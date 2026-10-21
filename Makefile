@@ -5,7 +5,7 @@ setup:
 	uv run pre-commit install
 
 dev:
-	docker compose up --build
+	docker compose up --build --remove-orphans
 
 test:
 	PYTHONPATH=src uv run pytest

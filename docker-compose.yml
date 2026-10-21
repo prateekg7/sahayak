@@ -1,0 +1,64 @@
+services:
+  app:
+    build:
+      context: .
+      target: runtime
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_NAME: ${APP_NAME:-Sahayak}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      ENABLED_MODULES: ${ENABLED_MODULES:-academics}
+    command: ["python", "-m", "sahayak.container", "app"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: .
+      target: runtime
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      ENABLED_MODULES: ${ENABLED_MODULES:-academics}
+    command: ["python", "-m", "sahayak.container", "worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: sahayak
+      POSTGRES_USER: sahayak
+      POSTGRES_PASSWORD: sahayak
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=sahayak --dbname=sahayak"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-bookworm
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
