@@ -30,6 +30,7 @@ repos:
           - pytest>=9.0.3,<10
           - pytest-asyncio>=1,<2
           - python-ulid>=3,<4
+          - SQLAlchemy>=2.0,<3
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.27.2
     hooks:

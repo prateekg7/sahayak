@@ -20,10 +20,10 @@ typecheck:
 	uv run mypy
 
 migrate:
-	@echo "Migrations are introduced by T0.6."
+	uv run alembic upgrade head
 
 migrate-check:
-	@echo "Migration checks are introduced by T0.6."
+	uv run python scripts/migrate_check.py
 
 snapshot:
 	@echo "Tool snapshots are introduced by T0.11."
