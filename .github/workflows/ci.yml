@@ -95,8 +95,15 @@ jobs:
         run: docker build --tag sahayak:ci .
       - name: Verify non-root runtime user
         run: test "$(docker run --rm --entrypoint id sahayak:ci -u)" = "10001"
+      - name: Start the local compose topology
+        run: docker compose up --build --wait
+      - name: Review production image size
+        run: docker image inspect sahayak:ci --format 'sahayak:ci size={{.Size}} bytes'
       - name: Scan production image
         run: >-
           docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock
           aquasec/trivy:0.75.0
           image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed sahayak:ci
+      - name: Stop local compose topology
+        if: always()
+        run: docker compose down --volumes --remove-orphans
