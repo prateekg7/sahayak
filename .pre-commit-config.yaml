@@ -25,7 +25,7 @@ repos:
         additional_dependencies:
           - pydantic>=2.14,<3
           - pydantic-settings>=2.16,<3
-          - pytest>=8.4,<9
+          - pytest>=9.0.3,<10
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.27.2
     hooks:
