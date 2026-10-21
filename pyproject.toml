@@ -10,7 +10,9 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = { text = "Proprietary" }
 authors = [{ name = "Sahayak contributors" }]
-dependencies = []
+dependencies = [
+  "pydantic-settings>=2.10,<3",
+]
 
 [dependency-groups]
 dev = [
