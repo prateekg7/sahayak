@@ -9,7 +9,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       ENABLED_MODULES: ${ENABLED_MODULES:-academics}
-    command: ["python", "-m", "sahayak.container", "app"]
+    command: ["uvicorn", "sahayak.main:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       postgres:
         condition: service_healthy

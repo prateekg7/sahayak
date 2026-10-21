@@ -33,9 +33,8 @@ COPY --from=builder --chown=sahayak:sahayak /app/src ./src
 
 USER sahayak
 
-# T0.5 replaces this import-level health check with the /healthz endpoint.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD python -c "import sahayak" || exit 1
+    CMD python -c "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/healthz')" || exit 1
 
-# T0.5 and T2.5 replace the bootstrap commands with the web application and worker.
-CMD ["python", "-m", "sahayak.container", "app"]
+# T2.5 replaces the worker bootstrap with its dedicated runtime.
+CMD ["uvicorn", "sahayak.main:app", "--host", "0.0.0.0", "--port", "8000"]
