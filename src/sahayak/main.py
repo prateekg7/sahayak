@@ -103,6 +103,11 @@ def create_app(
     if users_svc is None and deps is not None and deps.session_factory is not None:
         users_svc = UserService(session_factory=deps.session_factory)
 
+    if deps is not None and deps.session_factory is not None:
+        from sahayak.core.idempotency import IdempotencyService, set_default_idempotency_service
+
+        set_default_idempotency_service(IdempotencyService(session_factory=deps.session_factory))
+
     mcp_app: Starlette | None = None
     if enable_mcp:
         mod_registry = registry or get_registry()
