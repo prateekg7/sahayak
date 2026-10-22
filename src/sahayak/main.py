@@ -136,6 +136,22 @@ def create_app(
                 return JSONResponse(status_code=503, content={"status": "not_ready"})
         return JSONResponse(status_code=200, content={"status": "ok"})
 
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics(request: Request) -> Response:
+        """Report Prometheus metrics, authenticated by metrics_token when configured."""
+        if app_settings.metrics_token is not None:
+            auth_header = request.headers.get("Authorization", "")
+            token_val = app_settings.metrics_token.get_secret_value()
+            header_match = auth_header == f"Bearer {token_val}"
+            x_header_match = request.headers.get("X-Metrics-Token") == token_val
+            if not (header_match or x_header_match):
+                return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+
+        from sahayak.core.observability.metrics import render_metrics
+
+        data, content_type = render_metrics()
+        return Response(content=data, media_type=content_type)
+
     if mcp_app is not None:
         mount_mcp_server(app, mcp_app)
 

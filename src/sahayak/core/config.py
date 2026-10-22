@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     quiz_ttl_minutes: PositiveInt = 120
     otel_exporter_otlp_endpoint: AnyUrl | None = None
     sentry_dsn: SecretStr | None = None
+    metrics_token: SecretStr | None = None
 
     @field_validator("enabled_modules", mode="before")
     @classmethod

@@ -27,13 +27,16 @@ async def ping_echo(message: str = "ping", request_id: str = "") -> dict[str, An
 
         set_request_id(request_id)
 
-    req = PingRequest(message=message)
-    echo_result = await _service.process_ping(req.message)
-    data = PingResponseData(echo=echo_result, received_length=len(req.message)).model_dump()
-    return ok(
-        spoken_summary=f"Pong. {echo_result}",
-        data=data,
-        next_actions=["ping again with another message"],
-        module="_template",
-        version="0.1.0",
-    )
+    from sahayak.core.observability.instrumentation import instrument_tool
+
+    async with instrument_tool("ping_echo", "_template"):
+        req = PingRequest(message=message)
+        echo_result = await _service.process_ping(req.message)
+        data = PingResponseData(echo=echo_result, received_length=len(req.message)).model_dump()
+        return ok(
+            spoken_summary=f"Pong. {echo_result}",
+            data=data,
+            next_actions=["ping again with another message"],
+            module="_template",
+            version="0.1.0",
+        )
