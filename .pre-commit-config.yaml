@@ -37,6 +37,8 @@ repos:
           - structlog>=24.1,<26
           - prometheus-client>=0.20,<1
           - opentelemetry-api>=1.20,<2
+          - alembic>=1.14,<2
+          - pyjwt>=2.8,<3
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.27.2
     hooks:

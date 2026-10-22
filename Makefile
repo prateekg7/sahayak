@@ -20,10 +20,10 @@ typecheck:
 	uv run mypy
 
 migrate:
-	uv run alembic upgrade head
+	PYTHONPATH=src uv run alembic upgrade head
 
 migrate-check:
-	uv run python scripts/migrate_check.py
+	PYTHONPATH=src uv run python scripts/migrate_check.py
 
 snapshot:
 	PYTHONPATH=src uv run python scripts/snapshot_tools.py

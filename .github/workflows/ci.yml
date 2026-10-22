@@ -63,6 +63,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --frozen --all-groups
+      - run: make migrate
       - run: make test
       - run: make migrate-check
 

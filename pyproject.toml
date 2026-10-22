@@ -70,6 +70,10 @@ strict = true
 files = ["src", "tests"]
 warn_unused_configs = true
 
+[[tool.mypy.overrides]]
+module = ["alembic", "alembic.*"]
+ignore_missing_imports = true
+
 [tool.importlinter]
 root_package = "sahayak"
 

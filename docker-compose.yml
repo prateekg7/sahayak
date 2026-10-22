@@ -29,7 +29,11 @@ services:
       context: .
       target: runtime
     healthcheck:
-      disable: true
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 2s
     environment:
       APP_ENV: ${APP_ENV:-local}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
