@@ -1,0 +1,22 @@
+[
+  {
+    "description": "Echoes back a test message to verify that the Sahayak MCP connection is healthy. Use when testing connectivity or confirming the server is online, e.g. 'Alexa, ask Sahayak to ping'. Do not use for academic quizzes, flashcards, or study plans.",
+    "name": "ping_echo",
+    "parameters": {
+      "properties": {
+        "message": {
+          "default": "ping",
+          "title": "Message",
+          "type": "string"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "title": "ping_echoArguments",
+      "type": "object"
+    }
+  }
+]

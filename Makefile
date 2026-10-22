@@ -26,10 +26,10 @@ migrate-check:
 	uv run python scripts/migrate_check.py
 
 snapshot:
-	@echo "Tool snapshots are introduced by T0.11."
+	PYTHONPATH=src uv run python scripts/snapshot_tools.py
 
 snapshot-check:
-	@echo "Tool snapshot checks are introduced by T0.11."
+	PYTHONPATH=src uv run python scripts/snapshot_tools.py --check
 
 tunnel:
 	cloudflared tunnel --url http://localhost:8000
