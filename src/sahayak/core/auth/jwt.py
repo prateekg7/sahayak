@@ -218,19 +218,25 @@ class JWTValidator:
             raise InvalidTokenError(f"Invalid token: {exc}") from exc
 
         # Parse scopes from scope or scp or permissions
-        scopes_list: list[str] = []
+        raw_scopes: list[str] = []
         if "scope" in payload and isinstance(payload["scope"], str):
-            scopes_list.extend(payload["scope"].split())
+            raw_scopes.extend(payload["scope"].split())
         elif "scp" in payload and isinstance(payload["scp"], list):
-            scopes_list.extend(str(s) for s in payload["scp"])
+            raw_scopes.extend(str(s) for s in payload["scp"])
         elif "permissions" in payload and isinstance(payload["permissions"], list):
-            scopes_list.extend(str(s) for s in payload["permissions"])
+            raw_scopes.extend(str(s) for s in payload["permissions"])
+
+        scopes_list: list[str] = []
+        for s in raw_scopes:
+            scopes_list.append(s)
+            if "/" in s:
+                scopes_list.append(s.split("/", 1)[1])
 
         return TokenClaims(
             subject=str(payload["sub"]),
             issuer=str(payload["iss"]),
             audience=payload.get("aud", ""),
-            scopes=tuple(scopes_list),
+            scopes=tuple(dict.fromkeys(scopes_list)),
             expires_at=int(payload["exp"]),
             raw=payload,
         )
