@@ -129,6 +129,11 @@ class ModuleRegistry:
         """Return the registered modules keyed by name."""
         return dict(self._modules)
 
+    def register(self, module: Module) -> None:
+        """Register a module instance directly."""
+        self._modules[module.name] = module
+        logger.info("registered module %s v%s", module.name, module.version)
+
     def load(self, enabled_names: tuple[str, ...] | list[str]) -> None:
         """Import and register the modules listed in configuration.
 

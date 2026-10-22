@@ -5,12 +5,14 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator, Awaitable, Sequence
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
+from sahayak.core.auth.jwt import ALLOWED_ALGORITHMS, JWTValidator
+from sahayak.core.auth.middleware import AuthMiddleware
 from sahayak.core.config import Settings, get_settings
 from sahayak.core.mcp_server import create_mcp_app, create_mcp_server, mount_mcp_server
 from sahayak.core.module import Deps, ModuleRegistry, get_registry
@@ -21,6 +23,7 @@ from sahayak.core.request_id import (
     reset_request_id,
     set_request_id,
 )
+from sahayak.shared.users.service import UserService
 
 if TYPE_CHECKING:
     from starlette.applications import Starlette
@@ -58,6 +61,8 @@ def create_app(
     deps: Deps | None = None,
     registry: ModuleRegistry | None = None,
     enable_mcp: bool = True,
+    jwt_validator: JWTValidator | None = None,
+    user_service: UserService | None = None,
 ) -> FastAPI:
     """Build the stateless HTTP application.
 
@@ -67,11 +72,31 @@ def create_app(
         deps: Injected shared infrastructure for feature modules.
         registry: Explicit module registry for testing isolation.
         enable_mcp: Whether to mount the MCP Streamable HTTP endpoint.
+        jwt_validator: Injected JWT validator. If None and configured, created from settings.
+        user_service: Injected user provisioning service.
 
     Returns:
         A configured FastAPI application.
     """
     app_settings = settings or get_settings()
+
+    validator = jwt_validator
+    if validator is None and app_settings.oidc_issuer is not None:
+        jwks_url = (
+            str(app_settings.oidc_jwks_url)
+            if app_settings.oidc_jwks_url
+            else f"{app_settings.oidc_issuer}/.well-known/jwks.json"
+        )
+        validator = JWTValidator(
+            issuer=str(app_settings.oidc_issuer),
+            audience=app_settings.oidc_audience,
+            jwks_url=jwks_url,
+            cache=deps.cache if deps else None,
+        )
+
+    users_svc = user_service
+    if users_svc is None and deps is not None and deps.session_factory is not None:
+        users_svc = UserService(session_factory=deps.session_factory)
 
     mcp_app: Starlette | None = None
     if enable_mcp:
@@ -104,7 +129,6 @@ def create_app(
             yield
 
     app = FastAPI(title=app_settings.app_name, lifespan=lifespan)
-    app.add_middleware(RequestIDMiddleware)
 
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(
@@ -152,8 +176,28 @@ def create_app(
         data, content_type = render_metrics()
         return Response(content=data, media_type=content_type)
 
+    @app.get("/.well-known/oauth-protected-resource", include_in_schema=False)
+    async def oauth_protected_resource() -> dict[str, Any]:
+        """Expose RFC 9728 OAuth 2.0 protected resource metadata per ADR 0003."""
+        auth_servers: list[str] = []
+        if app_settings.oidc_issuer is not None:
+            auth_servers.append(str(app_settings.oidc_issuer))
+
+        return {
+            "resource": str(app_settings.public_base_url),
+            "authorization_servers": auth_servers,
+            "scopes_supported": ["academics.read", "academics.write"],
+            "bearer_methods_supported": ["header"],
+            "resource_signing_alg_values_supported": list(ALLOWED_ALGORITHMS),
+        }
+
     if mcp_app is not None:
         mount_mcp_server(app, mcp_app)
+
+    # AuthMiddleware wraps MCPRoutingMiddleware so credentials are set for tool execution
+    app.add_middleware(AuthMiddleware, validator=validator, user_service=users_svc)
+    # RequestIDMiddleware is outermost so correlation IDs span all layers
+    app.add_middleware(RequestIDMiddleware)
 
     return app
 

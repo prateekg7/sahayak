@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from sahayak.core.auth.principal import allow_anonymous
 from sahayak.core.envelope import ok
 from sahayak.modules._template.adapters.sample_repo import InMemoryPingRepository
 from sahayak.modules._template.schemas import PingRequest, PingResponseData
@@ -20,6 +21,7 @@ PING_ECHO_DESCRIPTION = (
 )
 
 
+@allow_anonymous
 async def ping_echo(message: str = "ping", request_id: str = "") -> dict[str, Any]:
     """Echo back the caller's message wrapped in a standardized envelope."""
     if request_id:
