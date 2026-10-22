@@ -33,6 +33,7 @@ repos:
           - SQLAlchemy>=2.0,<3
           - fakeredis>=2.26,<3
           - redis>=5,<7
+          - mcp>=2.3.0
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.27.2
     hooks:

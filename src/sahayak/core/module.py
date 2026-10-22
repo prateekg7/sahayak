@@ -147,8 +147,17 @@ class ModuleRegistry:
             try:
                 pkg = importlib.import_module(module_path)
             except ImportError as exc:
-                msg = f"cannot import module {name!r} from {module_path}: {exc}"
-                raise RuntimeError(msg) from exc
+                if not name.startswith("_"):
+                    fallback_path = f"sahayak.modules._{name}"
+                    try:
+                        pkg = importlib.import_module(fallback_path)
+                        module_path = fallback_path
+                    except ImportError:
+                        msg = f"cannot import module {name!r} from {module_path}: {exc}"
+                        raise RuntimeError(msg) from exc
+                else:
+                    msg = f"cannot import module {name!r} from {module_path}: {exc}"
+                    raise RuntimeError(msg) from exc
 
             instance = getattr(pkg, "module", None)
             if instance is None:
