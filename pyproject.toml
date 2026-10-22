@@ -68,3 +68,20 @@ warn_unused_configs = true
 
 [tool.importlinter]
 root_package = "sahayak"
+
+[[tool.importlinter.contracts]]
+name = "Core does not import modules"
+type = "forbidden"
+source_modules = ["sahayak.core"]
+forbidden_modules = ["sahayak.modules"]
+
+[[tool.importlinter.contracts]]
+name = "Domain does not import adapters"
+type = "forbidden"
+source_modules = ["sahayak.modules._template.domain"]
+forbidden_modules = ["sahayak.modules._template.adapters"]
+
+[[tool.importlinter.contracts]]
+name = "Modules are independent"
+type = "independence"
+modules = ["sahayak.modules._template"]
