@@ -23,6 +23,11 @@ from sahayak.core.request_id import (
     reset_request_id,
     set_request_id,
 )
+from sahayak.core.security import (
+    OriginValidationMiddleware,
+    RequestBodyLimitMiddleware,
+    SecurityHeadersMiddleware,
+)
 from sahayak.shared.users.service import UserService
 
 if TYPE_CHECKING:
@@ -196,6 +201,15 @@ def create_app(
 
     # AuthMiddleware wraps MCPRoutingMiddleware so credentials are set for tool execution
     app.add_middleware(AuthMiddleware, validator=validator, user_service=users_svc)
+    # Request body size limiter
+    app.add_middleware(
+        RequestBodyLimitMiddleware, max_body_bytes=app_settings.max_request_body_bytes
+    )
+    # Origin validation for web clients and DNS-rebinding protection
+    allowed_origins = [str(o) for o in app_settings.allowed_origins]
+    app.add_middleware(OriginValidationMiddleware, allowed_origins=allowed_origins)
+    # Defense-in-depth security headers
+    app.add_middleware(SecurityHeadersMiddleware)
     # RequestIDMiddleware is outermost so correlation IDs span all layers
     app.add_middleware(RequestIDMiddleware)
 

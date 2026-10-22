@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     max_tools_per_module: PositiveInt = 4
     spoken_summary_max_chars: PositiveInt = 300
     max_response_bytes: PositiveInt = 8192
+    max_request_body_bytes: PositiveInt = 65536
     request_timeout_seconds: Annotated[float, Field(gt=0, le=0.5)] = 0.45
     rate_limit_per_minute: PositiveInt = 60
     rate_limit_generation_per_minute: PositiveInt = 10
