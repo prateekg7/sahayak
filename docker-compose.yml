@@ -3,12 +3,18 @@ services:
     build:
       context: .
       target: runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     environment:
       APP_ENV: ${APP_ENV:-local}
       APP_NAME: ${APP_NAME:-Sahayak}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
-      ENABLED_MODULES: ${ENABLED_MODULES:-academics}
+      ENABLED_MODULES: ${ENABLED_MODULES:-_template}
     command: ["uvicorn", "sahayak.main:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       postgres:
@@ -22,11 +28,13 @@ services:
     build:
       context: .
       target: runtime
+    healthcheck:
+      disable: true
     environment:
       APP_ENV: ${APP_ENV:-local}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
-      ENABLED_MODULES: ${ENABLED_MODULES:-academics}
+      ENABLED_MODULES: ${ENABLED_MODULES:-_template}
     command: ["python", "-m", "sahayak.container", "worker"]
     depends_on:
       postgres:
