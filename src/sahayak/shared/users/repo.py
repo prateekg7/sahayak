@@ -59,6 +59,12 @@ class UserRepository:
         await session.flush()
         return user
 
+    async def get_identities(self, session: AsyncSession, user_id: uuid.UUID) -> list[UserIdentity]:
+        """Fetch all external identities associated with a user."""
+        stmt = select(UserIdentity).where(UserIdentity.user_id == user_id)
+        result = await session.execute(stmt)
+        return list(result.scalars().all())
+
     async def soft_delete_user(self, session: AsyncSession, user_id: uuid.UUID) -> bool:
         """Mark a user as deleted without removing historical records."""
         stmt = (
@@ -66,6 +72,16 @@ class UserRepository:
             .where(User.id == user_id, User.deleted_at.is_(None))
             .values(deleted_at=func.now())
         )
+        result = await session.execute(stmt)
+        if isinstance(result, CursorResult):
+            return result.rowcount > 0
+        return False
+
+    async def hard_delete_user(self, session: AsyncSession, user_id: uuid.UUID) -> bool:
+        """Permanently delete a user row, cascading to user_identities."""
+        from sqlalchemy import delete
+
+        stmt = delete(User).where(User.id == user_id)
         result = await session.execute(stmt)
         if isinstance(result, CursorResult):
             return result.rowcount > 0

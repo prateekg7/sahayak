@@ -6,9 +6,10 @@ import uuid
 from typing import TYPE_CHECKING
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from sahayak.core.db.session import UnitOfWork
-from sahayak.shared.users.models import User
+from sahayak.shared.users.models import User, UserIdentity
 from sahayak.shared.users.repo import UserRepository
 
 if TYPE_CHECKING:
@@ -66,7 +67,21 @@ class UserService:
                     return user
                 raise
 
+    async def get_identities(self, user_id: uuid.UUID) -> list[UserIdentity]:
+        """Fetch all external identities linked to a user."""
+        async with UnitOfWork(self._session_factory) as uow:
+            return await self._repo.get_identities(uow.session, user_id)
+
     async def soft_delete_user(self, user_id: uuid.UUID) -> bool:
         """Mark a user as deleted."""
         async with UnitOfWork(self._session_factory) as uow:
             return await self._repo.soft_delete_user(uow.session, user_id)
+
+    async def hard_delete_user(
+        self, user_id: uuid.UUID, session: AsyncSession | None = None
+    ) -> bool:
+        """Permanently remove a user and all cascade-dependent identities."""
+        if session is not None:
+            return await self._repo.hard_delete_user(session, user_id)
+        async with UnitOfWork(self._session_factory) as uow:
+            return await self._repo.hard_delete_user(uow.session, user_id)
