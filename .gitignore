@@ -19,3 +19,6 @@ build/
 !CHANGELOG.md
 !prompts/*.md
 !docs/**/*.md
+!infra/**/*.md
+!PRD.md
+!agents.md
