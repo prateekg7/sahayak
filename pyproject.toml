@@ -78,7 +78,7 @@ files = ["src", "tests"]
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = ["alembic", "alembic.*", "rapidfuzz", "rapidfuzz.*", "hypothesis", "hypothesis.*"]
+module = ["alembic", "alembic.*", "rapidfuzz", "rapidfuzz.*", "hypothesis", "hypothesis.*", "locust"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
