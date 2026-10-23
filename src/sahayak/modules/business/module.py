@@ -14,6 +14,7 @@ from sahayak.modules.business.models import (
     Business,
     BusinessMember,
     Customer,
+    LedgerEntry,
     Order,
     OrderItem,
 )
@@ -48,12 +49,21 @@ class BusinessModule:
         """Register MCP tools for business module."""
         self._deps = deps
         if deps.session_factory is not None:
+            from sahayak.modules.business.service.ledger import LedgerService
             from sahayak.modules.business.service.orders import OrderService
+            from sahayak.modules.business.tools.ledger import set_ledger_service
             from sahayak.modules.business.tools.orders import set_order_service
 
             order_service = OrderService(session_factory=deps.session_factory)
             set_order_service(order_service)
 
+            ledger_service = LedgerService(session_factory=deps.session_factory)
+            set_ledger_service(ledger_service)
+
+        from sahayak.modules.business.tools.ledger import (
+            LEDGER_DESCRIPTION,
+            ledger,
+        )
         from sahayak.modules.business.tools.orders import (
             ORDERS_DESCRIPTION,
             orders,
@@ -62,8 +72,10 @@ class BusinessModule:
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="orders", description=ORDERS_DESCRIPTION)(orders)
+            tool_decorator(name="ledger", description=LEDGER_DESCRIPTION)(ledger)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(orders, name="orders", description=ORDERS_DESCRIPTION)
+            mcp.add_tool(ledger, name="ledger", description=LEDGER_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs for business module."""
@@ -98,6 +110,7 @@ class BusinessModule:
             exported_orders = []
             exported_items = []
             exported_customers = []
+            exported_ledger = []
 
             if b_ids:
                 res_b = await uow.session.execute(select(Business).where(Business.id.in_(b_ids)))
@@ -119,12 +132,18 @@ class BusinessModule:
                 )
                 exported_customers = [c.to_dict() for c in res_c.scalars().all()]
 
+                res_l = await uow.session.execute(
+                    select(LedgerEntry).where(LedgerEntry.business_id.in_(b_ids))
+                )
+                exported_ledger = [entry.to_dict() for entry in res_l.scalars().all()]
+
             return {
                 "businesses": exported_businesses,
                 "memberships": [m.to_dict() for m in memberships],
                 "orders": exported_orders,
                 "order_items": exported_items,
                 "customers": exported_customers,
+                "ledger_entries": exported_ledger,
             }
 
     async def delete_user_data(self, user_id: str) -> None:

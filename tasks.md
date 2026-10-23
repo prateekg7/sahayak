@@ -509,7 +509,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** schema `business` (`businesses`, `business_members`, `orders`, `order_items`, `customers`), human-friendly sequential order numbers per business (race-safe), status machine (`pending → packed → shipped → delivered/cancelled`), `tools/orders.py` (`create, list_pending, update_status, get`), money as minor units, import path for CSV later (hook only).
 - **Done when:** concurrent order creation yields unique sequential numbers; illegal status transitions rejected with spoken guidance.
 
-### [ ] T10.2 — `ledger` tool (customer dues)
+### [x] T10.2 — `ledger` tool (customer dues)
 - **Depends on:** T10.1 · **Est. LOC:** ~650
 - **What it does:** Track who owes the business money.
 - **Implement:** `ledger_entries` (append-only, credits/debits), balance computed from entries (never edited in place), `tools/ledger.py` (`add_due, record_payment, balance, top_dues`), reversal entries instead of deletes, daily reconciliation test.

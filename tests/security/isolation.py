@@ -1216,3 +1216,72 @@ register_isolation_spec(
         custom_isolation_check=_orders_cross_user_isolation,
     )
 )
+
+
+async def _ledger_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A records a due for customer Priya
+    res_a = await session_a.call_tool(
+        "ledger",
+        {
+            "action": "add_due",
+            "customer_name": "Priya",
+            "amount": 500.0,
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to add due: {data_a}"
+    b_id_a = data_a.get("data", {}).get("business_id")
+    assert b_id_a is not None
+
+    # User B records a due for customer Rahul
+    res_b = await session_b.call_tool(
+        "ledger",
+        {
+            "action": "add_due",
+            "customer_name": "Rahul",
+            "amount": 300.0,
+        },
+    )
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is True, f"User B failed to add due: {data_b}"
+    b_id_b = data_b.get("data", {}).get("business_id")
+    assert b_id_a != b_id_b
+
+    # User A checks top dues: sees Priya, not Rahul
+    res_a_top = await session_a.call_tool("ledger", {"action": "top_dues"})
+    data_a_top = json.loads(getattr(res_a_top.content[0], "text", "{}"))
+    assert data_a_top.get("ok") is True
+    top_names_a = [
+        td.get("customer", {}).get("name") for td in data_a_top.get("data", {}).get("top_dues", [])
+    ]
+    assert "Priya" in top_names_a
+    assert "Rahul" not in top_names_a
+
+    # User B checks top dues: sees Rahul, not Priya
+    res_b_top = await session_b.call_tool("ledger", {"action": "top_dues"})
+    data_b_top = json.loads(getattr(res_b_top.content[0], "text", "{}"))
+    assert data_b_top.get("ok") is True
+    top_names_b = [
+        td.get("customer", {}).get("name") for td in data_b_top.get("data", {}).get("top_dues", [])
+    ]
+    assert "Rahul" in top_names_b
+    assert "Priya" not in top_names_b
+
+    # User B attempts to access User A's customer balance with User A's business_id
+    res_b_breach = await session_b.call_tool(
+        "ledger",
+        {"action": "balance", "business_id": b_id_a, "customer_name": "Priya"},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="ledger",
+        allows_anonymous=False,
+        sample_args={"action": "top_dues"},
+        custom_isolation_check=_ledger_cross_user_isolation,
+    )
+)

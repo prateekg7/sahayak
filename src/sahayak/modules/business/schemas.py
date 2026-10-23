@@ -49,3 +49,43 @@ class OrderRequest(BaseModel):
     status: str | None = Field(default=None, max_length=32)
     notes: str | None = Field(default=None, max_length=512)
     request_id: str | None = Field(default=None, max_length=64)
+
+
+class LedgerAction(str, Enum):
+    """Supported actions for the ledger MCP tool."""
+
+    ADD_DUE = "add_due"
+    RECORD_PAYMENT = "record_payment"
+    BALANCE = "balance"
+    TOP_DUES = "top_dues"
+    REVERSE = "reverse"
+    RECONCILE = "reconcile"
+
+
+class LedgerRequest(BaseModel):
+    """Request model for the ledger MCP tool."""
+
+    action: LedgerAction = Field(default=LedgerAction.TOP_DUES)
+    business_id: str | None = Field(default=None, max_length=64)
+    customer_name: str | None = Field(default=None, max_length=128)
+    customer_phone: str | None = Field(default=None, max_length=32)
+    customer_id: str | None = Field(default=None, max_length=64)
+    amount: float | None = Field(default=None, ge=0)
+    amount_minor: int | None = Field(default=None, ge=0)
+    notes: str | None = Field(default=None, max_length=512)
+    reference_id: str | None = Field(default=None, max_length=128)
+    entry_id: str | None = Field(default=None, max_length=64)
+    limit: int = Field(default=5, ge=1, le=20)
+    request_id: str | None = Field(default=None, max_length=64)
+
+    @model_validator(mode="before")
+    @classmethod
+    def resolve_amount_minor(cls, values: Any) -> Any:
+        if (
+            isinstance(values, dict)
+            and values.get("amount_minor") is None
+            and values.get("amount") is not None
+        ):
+            val = float(values["amount"])
+            values["amount_minor"] = int(round(val * 100))
+        return values

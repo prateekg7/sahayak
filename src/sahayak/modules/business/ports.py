@@ -5,7 +5,14 @@ from __future__ import annotations
 import uuid
 from typing import Any, Protocol
 
-from sahayak.modules.business.models import Business, BusinessMember, Order, OrderItem
+from sahayak.modules.business.models import (
+    Business,
+    BusinessMember,
+    Customer,
+    LedgerEntry,
+    Order,
+    OrderItem,
+)
 
 
 class BusinessRepositoryPort(Protocol):
@@ -84,4 +91,80 @@ class OrderRepositoryPort(Protocol):
         new_status: str,
     ) -> Order | None:
         """Update order status."""
+        ...
+
+
+class LedgerRepositoryPort(Protocol):
+    """Port for customer credit and debit ledger."""
+
+    async def get_or_create_customer(
+        self,
+        *,
+        business_id: uuid.UUID,
+        name: str,
+        phone: str | None = None,
+    ) -> Customer:
+        """Find existing customer by name/phone or create new one."""
+        ...
+
+    async def find_customer(
+        self,
+        *,
+        business_id: uuid.UUID,
+        customer_id: uuid.UUID | None = None,
+        name: str | None = None,
+        phone: str | None = None,
+    ) -> Customer | None:
+        """Find a customer by ID, exact name, or phone."""
+        ...
+
+    async def append_entry(
+        self,
+        *,
+        business_id: uuid.UUID,
+        customer_id: uuid.UUID,
+        entry_type: str,
+        direction: str,
+        amount_minor: int,
+        notes: str | None = None,
+        reference_id: str | None = None,
+        reversed_entry_id: uuid.UUID | None = None,
+        created_by: uuid.UUID | None = None,
+    ) -> LedgerEntry:
+        """Append an immutable ledger entry."""
+        ...
+
+    async def get_entries_for_customer(
+        self,
+        *,
+        business_id: uuid.UUID,
+        customer_id: uuid.UUID,
+    ) -> list[LedgerEntry]:
+        """Fetch all ledger entries for a customer in chronological order."""
+        ...
+
+    async def get_entry_by_id(
+        self,
+        *,
+        business_id: uuid.UUID,
+        entry_id: uuid.UUID,
+    ) -> LedgerEntry | None:
+        """Fetch a specific ledger entry by ID."""
+        ...
+
+    async def get_top_dues(
+        self,
+        *,
+        business_id: uuid.UUID,
+        limit: int = 5,
+    ) -> list[tuple[Customer, int]]:
+        """Fetch customers with highest outstanding dues (positive balance)."""
+        ...
+
+    async def reconcile_all_balances(
+        self,
+        *,
+        business_id: uuid.UUID,
+    ) -> dict[uuid.UUID, int]:
+        """Reconcile and compute current balances for all customers from ledger entries."""
         ...

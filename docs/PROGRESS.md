@@ -1,5 +1,30 @@
 # Progress
 
+## 2026-10-24 — T10.2 `ledger` tool (customer dues) — DONE
+
+- Summary: implemented append-only double-entry style customer credit and debit ledger, balance computation purely from entries, reversal entries with full audit trail, top dues ordering, daily balance reconciliation, and the `ledger` MCP tool (25th platform tool):
+  - Database & Migrations:
+    - `src/sahayak/modules/business/models.py`: Added `LedgerEntry` entity with direction (`debit`/`credit`), `amount_minor` (positive minor units), `reversed_entry_id` self-referential foreign key, and composite indexes.
+    - `src/sahayak/modules/business/migrations/0002_ledger_schema.py`: Alembic migration creating `business.ledger_entries` with `ck_business_ledger_amount_positive` check constraint. Reversible.
+  - Domain Logic (`src/sahayak/modules/business/domain/ledger.py`):
+    - Net effect computation: debit (+debt owed) and credit (-debt owed).
+    - Customer balance calculated as exact sum of signed entry effects; never updated in place.
+    - Voice formatters for add due, payment, balance, top dues, and reversal $\le 300$ chars without markdown/symbols.
+  - Adapters & Services:
+    - `src/sahayak/modules/business/adapters/ledger.py`: `SQLAlchemyLedgerRepository` implementing append-only entries, SQL-level aggregate balance calculations, and whole-store balance reconciliation.
+    - `src/sahayak/modules/business/service/ledger.py`: `LedgerService` orchestrating dues, payments, balance queries, top dues ranking, entry reversals (guarding against duplicate or nested reversals), and zero-discrepancy daily reconciliation.
+  - Public MCP Tool & GDPR:
+    - `src/sahayak/modules/business/tools/ledger.py`: `ledger` MCP tool (25th platform tool) with `@requires()` authentication, `@idempotent(tool_name="ledger")`, and standard envelope.
+    - `src/sahayak/modules/business/module.py`: Registered `ledger` tool; updated GDPR Right to Access export to include ledger entries.
+    - `tests/snapshots/tools.json`: Snapshot updated to 25 tools.
+  - Tests & Verification:
+    - `tests/unit/test_business_ledger_domain.py`: Hypothesis property test verifying balances always equal sum of entries, reversal cancellation test, voice formatting rules.
+    - `tests/unit/test_business_ledger_service.py`: Lifecycle integration testing dues, payments, balance queries, top dues descending ordering, reversals, duplicate reversal rejection, and daily reconciliation.
+    - `tests/contract/test_ledger_contract.py`: MCP contract test over Streamable HTTP.
+    - `tests/security/isolation.py`: Cross-user ledger isolation verified.
+  - Quality Gates: `make lint`, `make test` (613 passed, 86.06% coverage), `make snapshot-check` (25 tools), `make migrate-check`, `make security` all green.
+- Next: T10.3 `sales_summary` tool and low-stock alerts.
+
 ## 2026-10-24 — T10.1 Business tenancy and `orders` tool — DONE
 
 - Summary: implemented Phase 10 Small Business module tenancy, customers, sequential order numbers per business, lifecycle order status machine, integer minor units currency calculation, and the `orders` MCP tool (24th platform tool):
