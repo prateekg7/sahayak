@@ -577,7 +577,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** ADR defining add-on bundles (suggested: **Study** = academics; **Life** = productivity + finance + health; **Work** = career + business; **Home** = home + language + local info — adjust by V1 findings), deployment profiles via `ENABLED_MODULES` per service, per-profile tool snapshots, per-profile ECS service + ALB rule/path or subdomain, per-profile add-on config under `alexa/<bundle>/`, per-profile CI contract runs, routing of shared identity (one IdP, same `user_id` across bundles).
 - **Done when:** each profile starts independently, exposes only its tools, passes its contract suite, and shows the same user's data consistently where modules overlap.
 
-### [ ] T13.2 — Cross-module weekly report
+### [x] T13.2 — Cross-module weekly report
 - **Depends on:** T13.1, T3.13, T5.2, T6.4, T7.2 · **Est. LOC:** ~500
 - **What it does:** One spoken weekly summary combining study, habits, spending, and health.
 - **Implement:** `weekly_review` capability using published module APIs only; sections appear only for enabled modules and available data; concise spoken ordering; optional highlights ("longest study streak ever").

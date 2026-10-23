@@ -1460,3 +1460,11 @@ register_isolation_spec(
         sample_args={"action": "find", "occupation": "farmer"},
     )
 )
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="weekly_review",
+        allows_anonymous=False,
+        sample_args={"timezone": "UTC"},
+    )
+)

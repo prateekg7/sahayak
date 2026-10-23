@@ -1,5 +1,28 @@
 # Progress
 
+## 2026-10-24 — T13.2 `weekly_review` cross-module report — DONE
+
+- Summary: implemented the `weekly_review` cross-module summary capability and tool (32nd platform tool), aggregating learning, habits, spending, and health strictly via published module APIs with zero cross-module database imports:
+  - Architecture & Layering Compliance:
+    - Pure cross-module protocol: accessed each module strictly through its published `api.py` (`AcademicsAPI`, `ProductivityAPI`, `FinanceAPI`, `HealthAPI`).
+    - Extended `ProductivityAPI` with `get_weekly_habit_stats` and `HealthAPI` with `get_weekly_metrics`.
+  - Domain Model & Voice Formatter (`src/sahayak/modules/productivity/domain/weekly_review.py`):
+    - `WeeklyStudyStats`, `WeeklyHabitStats`, `WeeklyFinanceStats`, `WeeklyHealthStats`, `WeeklyReviewSummary` domain dataclasses.
+    - `format_weekly_review_spoken`: Generates natural, fluid spoken text combining only enabled modules with recorded activity strictly $\le 300$ characters.
+    - Highlights engine: Highlights milestone moments such as all-time study streak records and top habits.
+    - Empty fallback: Graceful spoken guidance when no activity has occurred in the past 7 days.
+  - Service Layer (`src/sahayak/modules/productivity/service/weekly_review.py`):
+    - `WeeklyReviewService`: Dynamically queries enabled module APIs via registry getter, gracefully catching per-module failures to ensure maximum resilience.
+  - Public MCP Tool & Snapshots:
+    - `src/sahayak/modules/productivity/tools/weekly_review.py`: `weekly_review` MCP tool with `@requires()` authentication, `@idempotent`, and `@instrument_tool`.
+    - Registered in `ProductivityModule` (12 tools for `life` bundle profile, 32 tools for `full` profile).
+    - Updated snapshots in `tests/snapshots/life_tools.json` and `tests/snapshots/tools.json`.
+  - Tests & Verification:
+    - `tests/unit/test_weekly_review.py`: Tests empty fallback, 4-module aggregation, single module subsets, streak highlights, character bounds, and service API resilience.
+    - `tests/contract/test_weekly_review_contract.py`: Over-the-wire Streamable HTTP MCP contract test verifying authenticated execution, payload shapes, and auto-isolation.
+  - Quality Gates: `make lint`, `make test` (706 passed, 85.37% coverage), `make snapshot-check`, `make migrate-check`, `make security` all clean.
+- Next: T13.3 — Feature flags, per-user module toggles, and admin CLI.
+
 ## 2026-10-24 — T13.1 Deployment profiles and multiple add-ons — DONE
 
 - Summary: implemented deployment profiles and multi-add-on bundle scaling (ADR 0016), resolving the Alexa+ tool budget across 31 platform tools with zero cross-module database fragmentation:

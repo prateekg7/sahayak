@@ -1013,5 +1013,32 @@
       "title": "tasksArguments",
       "type": "object"
     }
+  },
+  {
+    "description": "Get a unified spoken weekly summary combining study, habits, spending, and health. Use when the user says 'Give me my weekly review', 'How was my week?', or 'Weekly report'. Do not use for today's morning overview; use daily_briefing instead.",
+    "name": "weekly_review",
+    "parameters": {
+      "properties": {
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        }
+      },
+      "title": "weekly_reviewArguments",
+      "type": "object"
+    }
   }
 ]

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import select
@@ -13,7 +13,7 @@ from sahayak.modules.health.models import HealthEntry
 
 
 class HealthAPI:
-    """Public read API exposed to other modules (e.g. daily briefing)."""
+    """Public read API exposed to other modules (e.g. daily briefing, weekly review)."""
 
     def __init__(
         self,
@@ -54,4 +54,36 @@ class HealthAPI:
             "workouts_count": len(workouts),
             "meals_count": len(meals),
             "sleep_logged": len(sleep) > 0,
+        }
+
+    async def get_weekly_metrics(
+        self,
+        user_id: uuid.UUID,
+        since: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Aggregate health metrics (workouts, water, meals) over the past 7 days."""
+        target_end = self.clock()
+        target_start = since or (target_end - timedelta(days=7))
+
+        async with UnitOfWork(self.session_factory) as uow:
+            stmt = select(HealthEntry).where(
+                HealthEntry.user_id == user_id,
+                HealthEntry.is_deleted.is_(False),
+                HealthEntry.occurred_at >= target_start,
+                HealthEntry.occurred_at <= target_end,
+            )
+            res = await uow.session.execute(stmt)
+            entries = list(res.scalars().all())
+
+        total_water_ml = sum(e.data.get("amount_ml", 0) for e in entries if e.kind == "water")
+        workouts = [e.data for e in entries if e.kind == "workout"]
+        meals = [e.data for e in entries if e.kind == "meal"]
+        days_active = len({e.occurred_at.date() for e in entries})
+
+        return {
+            "total_water_ml": total_water_ml,
+            "avg_daily_water_ml": round(total_water_ml / 7),
+            "workouts_count": len(workouts),
+            "meals_count": len(meals),
+            "active_days": days_active,
         }

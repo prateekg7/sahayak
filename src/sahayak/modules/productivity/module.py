@@ -83,6 +83,22 @@ class ProductivityModule:
                 mod = get_registry().get("business")
                 return getattr(mod, "api", None) if mod is not None else None
 
+            def _get_module_api(name: str) -> Any:
+                from sahayak.core.module import get_registry
+
+                mod = get_registry().get(name)
+                return getattr(mod, "api", None) if mod is not None else None
+
+            from sahayak.modules.productivity.service.weekly_review import WeeklyReviewService
+            from sahayak.modules.productivity.tools.weekly_review import set_weekly_review_service
+
+            weekly_service = WeeklyReviewService(
+                session_factory=deps.session_factory,
+                module_api_getter=_get_module_api,
+                clock=clock_fn,
+            )
+            set_weekly_review_service(weekly_service)
+
             briefing_service = BriefingService(
                 session_factory=deps.session_factory,
                 academics_api_getter=_get_academics_api,
@@ -99,6 +115,10 @@ class ProductivityModule:
         from sahayak.modules.productivity.tools.habits import HABITS_DESCRIPTION, habits
         from sahayak.modules.productivity.tools.notes import NOTES_DESCRIPTION, notes
         from sahayak.modules.productivity.tools.tasks import TASKS_DESCRIPTION, tasks
+        from sahayak.modules.productivity.tools.weekly_review import (
+            WEEKLY_REVIEW_DESCRIPTION,
+            weekly_review,
+        )
 
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
@@ -109,6 +129,9 @@ class ProductivityModule:
             tool_decorator(name="daily_briefing", description=DAILY_BRIEFING_DESCRIPTION)(
                 daily_briefing
             )
+            tool_decorator(name="weekly_review", description=WEEKLY_REVIEW_DESCRIPTION)(
+                weekly_review
+            )
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(tasks, name="tasks", description=TASKS_DESCRIPTION)
             mcp.add_tool(habits, name="habits", description=HABITS_DESCRIPTION)
@@ -117,6 +140,7 @@ class ProductivityModule:
             mcp.add_tool(
                 daily_briefing, name="daily_briefing", description=DAILY_BRIEFING_DESCRIPTION
             )
+            mcp.add_tool(weekly_review, name="weekly_review", description=WEEKLY_REVIEW_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background jobs for productivity module."""
