@@ -12,7 +12,8 @@ dist/
 build/
 *.egg-info/
 .DS_Store
-# Product planning and working notes remain local; GitHub keeps only the README.
+# Product planning and working notes remain local; GitHub keeps only the README and CONTRIBUTING.
 *.md
 !README.md
+!CONTRIBUTING.md
 !prompts/*.md
