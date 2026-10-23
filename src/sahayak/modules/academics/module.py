@@ -102,6 +102,12 @@ class AcademicsModule:
             self._progress_service = progress_service
             set_progress_service(progress_service)
 
+        from sahayak.modules.academics.service.brief import TopicBriefService
+        from sahayak.modules.academics.tools.brief import (
+            TOPIC_BRIEF_DESCRIPTION,
+            set_brief_service,
+            topic_brief,
+        )
         from sahayak.modules.academics.tools.flashcards import (
             FLASHCARDS_DESCRIPTION,
             flashcards,
@@ -121,6 +127,12 @@ class AcademicsModule:
             study_plan,
         )
 
+        brief_service = TopicBriefService(
+            llm_client=getattr(deps, "llm_client", None),
+            cache=getattr(deps, "cache", None),
+        )
+        set_brief_service(brief_service)
+
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="quiz_start", description=QUIZ_START_DESCRIPTION)(quiz_start)
@@ -130,6 +142,7 @@ class AcademicsModule:
             tool_decorator(name="progress_report", description=PROGRESS_REPORT_DESCRIPTION)(
                 progress_report
             )
+            tool_decorator(name="topic_brief", description=TOPIC_BRIEF_DESCRIPTION)(topic_brief)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(quiz_start, name="quiz_start", description=QUIZ_START_DESCRIPTION)
             mcp.add_tool(quiz_answer, name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)
@@ -140,6 +153,7 @@ class AcademicsModule:
                 name="progress_report",
                 description=PROGRESS_REPORT_DESCRIPTION,
             )
+            mcp.add_tool(topic_brief, name="topic_brief", description=TOPIC_BRIEF_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs owned by the academics module."""

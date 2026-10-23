@@ -399,3 +399,50 @@ class ProgressReportResponseData(BaseModel):
     weekly: WeeklySummaryData | None = Field(
         default=None, description="7-day activity metrics for 'weekly' scope."
     )
+
+
+# ---------------------------------------------------------------------------
+# Topic Brief Schemas (T3.14)
+# ---------------------------------------------------------------------------
+
+BriefLength = Literal["short", "medium"]
+
+
+class TopicBriefRequest(BaseModel):
+    """Input parameters for topic_brief tool."""
+
+    topic: str = Field(
+        min_length=1,
+        max_length=128,
+        description="Academic topic or subject to summarize.",
+    )
+    length: BriefLength = Field(
+        default="short",
+        description="Desired summary length: 'short' (1-2 sentences) or 'medium' (3-4 sentences).",
+    )
+
+
+class TopicBriefSource(BaseModel):
+    """Grounding source reference."""
+
+    title: str = Field(description="Title of the source reference.")
+    url: str = Field(description="Canonical URL to the reference document.")
+
+
+class TopicBriefResponseData(BaseModel):
+    """Structured response payload for topic_brief tool."""
+
+    topic: str = Field(description="Canonical topic key.")
+    display_name: str = Field(description="Display title of the topic.")
+    brief: str = Field(description="Verified spoken summary text.")
+    length: BriefLength = Field(description="Length style of the brief.")
+    sources: list[TopicBriefSource] = Field(
+        default_factory=list,
+        description="Grounding citations used to produce the brief.",
+    )
+
+
+class RawTopicBriefOutput(BaseModel):
+    """Structured LLM output container for topic brief generation."""
+
+    brief: str = Field(description="Spoken summary of the topic grounded in reference text.")

@@ -358,3 +358,11 @@ register_isolation_spec(
         custom_isolation_check=_progress_report_cross_user_isolation,
     )
 )
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="topic_brief",
+        allows_anonymous=True,
+        sample_args={"topic": "General Science", "length": "short"},
+    )
+)

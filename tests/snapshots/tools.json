@@ -291,5 +291,27 @@
       "title": "study_planArguments",
       "type": "object"
     }
+  },
+  {
+    "description": "Provides a concise, sourced spoken summary of an academic topic grounded in verified references. Use when the user asks 'Give me a brief on photosynthesis', 'Tell me about the French Revolution', or 'What is plate tectonics?'. Do not use for testing knowledge or scheduling study; use 'quiz_start' or 'study_plan' instead.",
+    "name": "topic_brief",
+    "parameters": {
+      "properties": {
+        "length": {
+          "default": "short",
+          "title": "Length",
+          "type": "string"
+        },
+        "topic": {
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic"
+      ],
+      "title": "topic_briefArguments",
+      "type": "object"
+    }
   }
 ]
