@@ -86,7 +86,7 @@ class Module(Protocol):
         """Report whether this module's dependencies are reachable."""
         ...
 
-    def on_event(self, event: Any) -> None:
+    def on_event(self, event: Any) -> Any:
         """Handle a dispatched domain event.
 
         Args:

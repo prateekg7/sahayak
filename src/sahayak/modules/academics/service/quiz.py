@@ -134,8 +134,11 @@ class QuizService:
                 weak_stmt = (
                     select(Topic)
                     .join(TopicStats, Topic.id == TopicStats.topic_id)
-                    .where(TopicStats.user_id == user_id)
-                    .order_by((TopicStats.correct * 1.0 / TopicStats.attempts).asc())
+                    .where(TopicStats.user_id == user_id, TopicStats.attempts > 0)
+                    .order_by(
+                        (TopicStats.correct * 1.0 / TopicStats.attempts).asc(),
+                        TopicStats.attempts.desc(),
+                    )
                     .limit(1)
                 )
                 weak_res = await uow.session.execute(weak_stmt)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Sequence
 from datetime import date, datetime
-from typing import Protocol
+from typing import Any, Protocol
 
 from sahayak.modules.academics.models import (
     Card,
@@ -16,6 +16,7 @@ from sahayak.modules.academics.models import (
     QuestionStatus,
     StudyPlan,
     Topic,
+    TopicStats,
 )
 
 # Threshold of user flags before a question is automatically quarantined from serving
@@ -182,4 +183,65 @@ class StudyPlanPort(Protocol):
         from_date: date,
     ) -> Sequence[PlanTask]:
         """Delete incomplete tasks on or after from_date and insert new replanned tasks."""
+        ...
+
+
+class ProgressPort(Protocol):
+    """Port for tracking user study activity, updating stats, and querying progress."""
+
+    async def record_activity(
+        self,
+        user_id: uuid.UUID,
+        activity_type: str,
+        event_id: uuid.UUID,
+        created_at: datetime,
+        meta: dict[str, Any] | None = None,
+    ) -> bool:
+        """Record an activity event idempotently.
+
+        Returns:
+            True if recorded, False if event_id has already been processed.
+        """
+        ...
+
+    async def update_topic_stats(
+        self,
+        user_id: uuid.UUID,
+        topic_id: uuid.UUID,
+        attempts_delta: int,
+        correct_delta: int,
+        timestamp: datetime,
+    ) -> TopicStats:
+        """Atomically upsert topic statistics."""
+        ...
+
+    async def get_topic_stats(
+        self,
+        user_id: uuid.UUID,
+    ) -> Sequence[tuple[TopicStats, str]]:
+        """Fetch all topic stats for a user paired with topic display names."""
+        ...
+
+    async def get_activity_timestamps(
+        self,
+        user_id: uuid.UUID,
+        since: datetime | None = None,
+    ) -> Sequence[datetime]:
+        """Fetch all study activity timestamps for a user."""
+        ...
+
+    async def get_quiz_performance_summary(
+        self,
+        user_id: uuid.UUID,
+        since: datetime | None = None,
+    ) -> tuple[int, int, int]:
+        """Return (completed_quizzes_count, total_questions, correct_questions)."""
+        ...
+
+    async def get_cards_reviewed_count(
+        self,
+        user_id: uuid.UUID,
+        since: datetime | None = None,
+    ) -> int:
+        """Count flashcard reviews recorded for a user."""
         ...

@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     allowed_origins: Annotated[tuple[AnyUrl, ...], NoDecode] = ()
 
     max_tools: PositiveInt = 15
-    max_tools_per_module: PositiveInt = 4
+    max_tools_per_module: PositiveInt = 6
     spoken_summary_max_chars: PositiveInt = 300
     max_response_bytes: PositiveInt = 8192
     max_request_body_bytes: PositiveInt = 65536

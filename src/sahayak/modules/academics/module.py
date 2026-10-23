@@ -10,7 +10,15 @@ from sqlalchemy import delete, select
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.academics.models import Card, Deck, PlanTask, Quiz, StudyPlan, TopicStats
+from sahayak.modules.academics.models import (
+    ActivityLog,
+    Card,
+    Deck,
+    PlanTask,
+    Quiz,
+    StudyPlan,
+    TopicStats,
+)
 
 
 class AcademicsModule:
@@ -18,6 +26,7 @@ class AcademicsModule:
 
     def __init__(self) -> None:
         self._deps: Deps | None = None
+        self._progress_service: Any = None
 
     @property
     def name(self) -> str:
@@ -79,9 +88,27 @@ class AcademicsModule:
             )
             set_study_plan_service(study_plan_service)
 
+            from sahayak.modules.academics.service.progress import ProgressService
+            from sahayak.modules.academics.tools.progress import (
+                PROGRESS_REPORT_DESCRIPTION,
+                progress_report,
+                set_progress_service,
+            )
+
+            progress_service = ProgressService(
+                session_factory=deps.session_factory,
+                clock=clock_fn,
+            )
+            self._progress_service = progress_service
+            set_progress_service(progress_service)
+
         from sahayak.modules.academics.tools.flashcards import (
             FLASHCARDS_DESCRIPTION,
             flashcards,
+        )
+        from sahayak.modules.academics.tools.progress import (
+            PROGRESS_REPORT_DESCRIPTION,
+            progress_report,
         )
         from sahayak.modules.academics.tools.quiz import (
             QUIZ_ANSWER_DESCRIPTION,
@@ -100,11 +127,19 @@ class AcademicsModule:
             tool_decorator(name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)(quiz_answer)
             tool_decorator(name="flashcards", description=FLASHCARDS_DESCRIPTION)(flashcards)
             tool_decorator(name="study_plan", description=STUDY_PLAN_DESCRIPTION)(study_plan)
+            tool_decorator(name="progress_report", description=PROGRESS_REPORT_DESCRIPTION)(
+                progress_report
+            )
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(quiz_start, name="quiz_start", description=QUIZ_START_DESCRIPTION)
             mcp.add_tool(quiz_answer, name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)
             mcp.add_tool(flashcards, name="flashcards", description=FLASHCARDS_DESCRIPTION)
             mcp.add_tool(study_plan, name="study_plan", description=STUDY_PLAN_DESCRIPTION)
+            mcp.add_tool(
+                progress_report,
+                name="progress_report",
+                description=PROGRESS_REPORT_DESCRIPTION,
+            )
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs owned by the academics module."""
@@ -133,9 +168,31 @@ class AcademicsModule:
         """Self-check reporting module operational readiness."""
         return HealthStatus(healthy=True, detail="academics module ready")
 
-    def on_event(self, event: Any) -> None:
+    async def on_event(self, event: Any) -> None:
         """Handle dispatched domain events."""
-        # Event subscriptions will be wired in T3.13 (quiz.finished -> topic_stats)
+        if not hasattr(event, "type"):
+            return
+
+        if (
+            self._progress_service is None
+            and self._deps is not None
+            and self._deps.session_factory is not None
+        ):
+            from sahayak.modules.academics.service.progress import ProgressService
+
+            clock_fn = getattr(self._deps, "clock", None)
+            self._progress_service = ProgressService(
+                session_factory=self._deps.session_factory,
+                clock=clock_fn,
+            )
+
+        if self._progress_service is None:
+            return
+
+        if event.type == "academics.quiz.finished":
+            await self._progress_service.handle_quiz_finished(event)
+        elif event.type == "academics.flashcard.graded":
+            await self._progress_service.handle_flashcard_graded(event)
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
         """Return all academics data owned by the given user for privacy export."""
@@ -164,6 +221,12 @@ class AcademicsModule:
             # 4. Quizzes
             quizzes_res = await uow.session.execute(select(Quiz).where(Quiz.user_id == uid))
             quizzes = list(quizzes_res.scalars().all())
+
+            # 5. Activity Log
+            activity_res = await uow.session.execute(
+                select(ActivityLog).where(ActivityLog.user_id == uid)
+            )
+            activities = list(activity_res.scalars().all())
 
             return {
                 "decks": [
@@ -212,6 +275,15 @@ class AcademicsModule:
                     }
                     for q in quizzes
                 ],
+                "activity_log": [
+                    {
+                        "id": str(a.id),
+                        "activity_type": a.activity_type,
+                        "event_id": str(a.event_id),
+                        "created_at": a.created_at.isoformat(),
+                    }
+                    for a in activities
+                ],
             }
 
     async def delete_user_data(self, user_id: str) -> None:
@@ -232,6 +304,7 @@ class AcademicsModule:
             await uow.session.execute(delete(StudyPlan).where(StudyPlan.user_id == uid))
             await uow.session.execute(delete(TopicStats).where(TopicStats.user_id == uid))
             await uow.session.execute(delete(Quiz).where(Quiz.user_id == uid))
+            await uow.session.execute(delete(ActivityLog).where(ActivityLog.user_id == uid))
             await uow.session.commit()
 
 

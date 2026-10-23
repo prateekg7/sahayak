@@ -319,3 +319,42 @@ register_isolation_spec(
         custom_isolation_check=_study_plan_cross_user_isolation,
     )
 )
+
+
+async def _progress_report_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # 1. User B reads initial quiz count
+    res_b_before = await session_b.call_tool("progress_report", {"scope": "summary"})
+    data_b_before = json.loads(getattr(res_b_before.content[0], "text", "{}"))
+    assert data_b_before.get("ok") is True, (
+        f"User B initial progress_report failed: {data_b_before}"
+    )
+    quizzes_b_before = data_b_before.get("data", {}).get("total_quizzes", 0)
+
+    # 2. User A starts a quiz on seeded topic General Science
+    res_start = await session_a.call_tool(
+        "quiz_start",
+        {"topic": "General Science", "num_questions": 3},
+    )
+    data_start = json.loads(getattr(res_start.content[0], "text", "{}"))
+    assert data_start.get("ok") is True, f"User A quiz_start failed: {data_start}"
+
+    # 3. User B calls progress_report - User B's total quizzes is unchanged
+    res_b_after = await session_b.call_tool("progress_report", {"scope": "summary"})
+    data_b_after = json.loads(getattr(res_b_after.content[0], "text", "{}"))
+    assert data_b_after.get("ok") is True, f"User B progress_report after failed: {data_b_after}"
+    quizzes_b_after = data_b_after.get("data", {}).get("total_quizzes", 0)
+    assert quizzes_b_after == quizzes_b_before, (
+        "User A's new quiz leaked into User B's total_quizzes count"
+    )
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="progress_report",
+        allows_anonymous=False,
+        sample_args={"scope": "summary"},
+        custom_isolation_check=_progress_report_cross_user_isolation,
+    )
+)

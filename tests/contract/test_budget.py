@@ -46,8 +46,8 @@ def test_budget_guard_catches_exceeded_module_limit() -> None:
             return "0.1.0"
 
         def register_tools(self, mcp: Any, deps: Deps) -> None:
-            # Register 5 tools exceeding default limit of 4
-            for i in range(5):
+            # Register tools exceeding per-module limit
+            for i in range(settings.max_tools_per_module + 1):
                 mcp.tool(name=f"tool_{i}", description="test")(lambda: "ok")
 
         def register_jobs(self, worker: Any) -> None:

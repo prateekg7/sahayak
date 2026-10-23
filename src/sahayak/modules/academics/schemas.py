@@ -325,3 +325,77 @@ class StudyPlanResponseData(BaseModel):
         default=None,
         description="Task details updated during 'update' action.",
     )
+
+
+# ---------------------------------------------------------------------------
+# Progress Report Tool Schemas (T3.13)
+# ---------------------------------------------------------------------------
+
+ProgressScope = Literal["summary", "weak_topics", "streak", "weekly"]
+
+
+class ProgressReportRequest(BaseModel):
+    """Input payload for progress_report tool."""
+
+    scope: ProgressScope = Field(
+        default="summary",
+        description=(
+            "Aspect of progress to inspect: 'summary', 'weak_topics', 'streak', or 'weekly'."
+        ),
+    )
+    timezone: str = Field(
+        default="UTC",
+        description=(
+            "User timezone name (e.g. 'America/New_York', 'Asia/Kolkata') "
+            "for calendar day resolution."
+        ),
+    )
+
+
+class WeakTopicData(BaseModel):
+    """Performance summary for a weak topic."""
+
+    topic: str = Field(description="Display name of the academic topic.")
+    attempts: int = Field(description="Total questions attempted.")
+    correct: int = Field(description="Questions answered correctly.")
+    accuracy_pct: float = Field(description="Percentage accuracy.")
+
+
+class StreakData(BaseModel):
+    """Study streak information."""
+
+    current_streak: int = Field(description="Consecutive days studied ending today or yesterday.")
+    longest_streak: int = Field(description="Maximum consecutive days studied historically.")
+    studied_today: bool = Field(description="Whether user has recorded study activity today.")
+    last_active_date: str | None = Field(
+        default=None,
+        description="Last date studied in ISO format.",
+    )
+
+
+class WeeklySummaryData(BaseModel):
+    """7-day activity metrics."""
+
+    active_days: int = Field(description="Days active in the past 7 days (0-7).")
+    quizzes_completed: int = Field(description="Total quizzes finished in the past 7 days.")
+    questions_answered: int = Field(description="Total questions answered in the past 7 days.")
+    correct_count: int = Field(description="Total correct answers in the past 7 days.")
+    accuracy_pct: float = Field(description="Overall accuracy percentage in the past 7 days.")
+    cards_reviewed: int = Field(description="Total flashcard reviews in the past 7 days.")
+
+
+class ProgressReportResponseData(BaseModel):
+    """Structured data returned by progress_report tool."""
+
+    scope: ProgressScope = Field(description="Requested report scope.")
+    streak: StreakData = Field(description="Streak information.")
+    total_quizzes: int | None = Field(default=None, description="All-time completed quizzes.")
+    total_questions: int | None = Field(default=None, description="All-time questions answered.")
+    total_correct: int | None = Field(default=None, description="All-time correct answers.")
+    accuracy_pct: float | None = Field(default=None, description="All-time accuracy percentage.")
+    weak_topics: list[WeakTopicData] | None = Field(
+        default=None, description="Ranked list of weak topics needing reinforcement."
+    )
+    weekly: WeeklySummaryData | None = Field(
+        default=None, description="7-day activity metrics for 'weekly' scope."
+    )

@@ -433,3 +433,41 @@ class TopicStats(Base):
         kwargs.setdefault("correct", 0)
         kwargs.setdefault("last_attempt_at", datetime.now(UTC))
         super().__init__(**kwargs)
+
+
+class ActivityLog(Base):
+    """Transactional record of a student study activity for streak and progress calculation."""
+
+    __tablename__ = "activity_log"
+    __table_args__ = (
+        Index("ix_academics_activity_log_user_created", "user_id", "created_at"),
+        {"schema": "academics"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    activity_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    event_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        unique=True,
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+    meta: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
+    def __init__(self, **kwargs: Any) -> None:
+        kwargs.setdefault("id", uuid.uuid4())
+        kwargs.setdefault("created_at", datetime.now(UTC))
+        super().__init__(**kwargs)

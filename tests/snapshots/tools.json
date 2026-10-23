@@ -87,6 +87,26 @@
     }
   },
   {
+    "description": "Inspect academic quiz performance, study streaks, weak topics, and weekly summaries. Use when the student asks 'How am I doing?', 'What are my weak topics?', 'What is my streak?', or 'How did I do this week?'. Do not use for starting quizzes or scheduling study plans; use 'quiz_start' or 'study_plan' instead.",
+    "name": "progress_report",
+    "parameters": {
+      "properties": {
+        "scope": {
+          "default": "summary",
+          "title": "Scope",
+          "type": "string"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        }
+      },
+      "title": "progress_reportArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Submits an answer to the current question in an active quiz session. Use when the user answers a quiz question by letter, number, or text, such as 'Alexa, option B' or 'the answer is photosynthesis'. Do not use for starting a new quiz; use quiz_start instead.",
     "name": "quiz_answer",
     "parameters": {

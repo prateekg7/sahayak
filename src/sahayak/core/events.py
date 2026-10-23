@@ -196,7 +196,9 @@ class EventDispatcher:
         # 3. Loaded modules via Module.on_event
         if self._registry is not None:
             for mod in self._registry.modules.values():
-                mod.on_event(event)
+                res = mod.on_event(event)
+                if inspect.isawaitable(res):
+                    await res
 
     async def dispatch_pending(self, batch_size: int = 50) -> int:
         """Fetch and process a batch of unprocessed outbox events.
