@@ -12,7 +12,11 @@ from sahayak.core.errors import SahayakError
 from sahayak.core.idempotency import idempotent
 from sahayak.core.observability.instrumentation import instrument_tool
 from sahayak.modules.academics.schemas import (
+    NextQuestionData,
+    QuizAnswerRequest,
+    QuizAnswerResponseData,
     QuizOption,
+    QuizScoreData,
     QuizStartRequest,
     QuizStartResponseData,
 )
@@ -25,6 +29,13 @@ QUIZ_START_DESCRIPTION = (
     "Use when the user asks to start a quiz or be tested, such as "
     "'Alexa, quiz me on photosynthesis'. "
     "Do not use for answering questions in an active quiz; use quiz_answer instead."
+)
+
+QUIZ_ANSWER_DESCRIPTION = (
+    "Submits an answer to the current question in an active quiz session. "
+    "Use when the user answers a quiz question by letter, number, or text, such as "
+    "'Alexa, option B' or 'the answer is photosynthesis'. "
+    "Do not use for starting a new quiz; use quiz_start instead."
 )
 
 _quiz_service: QuizService | None = None
@@ -109,4 +120,82 @@ async def quiz_start(
             return fail(err, module="academics", version="0.1.0")
         except Exception as exc:
             logger.exception("Unexpected error in quiz_start: %s", exc)
+            return fail(SahayakError(), module="academics", version="0.1.0")
+
+
+@allow_anonymous
+@idempotent(tool_name="quiz_answer")
+async def quiz_answer(
+    quiz_id: str,
+    answer: str,
+    request_id: str = "",
+) -> dict[str, Any]:
+    """Submit an answer to the current question in an active quiz."""
+    if request_id:
+        from sahayak.core.request_id import set_request_id
+
+        set_request_id(request_id)
+
+    async with instrument_tool("quiz_answer", "academics"):
+        service = get_quiz_service()
+        principal = get_current_principal()
+
+        try:
+            req = QuizAnswerRequest(
+                quiz_id=quiz_id,
+                answer=answer,
+                request_id=request_id or None,
+            )
+
+            answered = await service.answer_question(
+                user_id=principal.user_id,
+                quiz_id=req.quiz_id,
+                answer_text=req.answer,
+            )
+
+            next_data = None
+            if (
+                answered.next_number is not None
+                and answered.next_question
+                and answered.next_options
+            ):
+                next_data = NextQuestionData(
+                    number=answered.next_number,
+                    question=answered.next_question,
+                    options=[
+                        QuizOption(key=k, text=v) for k, v in sorted(answered.next_options.items())
+                    ],
+                )
+
+            data = QuizAnswerResponseData(
+                correct=answered.correct,
+                correct_key=answered.correct_key,
+                explanation=answered.explanation,
+                score=QuizScoreData(
+                    correct=answered.score_correct,
+                    answered=answered.score_answered,
+                    total=answered.score_total,
+                ),
+                next=next_data,
+                finished=answered.finished,
+                summary=answered.final_summary,
+            ).model_dump()
+
+            next_actions = (
+                ["Say 'start a quiz' to play another topic."]
+                if answered.finished
+                else ["Answer the next question with an option letter or text, like 'Option A'."]
+            )
+
+            return ok(
+                spoken_summary=answered.spoken_summary,
+                data=data,
+                next_actions=next_actions,
+                module="academics",
+                version="0.1.0",
+            )
+        except SahayakError as err:
+            return fail(err, module="academics", version="0.1.0")
+        except Exception as exc:
+            logger.exception("Unexpected error in quiz_answer: %s", exc)
             return fail(SahayakError(), module="academics", version="0.1.0")

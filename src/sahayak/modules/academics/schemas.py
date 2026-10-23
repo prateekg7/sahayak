@@ -52,3 +52,52 @@ class QuizStartResponseData(BaseModel):
     difficulty: str = Field(description="Difficulty level of the quiz.")
     question: str = Field(description="Stem of the first question.")
     options: list[QuizOption] = Field(description="List of multiple-choice options.")
+
+
+class QuizAnswerRequest(BaseModel):
+    """Input payload for quiz_answer tool."""
+
+    quiz_id: str = Field(description="ID of the active quiz session.")
+    answer: str = Field(
+        min_length=1,
+        max_length=200,
+        description="User's spoken or typed answer (e.g. 'option B', 'photosynthesis').",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional client request ID for idempotent execution.",
+    )
+
+
+class QuizScoreData(BaseModel):
+    """Score summary counters."""
+
+    correct: int = Field(description="Number of correct answers so far.")
+    answered: int = Field(description="Total questions answered so far.")
+    total: int = Field(description="Total questions in the quiz.")
+
+
+class NextQuestionData(BaseModel):
+    """Details for the subsequent question in the quiz."""
+
+    number: int = Field(description="Question number (1-indexed).")
+    question: str = Field(description="Question stem.")
+    options: list[QuizOption] = Field(description="List of multiple-choice options.")
+
+
+class QuizAnswerResponseData(BaseModel):
+    """Structured data payload returned by quiz_answer."""
+
+    correct: bool = Field(description="Whether the submitted answer was correct.")
+    correct_key: str = Field(description="The correct option key ('A', 'B', 'C', or 'D').")
+    explanation: str = Field(description="Brief explanation of the correct answer.")
+    score: QuizScoreData = Field(description="Progress and score counters.")
+    next: NextQuestionData | None = Field(
+        default=None,
+        description="Details for the next question, or None if quiz is finished.",
+    )
+    finished: bool = Field(description="Whether all questions have been answered.")
+    summary: str | None = Field(
+        default=None,
+        description="Final completion summary if finished.",
+    )

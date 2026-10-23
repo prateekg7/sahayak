@@ -36,6 +36,9 @@ async def test_event_published_in_rolled_back_transaction_is_never_delivered() -
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
     dispatcher = EventDispatcher(session_factory=session_factory)
 
+    # Drain any pre-existing pending events from prior test runs
+    await dispatcher.dispatch_pending()
+
     received_events: list[DomainEvent] = []
     dispatcher.subscribe("quiz.aborted", lambda e: received_events.append(e))
 

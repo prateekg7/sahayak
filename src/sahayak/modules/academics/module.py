@@ -52,13 +52,20 @@ class AcademicsModule:
             )
             set_quiz_service(service)
 
-        from sahayak.modules.academics.tools.quiz import QUIZ_START_DESCRIPTION, quiz_start
+        from sahayak.modules.academics.tools.quiz import (
+            QUIZ_ANSWER_DESCRIPTION,
+            QUIZ_START_DESCRIPTION,
+            quiz_answer,
+            quiz_start,
+        )
 
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="quiz_start", description=QUIZ_START_DESCRIPTION)(quiz_start)
+            tool_decorator(name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)(quiz_answer)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(quiz_start, name="quiz_start", description=QUIZ_START_DESCRIPTION)
+            mcp.add_tool(quiz_answer, name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs owned by the academics module."""

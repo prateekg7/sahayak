@@ -27,6 +27,7 @@ class ToolIsolationSpec:
     custom_isolation_check: (
         Callable[[ClientSession, ClientSession], Coroutine[Any, Any, None]] | None
     ) = None
+    setup_sample_args: Callable[[ClientSession], Coroutine[Any, Any, dict[str, Any]]] | None = None
 
 
 ISOLATION_REGISTRY: dict[str, ToolIsolationSpec] = {}
@@ -80,7 +81,12 @@ async def assert_user_isolation(
         ClientSession(r, w) as session,
     ):
         await session.initialize()
-        res = await session.call_tool(spec.name, arguments=spec.sample_args)
+        args = (
+            await spec.setup_sample_args(session)
+            if spec.setup_sample_args is not None
+            else spec.sample_args
+        )
+        res = await session.call_tool(spec.name, arguments=args)
         data = json.loads(getattr(res.content[0], "text", "{}"))
 
         if spec.allows_anonymous:
@@ -107,7 +113,12 @@ async def assert_user_isolation(
             ClientSession(r, w) as session,
         ):
             await session.initialize()
-            res = await session.call_tool(spec.name, arguments=spec.sample_args)
+            args = (
+                await spec.setup_sample_args(session)
+                if spec.setup_sample_args is not None
+                else spec.sample_args
+            )
+            res = await session.call_tool(spec.name, arguments=args)
             data = json.loads(getattr(res.content[0], "text", "{}"))
             assert data.get("ok") is False
             assert data.get("error_code") == "forbidden"
@@ -146,12 +157,22 @@ async def assert_user_isolation(
             await session_b.initialize()
 
             # Execute standard call under User A
-            res_a = await session_a.call_tool(spec.name, arguments=spec.sample_args)
+            args_a = (
+                await spec.setup_sample_args(session_a)
+                if spec.setup_sample_args is not None
+                else spec.sample_args
+            )
+            res_a = await session_a.call_tool(spec.name, arguments=args_a)
             data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
             assert data_a.get("ok") is True, f"User A failed to call {spec.name}: {data_a}"
 
             # Execute standard call under User B
-            res_b = await session_b.call_tool(spec.name, arguments=spec.sample_args)
+            args_b = (
+                await spec.setup_sample_args(session_b)
+                if spec.setup_sample_args is not None
+                else spec.sample_args
+            )
+            res_b = await session_b.call_tool(spec.name, arguments=args_b)
             data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
             assert data_b.get("ok") is True, f"User B failed to call {spec.name}: {data_b}"
 
@@ -174,5 +195,42 @@ register_isolation_spec(
         name="quiz_start",
         allows_anonymous=True,
         sample_args={"topic": "General Science", "num_questions": 3},
+    )
+)
+
+
+async def _quiz_answer_setup(session: ClientSession) -> dict[str, Any]:
+    res = await session.call_tool("quiz_start", {"topic": "General Science", "num_questions": 3})
+    data = json.loads(getattr(res.content[0], "text", "{}"))
+    quiz_id = data.get("data", {}).get("quiz_id", "")
+    return {"quiz_id": quiz_id, "answer": "A"}
+
+
+async def _quiz_answer_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A starts a quiz
+    res_a = await session_a.call_tool(
+        "quiz_start", {"topic": "General Science", "num_questions": 3}
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    quiz_id_a = data_a.get("data", {}).get("quiz_id", "")
+    assert quiz_id_a, "Failed to get quiz_id for User A"
+
+    # User B tries to answer User A's quiz
+    res_b = await session_b.call_tool("quiz_answer", {"quiz_id": quiz_id_a, "answer": "A"})
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is False, (
+        f"User B should be forbidden from answering User A's quiz: {data_b}"
+    )
+    assert data_b.get("error_code") == "forbidden"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="quiz_answer",
+        allows_anonymous=True,
+        setup_sample_args=_quiz_answer_setup,
+        custom_isolation_check=_quiz_answer_cross_user_isolation,
     )
 )

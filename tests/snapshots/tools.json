@@ -1,5 +1,32 @@
 [
   {
+    "description": "Submits an answer to the current question in an active quiz session. Use when the user answers a quiz question by letter, number, or text, such as 'Alexa, option B' or 'the answer is photosynthesis'. Do not use for starting a new quiz; use quiz_start instead.",
+    "name": "quiz_answer",
+    "parameters": {
+      "properties": {
+        "answer": {
+          "title": "Answer",
+          "type": "string"
+        },
+        "quiz_id": {
+          "title": "Quiz Id",
+          "type": "string"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "quiz_id",
+        "answer"
+      ],
+      "title": "quiz_answerArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Starts an interactive multiple-choice quiz on any academic topic. Use when the user asks to start a quiz or be tested, such as 'Alexa, quiz me on photosynthesis'. Do not use for answering questions in an active quiz; use quiz_answer instead.",
     "name": "quiz_start",
     "parameters": {
