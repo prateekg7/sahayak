@@ -161,3 +161,105 @@ class BudgetResponseData(BaseModel):
     status: BudgetStatusData | None = None
     budgets: list[BudgetStatusData] = Field(default_factory=list)
     count: int = 0
+
+
+class SplitBillAction(str, Enum):
+    """Supported bill splitting actions (T6.3)."""
+
+    SPLIT = "split"
+    BALANCES = "balances"
+    SETTLE = "settle"
+    LIST_GROUPS = "list_groups"
+    CREATE_GROUP = "create_group"
+
+
+class SplitBillRequest(BaseModel):
+    """Input payload for the 'split_bill' MCP tool."""
+
+    action: SplitBillAction = Field(
+        ...,
+        description="Action: 'split', 'balances', 'settle', 'list_groups', or 'create_group'.",
+    )
+    amount: str | int | None = Field(
+        default=None,
+        description="Total bill amount (e.g. 1200, '1200.50'). Required for 'split' and 'settle'.",
+    )
+    currency: str = Field(
+        default="INR",
+        max_length=3,
+        description="3-letter ISO currency code (default 'INR').",
+    )
+    group: str | None = Field(
+        default=None,
+        max_length=128,
+        description="Name of the group (e.g. 'Goa Trip', 'Roommates').",
+    )
+    participants: list[str] | str | None = Field(
+        default=None,
+        description="Names of people splitting (e.g. ['Alice', 'Bob'] or 'Alice, Bob').",
+    )
+
+    payer: str | None = Field(
+        default="You",
+        max_length=64,
+        description="Name of person who paid the bill (defaults to 'You').",
+    )
+    description: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Description of the expense (e.g. 'Dinner at Olive', 'Cab fare').",
+    )
+    settle_from: str | None = Field(
+        default=None,
+        max_length=64,
+        description="Person paying the settlement (required for 'settle').",
+    )
+    settle_to: str | None = Field(
+        default=None,
+        max_length=64,
+        description="Person receiving the settlement (required for 'settle').",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional idempotency key for mutations.",
+    )
+
+
+class ParticipantShareData(BaseModel):
+    name: str
+    amount_minor: int
+    formatted_amount: str
+
+
+class NetBalanceData(BaseModel):
+    name: str
+    net_minor: int
+    formatted_net: str
+
+
+class SettlementTransferData(BaseModel):
+    from_name: str
+    to_name: str
+    amount_minor: int
+    formatted_amount: str
+
+
+class GroupSummaryData(BaseModel):
+    id: str
+    name: str
+    currency: str
+    members: list[str] = Field(default_factory=list)
+
+
+class SplitBillResponseData(BaseModel):
+    """Output payload for the 'split_bill' tool inside the standard envelope."""
+
+    action: str
+    group_name: str | None = None
+    total_minor: int | None = None
+    currency: str = "INR"
+    shares: list[ParticipantShareData] = Field(default_factory=list)
+    balances: list[NetBalanceData] = Field(default_factory=list)
+    transfers: list[SettlementTransferData] = Field(default_factory=list)
+    groups: list[GroupSummaryData] = Field(default_factory=list)
+    count: int = 0

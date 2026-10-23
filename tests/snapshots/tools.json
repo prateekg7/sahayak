@@ -582,6 +582,133 @@
     }
   },
   {
+    "description": "Split shared expenses, calculate who owes whom, and record debt settlements. Use when the user says 'Split 1200 among four of us', 'Who owes what in Goa Trip?', 'What are the balances in Roommates?', or 'Record settlement of 300 rupees from Bob to me'. Do not use for individual personal expenses; use expense_log instead.",
+    "name": "split_bill",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "currency": {
+          "default": "INR",
+          "title": "Currency",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group"
+        },
+        "participants": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participants"
+        },
+        "payer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "You",
+          "title": "Payer"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "settle_from": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Settle From"
+        },
+        "settle_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Settle To"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "split_billArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Creates and manages day-by-day exam preparation schedules and daily study tasks. Use when the user wants to prepare for an upcoming exam or ask what to study today, such as 'Alexa, make a study plan for chemistry exam on the 15th' or 'Alexa, what should I study today?'. Do not use for practicing flashcards or quizzes; use flashcards or quiz_start instead.",
     "name": "study_plan",
     "parameters": {

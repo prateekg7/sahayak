@@ -65,6 +65,20 @@ async def test_finance_privacy_export_and_delete() -> None:
             ),
         )
 
+        from sahayak.modules.finance.service.split_bill import SplitBillService
+
+        split_service = SplitBillService(session_factory=session_factory)
+        from sahayak.modules.finance.schemas import SplitBillAction, SplitBillRequest
+
+        await split_service.execute(
+            user_id,
+            SplitBillRequest(
+                action=SplitBillAction.CREATE_GROUP,
+                group="Goa Trip",
+                participants=["Alice", "Bob"],
+            ),
+        )
+
         # 1. Export user data
         exported = await fin_module.export_user_data(str(user_id))
         assert "expenses" in exported
@@ -72,6 +86,9 @@ async def test_finance_privacy_export_and_delete() -> None:
         assert "budgets" in exported
         assert len(exported["budgets"]) == 1
         assert exported["budgets"][0]["category"] == "groceries"
+        assert "groups" in exported
+        assert len(exported["groups"]) == 1
+        assert exported["groups"][0]["name"] == "Goa Trip"
 
         # 2. Delete user data (GDPR erasure)
         await fin_module.delete_user_data(str(user_id))
@@ -80,6 +97,7 @@ async def test_finance_privacy_export_and_delete() -> None:
         exported_after = await fin_module.export_user_data(str(user_id))
         assert exported_after["expenses"] == []
         assert exported_after["budgets"] == []
+        assert exported_after["groups"] == []
 
         _, list_after, _ = await service.list_expenses(user_id=user_id)
         assert list_after.count == 0

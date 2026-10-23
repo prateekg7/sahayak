@@ -10,7 +10,7 @@ from sqlalchemy import delete, select
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.finance.models import Budget, Expense
+from sahayak.modules.finance.models import Budget, Expense, Group
 
 
 class FinanceModule:
@@ -49,8 +49,10 @@ class FinanceModule:
         if deps.session_factory is not None:
             from sahayak.modules.finance.service.budgets import BudgetService
             from sahayak.modules.finance.service.expenses import ExpenseService
+            from sahayak.modules.finance.service.split_bill import SplitBillService
             from sahayak.modules.finance.tools.budget import set_budget_service
             from sahayak.modules.finance.tools.expense_log import set_expense_service
+            from sahayak.modules.finance.tools.split_bill import set_split_bill_service
 
             clock_fn = getattr(deps, "clock", None)
             expense_service = ExpenseService(
@@ -65,6 +67,9 @@ class FinanceModule:
             )
             set_budget_service(budget_service)
 
+            split_bill_service = SplitBillService(session_factory=deps.session_factory)
+            set_split_bill_service(split_bill_service)
+
         from sahayak.modules.finance.tools.budget import (
             BUDGET_DESCRIPTION,
             budget,
@@ -73,14 +78,20 @@ class FinanceModule:
             EXPENSE_LOG_DESCRIPTION,
             expense_log,
         )
+        from sahayak.modules.finance.tools.split_bill import (
+            SPLIT_BILL_DESCRIPTION,
+            split_bill,
+        )
 
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="expense_log", description=EXPENSE_LOG_DESCRIPTION)(expense_log)
             tool_decorator(name="budget", description=BUDGET_DESCRIPTION)(budget)
+            tool_decorator(name="split_bill", description=SPLIT_BILL_DESCRIPTION)(split_bill)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(expense_log, name="expense_log", description=EXPENSE_LOG_DESCRIPTION)
             mcp.add_tool(budget, name="budget", description=BUDGET_DESCRIPTION)
+            mcp.add_tool(split_bill, name="split_bill", description=SPLIT_BILL_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background jobs for finance module."""
@@ -99,7 +110,7 @@ class FinanceModule:
         pass
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
-        """GDPR Right to Access: export all personal expenses and budgets owned by user_id."""
+        """GDPR Right to Access: export user expenses, budgets, and groups."""
         if self._deps is None or self._deps.session_factory is None:
             return {}
 
@@ -111,13 +122,18 @@ class FinanceModule:
             b_res = await uow.session.execute(select(Budget).where(Budget.user_id == uid))
             budgets = b_res.scalars().all()
 
+            g_res = await uow.session.execute(select(Group).where(Group.user_id == uid))
+            groups = g_res.scalars().all()
+
             return {
                 "expenses": [e.to_dict() for e in expenses],
                 "budgets": [b.to_dict() for b in budgets],
+                "groups": [g.to_dict() for g in groups],
             }
 
     async def delete_user_data(self, user_id: str) -> None:
-        """GDPR Right to Erasure: permanently delete all expenses and budgets owned by user_id."""
+        """GDPR Right to Erasure: permanently delete user expenses, budgets, and groups."""
+
         if self._deps is None or self._deps.session_factory is None:
             return
 
@@ -125,6 +141,7 @@ class FinanceModule:
         async with UnitOfWork(self._deps.session_factory) as uow:
             await uow.session.execute(delete(Expense).where(Expense.user_id == uid))
             await uow.session.execute(delete(Budget).where(Budget.user_id == uid))
+            await uow.session.execute(delete(Group).where(Group.user_id == uid))
 
 
 module = FinanceModule()

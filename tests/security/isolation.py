@@ -665,3 +665,40 @@ register_isolation_spec(
         custom_isolation_check=_budget_cross_user_isolation,
     )
 )
+
+
+async def _split_bill_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A creates a group
+    res_a = await session_a.call_tool(
+        "split_bill",
+        {"action": "create_group", "group": "Private Trip", "participants": ["Bob"]},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+
+    # User B lists groups - User A's group must not appear
+    res_b_list = await session_b.call_tool("split_bill", {"action": "list_groups"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_names = [g.get("name") for g in data_b_list.get("data", {}).get("groups", [])]
+    assert "Private Trip" not in b_names
+
+    # User B attempts to view balances of User A's group - must fail with not_found
+    res_b_bal = await session_b.call_tool(
+        "split_bill", {"action": "balances", "group": "Private Trip"}
+    )
+    data_b_bal = json.loads(getattr(res_b_bal.content[0], "text", "{}"))
+    assert data_b_bal.get("ok") is False
+    assert data_b_bal.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="split_bill",
+        allows_anonymous=False,
+        sample_args={"action": "list_groups"},
+        custom_isolation_check=_split_bill_cross_user_isolation,
+    )
+)

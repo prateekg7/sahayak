@@ -10,10 +10,16 @@ from sahayak.modules.finance.tools.expense_log import (
     EXPENSE_LOG_DESCRIPTION,
     expense_log,
 )
+from sahayak.modules.finance.tools.split_bill import (
+    SPLIT_BILL_DESCRIPTION,
+    split_bill,
+)
 
 __all__ = [
     "BUDGET_DESCRIPTION",
     "EXPENSE_LOG_DESCRIPTION",
+    "SPLIT_BILL_DESCRIPTION",
     "budget",
     "expense_log",
+    "split_bill",
 ]

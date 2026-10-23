@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from sahayak.core.db.base import Base
@@ -152,4 +152,153 @@ class Budget(Base):
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class Group(Base):
+    """A bill-splitting group (e.g. 'Goa Trip', 'Roommates') owned by a user (T6.3)."""
+
+    __tablename__ = "groups"
+    __table_args__ = (
+        Index("ix_finance_groups_user_id", "user_id"),
+        {"schema": "finance"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    currency: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False,
+        default="INR",
+        server_default="INR",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "name": self.name,
+            "currency": self.currency,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class GroupMember(Base):
+    """Named participant in a split group (does not require a separate user account)."""
+
+    __tablename__ = "group_members"
+    __table_args__ = (
+        UniqueConstraint("group_id", "name", name="uq_finance_group_members_group_name"),
+        {"schema": "finance"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    group_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("finance.groups.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "group_id": str(self.group_id),
+            "name": self.name,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class SharedExpense(Base):
+    """A shared group expense with itemized participant split shares."""
+
+    __tablename__ = "shared_expenses"
+    __table_args__ = (
+        Index("ix_finance_shared_expenses_group", "group_id"),
+        {"schema": "finance"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    group_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("finance.groups.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    payer_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    total_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    description: Mapped[str] = mapped_column(String(255), nullable=False)
+    split_data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "group_id": str(self.group_id),
+            "payer_name": self.payer_name,
+            "total_minor": self.total_minor,
+            "description": self.description,
+            "split_data": self.split_data,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class Settlement(Base):
+    """A recorded debt settlement payment between two group members."""
+
+    __tablename__ = "settlements"
+    __table_args__ = (
+        Index("ix_finance_settlements_group", "group_id"),
+        {"schema": "finance"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    group_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("finance.groups.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    from_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    to_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    amount_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    settled_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "group_id": str(self.group_id),
+            "from_name": self.from_name,
+            "to_name": self.to_name,
+            "amount_minor": self.amount_minor,
+            "settled_at": self.settled_at.isoformat() if self.settled_at else None,
         }

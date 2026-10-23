@@ -6,7 +6,14 @@ import uuid
 from datetime import datetime
 from typing import Protocol
 
-from sahayak.modules.finance.models import Budget, Expense
+from sahayak.modules.finance.models import (
+    Budget,
+    Expense,
+    Group,
+    GroupMember,
+    Settlement,
+    SharedExpense,
+)
 
 
 class ExpenseRepositoryPort(Protocol):
@@ -100,4 +107,69 @@ class BudgetRepositoryPort(Protocol):
 
     async def remove_budget(self, user_id: uuid.UUID, category: str) -> bool:
         """Deactivate or remove a category budget."""
+        ...
+
+
+class SplitBillRepositoryPort(Protocol):
+    """Repository port interface for bill splitting and debt settlements (T6.3)."""
+
+    async def create_group(
+        self,
+        user_id: uuid.UUID,
+        name: str,
+        currency: str = "INR",
+        members: list[str] | None = None,
+    ) -> Group:
+        """Create a new group and add initial members."""
+        ...
+
+    async def get_group_by_name(self, user_id: uuid.UUID, name: str) -> Group | None:
+        """Find a group by name for a user."""
+        ...
+
+    async def get_group(self, user_id: uuid.UUID, group_id: uuid.UUID) -> Group | None:
+        """Find a group by ID for a user."""
+        ...
+
+    async def list_groups(self, user_id: uuid.UUID) -> list[Group]:
+        """List all groups owned by a user."""
+        ...
+
+    async def get_group_members(self, group_id: uuid.UUID) -> list[GroupMember]:
+        """Get all named participants in a group."""
+        ...
+
+    async def add_group_members(
+        self, group_id: uuid.UUID, member_names: list[str]
+    ) -> list[GroupMember]:
+        """Add new members to an existing group if not already present."""
+        ...
+
+    async def create_shared_expense(
+        self,
+        group_id: uuid.UUID,
+        payer_name: str,
+        total_minor: int,
+        description: str,
+        split_data: dict[str, int],
+    ) -> SharedExpense:
+        """Persist a shared expense with itemized split shares."""
+        ...
+
+    async def list_shared_expenses(self, group_id: uuid.UUID) -> list[SharedExpense]:
+        """List all shared expenses recorded for a group."""
+        ...
+
+    async def create_settlement(
+        self,
+        group_id: uuid.UUID,
+        from_name: str,
+        to_name: str,
+        amount_minor: int,
+    ) -> Settlement:
+        """Record a debt settlement between two members."""
+        ...
+
+    async def list_settlements(self, group_id: uuid.UUID) -> list[Settlement]:
+        """List all recorded settlements for a group."""
         ...
