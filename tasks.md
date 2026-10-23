@@ -583,7 +583,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** `weekly_review` capability using published module APIs only; sections appear only for enabled modules and available data; concise spoken ordering; optional highlights ("longest study streak ever").
 - **Done when:** output adapts to any enabled-module combination in tests.
 
-### [ ] T13.3 — Feature flags, per-user module toggles, and admin CLI
+### [x] T13.3 — Feature flags, per-user module toggles, and admin CLI
 - **Depends on:** T13.1 · **Est. LOC:** ~700
 - **What it does:** Safely roll out tools and let users turn modules on or off.
 - **Implement:** flag store (config + DB overrides, percent rollout by hashed `user_id`), user preference tool (`settings` with `enable_module/disable_module/status`) respecting the tool budget, admin CLI (`scripts/admin.py`: inspect user, flag question, quarantine topic, replay dead-letter events), audit logging of admin actions.

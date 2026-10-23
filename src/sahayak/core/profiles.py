@@ -19,6 +19,7 @@ BUNDLE_PROFILES: dict[str, tuple[str, ...]] = {
         "business",
         "language",
         "local_info",
+        "settings",
     ),
 }
 

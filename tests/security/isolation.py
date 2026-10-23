@@ -1468,3 +1468,11 @@ register_isolation_spec(
         sample_args={"timezone": "UTC"},
     )
 )
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="settings",
+        allows_anonymous=False,
+        sample_args={"action": "status"},
+    )
+)

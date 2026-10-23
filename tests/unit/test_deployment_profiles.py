@@ -19,7 +19,7 @@ def test_get_profile_modules_known_profiles() -> None:
     assert get_profile_modules("life") == ("productivity", "finance", "health")
     assert get_profile_modules("work") == ("career", "business")
     assert get_profile_modules("home") == ("home", "language", "local_info")
-    assert len(get_profile_modules("full")) == 9
+    assert len(get_profile_modules("full")) == 10
 
 
 def test_get_profile_modules_case_insensitive() -> None:

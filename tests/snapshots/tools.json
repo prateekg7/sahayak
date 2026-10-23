@@ -2053,6 +2053,45 @@
     }
   },
   {
+    "description": "Manage assistant settings and toggle individual modules on or off. Use when the user says 'What are my settings?', 'Disable finance', or 'Enable business'. Do not use for setting habit or study targets; use the respective tools instead.",
+    "name": "settings",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "status",
+          "title": "Action",
+          "type": "string"
+        },
+        "module": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Module"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "title": "settingsArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Add, remove, read, check off, and clear items on shared household lists like groceries. Use when the user says 'Add milk to the shopping list', 'What is on our grocery list?', 'Check off eggs', or 'Clear finished items from the list'. Do not use for personal private tasks or habit tracking.",
     "name": "shared_list",
     "parameters": {

@@ -1,5 +1,28 @@
 # Progress
 
+## 2026-10-24 — T13.3 Feature flags, user preferences, and admin CLI — DONE
+
+- Summary: implemented platform feature flags, per-user module preferences, `settings` MCP tool (33rd platform tool), and administrative CLI (`scripts/admin.py`):
+  - Database & Migrations:
+    - `migrations/versions/core/0006_flags_and_prefs.py`: Reversible migration creating `core.feature_flags` and `core.user_preferences` tables with constraints and indexes.
+  - Core Feature Flags & User Preferences (`src/sahayak/core/flags.py`):
+    - `FeatureFlagStore`: Master kill-switch, deterministic SHA-256 percentage rollout (`hash(flag:user_id) % 100 < pct`), and explicit per-user overrides.
+    - `@check_feature_flag(flag_name)` decorator: Returns graceful error envelope (`error_code="feature_disabled"`) when disabled.
+    - `UserPreferenceService`: Allows users to selectively disable or enable modules independently.
+  - Settings MCP Tool & Module (`src/sahayak/modules/settings/`):
+    - `SettingsModule`: Satisfies `@runtime_checkable class Module` protocol with GDPR export and erase hooks.
+    - `settings` MCP tool: Provides voice-friendly actions `status`, `enable_module`, `disable_module` with responses strictly <= 300 characters.
+    - Full profile tool snapshot updated to 33 tools (within 35 tool budget).
+  - Admin CLI (`scripts/admin.py`):
+    - Subcommands: `inspect-user`, `flag-question` (auto-quarantines upon reaching threshold), `quarantine-topic`, `replay-dead-letter` (re-inserts to outbox), `audit-log`, and `set-flag`.
+    - Every administrative operation writes an immutable record to `core.audit_log`.
+  - Tests & Verification:
+    - `tests/unit/test_feature_flags_and_admin.py`: Tests evaluation hierarchy, user overrides, percentage rollout, decorator, module preference toggles, and admin CLI commands.
+    - `tests/contract/test_settings_contract.py`: Full over-the-wire Streamable HTTP MCP contract lifecycle test.
+    - `tests/security/isolation.py`: Cross-user isolation verified across all 33 registered tools.
+  - Quality Gates: `make lint`, `make test` (713 passed, 85.02% coverage), `make snapshot-check` (33 tools), `make migrate-check`, `make security` all clean.
+- Next: T13.4 — Full regression, release readiness, and v1.0.
+
 ## 2026-10-24 — T13.2 `weekly_review` cross-module report — DONE
 
 - Summary: implemented the `weekly_review` cross-module summary capability and tool (32nd platform tool), aggregating learning, habits, spending, and health strictly via published module APIs with zero cross-module database imports:
