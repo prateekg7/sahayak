@@ -30,7 +30,8 @@ class Deps:
 
     session_factory: SessionFactory | Any = None
     cache: Cache | Any = None
-    # Extended by later tasks: llm_client, event_bus, clock, principal_accessor
+    llm_client: Any = None
+    # Extended by later tasks: event_bus, clock, principal_accessor
 
 
 @dataclass(frozen=True)
