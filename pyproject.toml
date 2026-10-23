@@ -21,6 +21,7 @@ dependencies = [
   "pydantic-settings>=2.10,<3",
   "pyjwt[crypto]>=2.8,<3",
   "python-ulid>=3,<4",
+  "rapidfuzz>=3.9,<4",
   "redis>=5,<7",
   "sqlalchemy[asyncio]>=2.0,<3",
   "structlog>=24.1,<26",
@@ -31,6 +32,7 @@ dependencies = [
 dev = [
   "bandit>=1.8,<2",
   "fakeredis>=2.26,<3",
+  "hypothesis>=6.100,<7",
   "import-linter>=2.3,<3",
   "mypy>=1.15,<2",
   "pip-audit>=2.8,<3",
@@ -76,8 +78,12 @@ files = ["src", "tests"]
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = ["alembic", "alembic.*"]
+module = ["alembic", "alembic.*", "rapidfuzz", "rapidfuzz.*", "hypothesis", "hypothesis.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_decorators = false
 
 [tool.importlinter]
 root_package = "sahayak"
