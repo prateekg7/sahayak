@@ -17,6 +17,7 @@ from sahayak.modules.academics.models import (
     Question,
     QuestionStatus,
 )
+from sahayak.modules.academics.service.quality import QuestionQualityService
 
 
 @pytest.mark.integration
@@ -157,6 +158,23 @@ async def test_question_bank_crud_and_deduplication() -> None:
 
             after_q2_count = await repo.count_available("photosynthesis", DifficultyLevel.EASY)
             assert after_q2_count == 1
+
+            # 5. QuestionQualityService on real DB
+            quality_service = QuestionQualityService(repo, quarantine_threshold=3)
+            # q3 is still approved
+            flagged_q3 = await quality_service.flag_question(q3.id, reason="Bad explanation")
+            assert flagged_q3 is not None
+            assert flagged_q3.flag_count == 1
+            assert flagged_q3.status == QuestionStatus.FLAGGED
+
+            quarantined_q3 = await quality_service.quarantine_question(
+                q3.id, reason="Critical error"
+            )
+            assert quarantined_q3 is not None
+            assert quarantined_q3.status == QuestionStatus.QUARANTINED
+
+            after_q3_count = await repo.count_available("photosynthesis", DifficultyLevel.EASY)
+            assert after_q3_count == 0
 
             await uow.session.rollback()
     finally:

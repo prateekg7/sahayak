@@ -83,6 +83,21 @@ JOB_DURATION_SECONDS = Histogram(
     registry=registry,
 )
 
+# 5. Question verification metrics (PRD §11.2, T3.4)
+QUESTION_VERIFICATION_ATTEMPTS_TOTAL = Counter(
+    "sahayak_question_verification_attempts_total",
+    "Total number of generated question verification attempts.",
+    ["topic", "outcome"],
+    registry=registry,
+)
+
+QUESTION_VERIFICATION_REJECTIONS_TOTAL = Counter(
+    "sahayak_question_verification_rejections_total",
+    "Total number of generated question verification rejections.",
+    ["topic", "reason"],
+    registry=registry,
+)
+
 
 def render_metrics() -> tuple[bytes, str]:
     """Serialize all registered Prometheus metrics to the standard text format.

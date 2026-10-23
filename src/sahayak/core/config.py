@@ -68,6 +68,7 @@ class Settings(BaseSettings):
     llm_daily_budget_requests: PositiveInt = 1000
 
     quiz_ttl_minutes: PositiveInt = 120
+    academics_flag_quarantine_threshold: PositiveInt = 3
     otel_exporter_otlp_endpoint: AnyUrl | None = None
     sentry_dsn: SecretStr | None = None
     metrics_token: SecretStr | None = None

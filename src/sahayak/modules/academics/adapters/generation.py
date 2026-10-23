@@ -12,6 +12,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from sahayak.modules.academics.adapters.verification import QuestionVerifier
 from sahayak.modules.academics.domain.topics import normalize_topic
 from sahayak.modules.academics.models import (
     DifficultyLevel,
@@ -178,10 +179,12 @@ class QuestionGenerationPipeline:
         self,
         llm_client: LLMClient,
         wikipedia_client: WikipediaClient | None = None,
+        verifier: QuestionVerifier | None = None,
         prompt_path: Path = PROMPT_PATH,
     ) -> None:
         self._llm = llm_client
         self._wikipedia = wikipedia_client
+        self._verifier = verifier
         self._prompt_path = prompt_path
         self._prompt_template: str | None = None
 
@@ -268,6 +271,16 @@ class QuestionGenerationPipeline:
             if q.content_hash in seen_hashes:
                 rejections["Duplicate question content within batch"] += 1
                 continue
+
+            if self._verifier is not None:
+                v_res = await self._verifier.verify_question(
+                    question=q,
+                    topic_name=display_name,
+                    grounding_block=grounding_block,
+                )
+                if not v_res.is_verified:
+                    rejections[f"Verification rejected: {v_res.reason}"] += 1
+                    continue
 
             seen_hashes.add(q.content_hash)
             validated.append(q)
