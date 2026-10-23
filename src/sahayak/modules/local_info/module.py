@@ -1,4 +1,4 @@
-"""Local and civic information module conforming to the Module protocol (T12.1, T12.2, T12.3)."""
+"""Local and civic information module conforming to the Module protocol (T12.1-T12.4)."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ class LocalInfoModule:
     @property
     def api(self) -> LocalInfoAPI:
         if self._api is None:
-            self._api = DefaultLocalInfoAPI(registered_count=2)
+            self._api = DefaultLocalInfoAPI(registered_count=3)
         return self._api
 
     def register_tools(self, mcp: Any, deps: Deps) -> None:
@@ -59,6 +59,17 @@ class LocalInfoModule:
         commodity_service = CommodityService(data_source=commodity_source)
         set_commodity_service(commodity_service)
 
+        # Scheme finder tool registration (T12.4)
+        from sahayak.modules.local_info.service.schemes import SchemeService
+        from sahayak.modules.local_info.tools.schemes import (
+            SCHEME_FINDER_DESCRIPTION,
+            scheme_finder,
+            set_scheme_service,
+        )
+
+        scheme_service = SchemeService()
+        set_scheme_service(scheme_service)
+
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="transit_status", description=TRANSIT_STATUS_DESCRIPTION)(
@@ -66,6 +77,9 @@ class LocalInfoModule:
             )
             tool_decorator(name="commodity_prices", description=COMMODITY_PRICES_DESCRIPTION)(
                 commodity_prices
+            )
+            tool_decorator(name="scheme_finder", description=SCHEME_FINDER_DESCRIPTION)(
+                scheme_finder
             )
 
     def register_jobs(self, worker: Any) -> None:

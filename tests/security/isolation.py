@@ -1452,3 +1452,11 @@ register_isolation_spec(
         sample_args={"action": "get_price", "commodity": "wheat", "market": "Azadpur"},
     )
 )
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="scheme_finder",
+        allows_anonymous=True,
+        sample_args={"action": "find", "occupation": "farmer"},
+    )
+)

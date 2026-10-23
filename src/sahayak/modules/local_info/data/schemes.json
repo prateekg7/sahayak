@@ -1,0 +1,218 @@
+[
+  {
+    "id": "pm_kisan",
+    "name": "PM-Kisan Samman Nidhi",
+    "category": "agriculture",
+    "beneficiary_desc": "Small and marginal farmer families with cultivable land.",
+    "benefits_summary": "Direct income support of 6,000 rupees per year paid in three equal installments of 2,000 rupees.",
+    "official_portal_url": "https://pmkisan.gov.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": null,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["farmer", "agriculture"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": true
+    }
+  },
+  {
+    "id": "ayushman_bharat",
+    "name": "Ayushman Bharat PM-JAY",
+    "category": "health",
+    "beneficiary_desc": "Low-income and vulnerable families identified by socio-economic criteria.",
+    "benefits_summary": "Cashless health insurance coverage up to 5 lakh rupees per family per year for secondary and tertiary hospitalization.",
+    "official_portal_url": "https://pmjay.gov.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": null,
+      "max_age": null,
+      "max_annual_income_inr": 250000,
+      "allowed_occupations": ["any"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "pm_svanidhi",
+    "name": "PM SVANidhi",
+    "category": "employment",
+    "beneficiary_desc": "Urban and peri-urban street vendors and hawkers.",
+    "benefits_summary": "Collateral-free working capital micro-loans of 10,000 to 50,000 rupees with interest subsidy on regular repayment.",
+    "official_portal_url": "https://pmsvanidhi.mohua.gov.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": 65,
+      "max_annual_income_inr": 300000,
+      "allowed_occupations": ["street_vendor", "vendor", "hawker", "self_employed"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "pm_vishwakarma",
+    "name": "PM Vishwakarma Scheme",
+    "category": "employment",
+    "beneficiary_desc": "Traditional artisans and craftspeople across 18 family-based trades.",
+    "benefits_summary": "Recognition certificate, skill training with daily stipend, 15,000 rupees toolkit incentive, and collateral-free loans up to 3 lakh rupees at 5 percent interest.",
+    "official_portal_url": "https://pmvishwakarma.gov.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": null,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["artisan", "carpenter", "blacksmith", "potter", "weaver", "craftsperson"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "pm_awas_gramin",
+    "name": "Pradhan Mantri Awas Yojana Gramin",
+    "category": "housing",
+    "beneficiary_desc": "Houseless and rural families living in kutcha or dilapidated houses.",
+    "benefits_summary": "Financial grant of 1.20 lakh rupees in plains and 1.30 lakh in hilly areas, plus 90 days of MGNREGA wages to construct a pucca house.",
+    "official_portal_url": "https://pmayg.nic.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": null,
+      "max_annual_income_inr": 180000,
+      "allowed_occupations": ["any"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "pm_mudra",
+    "name": "Pradhan Mantri Mudra Yojana",
+    "category": "financial_inclusion",
+    "beneficiary_desc": "Non-corporate, non-farm small and micro enterprises seeking business loans.",
+    "benefits_summary": "Collateral-free micro enterprise loans up to 10 lakh rupees under Shishu, Kishor, and Tarun categories.",
+    "official_portal_url": "https://www.mudra.org.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": 65,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["self_employed", "business", "trader", "artisan", "vendor"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "sukanya_samriddhi",
+    "name": "Sukanya Samriddhi Yojana",
+    "category": "women_and_children",
+    "beneficiary_desc": "Girl children up to age 10 opened by natural or legal guardians.",
+    "benefits_summary": "High-interest sovereign savings account with triple tax exemption (EEE) under Section 80C for girl child higher education and marriage.",
+    "official_portal_url": "https://www.indiapost.gov.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 0,
+      "max_age": 10,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["any", "student"],
+      "allowed_genders": ["female"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "atal_pension",
+    "name": "Atal Pension Yojana",
+    "category": "financial_inclusion",
+    "beneficiary_desc": "Citizens in the unorganized sector without statutory social security.",
+    "benefits_summary": "Guaranteed monthly pension of 1,000 to 5,000 rupees after age 60 depending on monthly contribution.",
+    "official_portal_url": "https://www.npscra.nsdl.co.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": 40,
+      "max_annual_income_inr": 250000,
+      "allowed_occupations": ["any", "unorganized", "laborer", "driver", "farmer"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "mgnrega",
+    "name": "Mahatma Gandhi NREGA",
+    "category": "employment",
+    "beneficiary_desc": "Rural adult citizens willing to do unskilled manual work.",
+    "benefits_summary": "Statutory guarantee of 100 days of wage employment per financial year per rural household.",
+    "official_portal_url": "https://nrega.nic.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": null,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["unemployed", "laborer", "farmer", "any"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "pm_suraksha_bima",
+    "name": "Pradhan Mantri Suraksha Bima Yojana",
+    "category": "financial_inclusion",
+    "beneficiary_desc": "Bank account holders between ages 18 and 70.",
+    "benefits_summary": "Accidental death and disability insurance cover of 2 lakh rupees for an annual premium of only 20 rupees.",
+    "official_portal_url": "https://financialservices.gov.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": 70,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["any"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "stand_up_india",
+    "name": "Stand-Up India Scheme",
+    "category": "financial_inclusion",
+    "beneficiary_desc": "Scheduled Caste, Scheduled Tribe, or female entrepreneurs setting up greenfield ventures.",
+    "benefits_summary": "Composite bank loans between 10 lakh and 1 crore rupees for manufacturing, services, or trading enterprises.",
+    "official_portal_url": "https://www.standupmitra.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": null,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["self_employed", "business", "entrepreneur"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": null
+    }
+  },
+  {
+    "id": "kisan_credit_card",
+    "name": "Kisan Credit Card (KCC)",
+    "category": "agriculture",
+    "beneficiary_desc": "Farmers, sharecroppers, tenant farmers, and animal husbandry practitioners.",
+    "benefits_summary": "Short-term production credit up to 3 lakh rupees at subsidized 4 percent effective interest rate upon prompt repayment.",
+    "official_portal_url": "https://agricoop.nic.in",
+    "last_verified_date": "2026-10-24",
+    "criteria": {
+      "min_age": 18,
+      "max_age": 75,
+      "max_annual_income_inr": null,
+      "allowed_occupations": ["farmer", "agriculture", "dairy", "fisheries"],
+      "allowed_genders": ["all"],
+      "allowed_states": ["all"],
+      "requires_landowner": false
+    }
+  }
+]

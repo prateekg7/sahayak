@@ -58,3 +58,40 @@ class CommodityPriceRequest(BaseModel):
         None,
         description="List of mandis to compare for 'compare_markets' action.",
     )
+
+
+class SchemeFinderRequest(BaseModel):
+    """Input payload for government scheme finder tool."""
+
+    action: Literal["find", "explain", "check_eligibility"] = Field(
+        "find",
+        description="Action to perform: 'find', 'explain', or 'check_eligibility'.",
+    )
+    scheme: str | None = Field(
+        None,
+        description="Scheme name or slug (e.g., 'PM-Kisan', 'ayushman_bharat', 'mudra').",
+    )
+    age: int | None = Field(
+        None,
+        description="User age in years.",
+    )
+    annual_income_inr: int | None = Field(
+        None,
+        description="Approximate annual household income in Indian Rupees.",
+    )
+    occupation: str | None = Field(
+        None,
+        description="Primary occupation (e.g., 'farmer', 'street_vendor', 'artisan', 'student').",
+    )
+    state: str | None = Field(
+        None,
+        description="State of residence (e.g., 'Delhi', 'Uttar Pradesh', 'Punjab').",
+    )
+    gender: str | None = Field(
+        None,
+        description="Gender ('female', 'male', or 'other').",
+    )
+    is_landowner: bool | None = Field(
+        None,
+        description="Whether the user owns cultivable agricultural land.",
+    )

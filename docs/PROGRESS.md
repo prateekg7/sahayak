@@ -1,5 +1,35 @@
 # Progress
 
+## 2026-10-24 — T12.4 `scheme_finder` tool (government scheme eligibility) — DONE
+
+- Summary: completed Phase 12 (Local and Civic Info Module) in full with a curated versioned dataset of 12+ prominent national welfare schemes, pure code declarative rules engine, conversational one-missing-fact clarification, and the `scheme_finder` MCP tool (31st platform tool):
+  - Architecture Decision Record:
+    - `docs/adr/0015-government-scheme-finder.md`: Documented deterministic pure code eligibility evaluation, curated in-tree versioned schemes dataset, one-missing-fact voice clarification loop, statutory guidance disclaimer, and anonymous access policy per ADR 0009.
+    - Updated `docs/adr/index.md`.
+  - Curated Dataset & CI Validation (`src/sahayak/modules/local_info/data/schemes.json`):
+    - Curated 12 major welfare schemes: PM-Kisan, Ayushman Bharat, PM SVANidhi, PM Vishwakarma, PMAY Gramin, PM Mudra, Sukanya Samriddhi, Atal Pension Yojana, MGNREGA, PM Suraksha Bima, Stand-Up India, and Kisan Credit Card.
+    - Each scheme includes official portal URL, beneficiary summary, category, last verified date, and structured eligibility criteria.
+    - `scripts/validate_schemes.py`: Enforces link validity, date formats, and schema compliance in CI.
+  - Domain Rules Engine (`src/sahayak/modules/local_info/domain/schemes.py`):
+    - `SchemeCriteria`, `SchemeDefinition`, `UserProfile`, `EligibilityResult` domain models.
+    - `evaluate_scheme`: Pure deterministic code evaluating age limits, income ceilings, occupation tags, gender rules, and landownership without LLM hallucinations.
+    - `SchemeRepository`: Loads and searches schemes by ID, name, or fuzzy match.
+    - Spoken formatters for scheme discovery, explanation, and qualification verification with automatic inclusion of the required legal guidance disclaimer strictly $\le 300$ characters.
+  - Service (`src/sahayak/modules/local_info/service/schemes.py`):
+    - `SchemeService`: Orchestrates `find_schemes` (with single-fact clarification question when info is missing), `explain_scheme`, and `check_eligibility`.
+  - Public MCP Tool & Snapshot:
+    - `tools/schemes.py`: `scheme_finder` MCP tool with `@allow_anonymous` supporting `find`, `explain`, and `check_eligibility` actions.
+    - Registered tool in `local_info/module.py` and exported in `tools/__init__.py`.
+    - `tests/snapshots/tools.json`: Updated snapshot to 31 tools.
+  - Tests & Verification:
+    - `tests/unit/test_schemes_domain.py`: Rules engine evaluation across diverse profiles, missing info identification, dataset lookup, dataset validation script invocation, and spoken formatters with disclaimers.
+    - `tests/unit/test_schemes_service.py`: Blank profile conversational guidance, occupation matching, scheme explanation, and eligibility checks.
+    - `tests/contract/test_scheme_finder_contract.py`: Contract test over Streamable HTTP verifying anonymous discovery, blank profile clarification, explanation with portal links, and auto-isolation.
+    - `tests/security/isolation.py`: Registered `scheme_finder` in auto-isolation suite with `allows_anonymous=True`.
+  - Quality Gates: `make lint`, `make test` (687 passed, 85.59% coverage), `make snapshot-check` (31 tools), `make migrate-check`, `make security` all green.
+- Phase 12 (Local and Civic Info Module) Complete!
+- Next: Phase 13 — Multi-add-on scaling, cross-module features, v1.0 (T13.1 through T13.4).
+
 ## 2026-10-24 — T12.3 `commodity_prices` tool — DONE
 
 - Summary: implemented the `commodity_prices` MCP tool (30th platform tool) for agricultural mandi crop prices, wholesale market comparisons, and trends with Hindi/English crop aliasing, quintal-to-kg unit normalization, and date freshness warnings:

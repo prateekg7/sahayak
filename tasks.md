@@ -561,7 +561,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** ADR for the government open-data source and its terms, adapter, commodity/market alias tables, `tools/commodity.py` (`get_price, compare_markets, trend`), unit normalization (quintal/kg), date-freshness guard (warn when data is old).
 - **Done when:** unit conversions tested; stale-data warnings appear in spoken output.
 
-### [ ] T12.4 — `scheme_finder` tool (government scheme eligibility)
+### [x] T12.4 — `scheme_finder` tool (government scheme eligibility)
 - **Depends on:** T12.1 · **Est. LOC:** ~900
 - **What it does:** Tells a user which schemes they may qualify for.
 - **Implement:** curated, versioned dataset of schemes (YAML/JSON in repo with source links and "last verified" dates), declarative eligibility rules engine (age, income, state, occupation) as pure code, `tools/schemes.py` (`find, explain, check_eligibility`), conversation design that asks for **one missing fact at a time**, strong disclaimer ("check the official portal; this is guidance, not a decision").

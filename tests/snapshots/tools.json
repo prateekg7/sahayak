@@ -1954,6 +1954,105 @@
     }
   },
   {
+    "description": "Discover government welfare schemes, check eligibility, and find portals. Use when the user asks 'Which government schemes do I qualify for?', 'Tell me about PM-Kisan', or 'Am I eligible for Ayushman Bharat?'. Do not use for checking agricultural mandi prices or transit departures; use 'commodity_prices' or 'transit_status' instead.",
+    "name": "scheme_finder",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "find",
+          "title": "Action",
+          "type": "string"
+        },
+        "age": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Age"
+        },
+        "annual_income_inr": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Annual Income Inr"
+        },
+        "gender": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gender"
+        },
+        "is_landowner": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Landowner"
+        },
+        "occupation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occupation"
+        },
+        "scheme": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scheme"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State"
+        }
+      },
+      "title": "scheme_finderArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Add, remove, read, check off, and clear items on shared household lists like groceries. Use when the user says 'Add milk to the shopping list', 'What is on our grocery list?', 'Check off eggs', or 'Clear finished items from the list'. Do not use for personal private tasks or habit tracking.",
     "name": "shared_list",
     "parameters": {
