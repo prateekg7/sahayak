@@ -20,6 +20,11 @@ def run(role: str) -> int:
         print("container role must be app or worker", file=sys.stderr)
         return 2
 
+    if role == "worker":
+        from sahayak.worker import main as worker_main
+
+        return worker_main()
+
     stop_requested = Event()
 
     def request_stop(_signal_number: int, _frame: object) -> None:

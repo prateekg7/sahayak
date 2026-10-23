@@ -51,3 +51,14 @@ def test_main_requires_exactly_one_role_argument(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(sys, "argv", ["container"])
 
     assert container.main() == 2
+
+
+def test_worker_container_role_invokes_worker_main(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Delegate worker container execution to sahayak.worker.main."""
+    from unittest.mock import MagicMock
+
+    mock_main = MagicMock(return_value=0)
+    monkeypatch.setattr("sahayak.worker.main", mock_main)
+
+    assert container.run("worker") == 0
+    mock_main.assert_called_once()

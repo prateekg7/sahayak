@@ -67,6 +67,22 @@ LLM_TOKENS_TOTAL = Counter(
     registry=registry,
 )
 
+# 4. Background worker metrics (PRD §10, T2.5)
+JOB_EXECUTIONS_TOTAL = Counter(
+    "sahayak_job_executions_total",
+    "Total background worker job executions.",
+    ["job", "outcome"],
+    registry=registry,
+)
+
+JOB_DURATION_SECONDS = Histogram(
+    "sahayak_job_duration_seconds",
+    "Duration of background job executions in seconds.",
+    ["job"],
+    buckets=(0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 60.0),
+    registry=registry,
+)
+
 
 def render_metrics() -> tuple[bytes, str]:
     """Serialize all registered Prometheus metrics to the standard text format.
