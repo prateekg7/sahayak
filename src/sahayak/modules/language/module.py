@@ -1,4 +1,4 @@
-"""Language module conforming to the Module protocol (T11.1)."""
+"""Language module conforming to the Module protocol (T11.1, T11.2)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.language.models import UserWord
+from sahayak.modules.language.models import PracticeSession, UserWord
 
 
 class LanguageModule:
@@ -45,7 +45,11 @@ class LanguageModule:
         """Register MCP tools for language learning module."""
         self._deps = deps
         if deps.session_factory is not None:
+            from sahayak.modules.language.service.practice import LanguagePracticeService
             from sahayak.modules.language.service.vocab import VocabService
+            from sahayak.modules.language.tools.language_practice import (
+                set_language_practice_service,
+            )
             from sahayak.modules.language.tools.vocab import set_vocab_service
 
             vocab_service = VocabService(
@@ -53,6 +57,16 @@ class LanguageModule:
             )
             set_vocab_service(vocab_service)
 
+            practice_service = LanguagePracticeService(
+                session_factory=deps.session_factory,  # type: ignore[arg-type]
+                llm_client=deps.llm_client,
+            )
+            set_language_practice_service(practice_service)
+
+        from sahayak.modules.language.tools.language_practice import (
+            LANGUAGE_PRACTICE_DESCRIPTION,
+            language_practice,
+        )
         from sahayak.modules.language.tools.vocab import (
             VOCAB_DESCRIPTION,
             vocab,
@@ -61,8 +75,16 @@ class LanguageModule:
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="vocab", description=VOCAB_DESCRIPTION)(vocab)
+            tool_decorator(name="language_practice", description=LANGUAGE_PRACTICE_DESCRIPTION)(
+                language_practice
+            )
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(vocab, name="vocab", description=VOCAB_DESCRIPTION)
+            mcp.add_tool(
+                language_practice,
+                name="language_practice",
+                description=LANGUAGE_PRACTICE_DESCRIPTION,
+            )
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs for language module."""
@@ -81,7 +103,7 @@ class LanguageModule:
         pass
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
-        """GDPR Right to Access: export user vocabulary and progress."""
+        """GDPR Right to Access: export user vocabulary and practice sessions."""
         if self._deps is None or self._deps.session_factory is None:
             return {}
 
@@ -95,18 +117,27 @@ class LanguageModule:
             )
             user_words = res_uw.scalars().all()
 
+            res_ps = await uow.session.execute(
+                select(PracticeSession)
+                .where(PracticeSession.user_id == uid)
+                .order_by(PracticeSession.created_at.asc())
+            )
+            sessions = res_ps.scalars().all()
+
             return {
                 "user_words": [uw.to_dict() for uw in user_words],
+                "practice_sessions": [s.to_dict() for s in sessions],
             }
 
     async def delete_user_data(self, user_id: str) -> None:
-        """GDPR Right to Erasure: delete all vocabulary records for user."""
+        """GDPR Right to Erasure: delete all vocabulary and practice records for user."""
         if self._deps is None or self._deps.session_factory is None:
             return
 
         uid = uuid.UUID(user_id) if isinstance(user_id, str) else user_id
         async with UnitOfWork(self._deps.session_factory) as uow:
             await uow.session.execute(delete(UserWord).where(UserWord.user_id == uid))
+            await uow.session.execute(delete(PracticeSession).where(PracticeSession.user_id == uid))
 
 
 module = LanguageModule()

@@ -16,7 +16,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sahayak.core.db.base import Base
@@ -120,4 +120,70 @@ class UserWord(Base):
             ),
             "created_at": self.created_at.isoformat(),
             "word": self.word.to_dict() if self.word else None,
+        }
+
+
+class PracticeSession(Base):
+    """Turn-limited interactive conversational role-play session (T11.2)."""
+
+    __tablename__ = "practice_sessions"
+    __table_args__ = (
+        Index("ix_language_practice_sessions_user_status", "user_id", "status"),
+        Index("ix_language_practice_sessions_user_created", "user_id", "created_at"),
+        {"schema": "language"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    language: Mapped[str] = mapped_column(String(32), nullable=False)
+    scenario: Mapped[str] = mapped_column(
+        String(64), nullable=False, default="general", server_default="general"
+    )
+    level: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="beginner", server_default="beginner"
+    )
+    turns_completed: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    max_turns: Mapped[int] = mapped_column(Integer, nullable=False, default=5, server_default="5")
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="active", server_default="active"
+    )
+    history: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB, nullable=False, default=list, server_default="[]"
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert practice session to dictionary."""
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "language": self.language,
+            "scenario": self.scenario,
+            "level": self.level,
+            "turns_completed": self.turns_completed,
+            "max_turns": self.max_turns,
+            "status": self.status,
+            "history": self.history,
+            "expires_at": self.expires_at.isoformat(),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }

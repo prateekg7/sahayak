@@ -1393,3 +1393,44 @@ register_isolation_spec(
         custom_isolation_check=_vocab_cross_user_isolation,
     )
 )
+
+
+async def _language_practice_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A starts conversation
+    res_a = await session_a.call_tool(
+        "language_practice",
+        {"action": "start_conversation", "language": "spanish", "scenario": "ordering_food"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to start conversation: {data_a}"
+    s_id_a = data_a.get("data", {}).get("session", {}).get("id")
+    assert s_id_a, "Missing session_id for User A"
+
+    # User B attempts to reply to User A's session: must fail with not_found
+    res_b_breach = await session_b.call_tool(
+        "language_practice",
+        {"action": "reply", "session_id": s_id_a, "user_message": "Un cafe por favor"},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+    # User A replies to their own session: must succeed
+    res_a_reply = await session_a.call_tool(
+        "language_practice",
+        {"action": "reply", "session_id": s_id_a, "user_message": "Un cafe por favor"},
+    )
+    data_a_reply = json.loads(getattr(res_a_reply.content[0], "text", "{}"))
+    assert data_a_reply.get("ok") is True
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="language_practice",
+        allows_anonymous=False,
+        sample_args={"action": "translate_explain", "query": "hello", "target_language": "spanish"},
+        custom_isolation_check=_language_practice_cross_user_isolation,
+    )
+)

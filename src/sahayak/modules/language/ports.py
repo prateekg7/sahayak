@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Protocol
 
-from sahayak.modules.language.models import UserWord, Word
+from sahayak.modules.language.models import PracticeSession, UserWord, Word
 
 
 class WordRepositoryPort(Protocol):
@@ -92,4 +92,40 @@ class UserWordRepositoryPort(Protocol):
 
     async def export_for_user(self, user_id: uuid.UUID) -> list[dict[str, Any]]:
         """Export all user learning records for GDPR right of access."""
+        ...
+
+
+class PracticeSessionRepositoryPort(Protocol):
+    """Port for practice sessions repository."""
+
+    async def get_session_by_id(
+        self,
+        session_id: uuid.UUID,
+        user_id: uuid.UUID,
+    ) -> PracticeSession | None:
+        """Retrieve practice session by ID verifying user ownership."""
+        ...
+
+    async def get_active_session(
+        self,
+        user_id: uuid.UUID,
+        language: str | None = None,
+    ) -> PracticeSession | None:
+        """Retrieve the user's current active practice session."""
+        ...
+
+    async def create_session(self, session: PracticeSession) -> PracticeSession:
+        """Persist a new practice session."""
+        ...
+
+    async def save_session(self, session: PracticeSession) -> PracticeSession:
+        """Update existing practice session state."""
+        ...
+
+    async def delete_all_for_user(self, user_id: uuid.UUID) -> int:
+        """Delete all practice sessions for GDPR erasure."""
+        ...
+
+    async def export_for_user(self, user_id: uuid.UUID) -> list[dict[str, Any]]:
+        """Export all practice sessions for GDPR right of access."""
         ...

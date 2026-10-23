@@ -1,5 +1,32 @@
 # Progress
 
+## 2026-10-24 — T11.2 `language_practice` tool (conversation and translate-and-explain) — DONE
+
+- Summary: completed Phase 11 (Language Learning Module) in full with turn-limited conversation role-play sessions, structured grammar feedback and corrections, translate-and-explain queries, prompt guardrails, and the `language_practice` MCP tool (28th platform tool):
+  - Database & Migrations:
+    - `src/sahayak/modules/language/models.py`: Added `PracticeSession` model with `user_id`, `language`, `scenario`, `level`, `turns_completed`, `max_turns`, `status` (`active`, `completed`, `expired`, `abandoned`), `history` (JSONB conversation turns), and `expires_at` (30-minute TTL).
+    - `src/sahayak/modules/language/migrations/0002_practice_sessions_schema.py`: Alembic migration creating `language.practice_sessions` table with indexes on `(user_id, status)` and `expires_at`. Reversible up->down->up.
+  - Domain Logic (`src/sahayak/modules/language/domain/practice.py`):
+    - Scenario normalization (`general`, `ordering_food`, `asking_directions`, `meeting_friends`, `travel`, `shopping`) with flexible aliases.
+    - Curated scenario starters in target languages (Spanish, French, German, Hindi, Japanese).
+    - Voice formatters for start conversation, partner reply turn with grammar corrections and explanations, and session completion celebration strictly $\le 300$ characters without markdown, asterisks, or quotes.
+  - Adapters & Services:
+    - `src/sahayak/modules/language/adapters/practice.py`: `SQLAlchemyPracticeSessionRepository` implementing active session lookup, session creation, save, and GDPR deletion.
+    - `src/sahayak/modules/language/adapters/evaluator.py`: `LLMLanguagePracticeEvaluator` with structured `LLMConversationTurnOutput` and `LLMTranslateOutput` Pydantic schemas, supporting `LLMClient.generate_json` and deterministic fallbacks.
+    - `src/sahayak/modules/language/service/practice.py`: `LanguagePracticeService` managing start conversation, reply turns, grammar corrections, turn limits (clamped to max 10), 30-minute session expiration, explicit session end, and outbox event dispatch (`language.practice.turn_completed`).
+  - Public MCP Tool, Snapshot & GDPR:
+    - `src/sahayak/modules/language/tools/language_practice.py`: `language_practice` MCP tool (28th platform tool) with `@requires()` authorization, `@idempotent(tool_name="language_practice")`, and standard envelope responses.
+    - `src/sahayak/modules/language/module.py`: Registered `language_practice` tool; added `practice_sessions` to GDPR Right to Access export and deletion hooks.
+    - `tests/snapshots/tools.json`: Tool snapshot updated to 28 tools.
+  - Tests & Verification:
+    - `tests/unit/test_language_practice_domain.py`: Scenario normalization, starters, and voice formatting length bounds.
+    - `tests/unit/test_language_practice_service.py`: Conversation lifecycle, turn limiting, session completion, TTL expiration, previous session abandonment, structured LLM correction via `FakeLLMClient`, translation, and cross-user isolation.
+    - `tests/contract/test_language_practice_contract.py`: Full MCP contract test over Streamable HTTP verifying anonymous rejection and complete authenticated lifecycle.
+    - `tests/security/isolation.py`: Cross-user isolation verified across all 28 registered tools.
+  - Quality Gates: `make lint`, `make test` (636 passed, 85.51% coverage), `make snapshot-check` (28 tools), `make migrate-check`, `make security` all green.
+- Phase 11 (Language Learning Module) Complete!
+- Next: Phase 12 — Local and civic info module (T12.1 through T12.4).
+
 ## 2026-10-24 — T11.1 `vocab` tool (daily vocabulary with spaced repetition) — DONE
 
 - Summary: implemented Phase 11 Language Learning module foundation with language normalization (Spanish, French, German, Hindi, Japanese, Italian, Mandarin), curated seed vocabulary, word-of-the-day acquisition, SuperMemo-2 (SM-2) spaced repetition review quizzes via `shared/srs`, custom word additions, GDPR privacy hooks, and the `vocab` MCP tool (27th platform tool):

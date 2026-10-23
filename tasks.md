@@ -531,7 +531,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** schema `language` (`words` cache by language/level, `user_words` with SM-2 state using `shared/srs`), word-of-the-day generation validated (word, meaning, example sentence, pronunciation hint in text), `tools/vocab.py` (`word_of_day, review, grade, stats`), supported language list in config (verify locale/speech behavior per V4).
 - **Done when:** reviews reschedule correctly using the shared SM-2; duplicate words are not repeated for a user.
 
-### [ ] T11.2 — `language_practice` tool (conversation and translate-and-explain)
+### [x] T11.2 — `language_practice` tool (conversation and translate-and-explain)
 - **Depends on:** T11.1 · **Est. LOC:** ~650
 - **What it does:** Practice short conversations and get grammar-aware translations.
 - **Implement:** `tools/language_practice.py` (`start_conversation, reply, translate_explain, end`), turn-limited sessions with handle IDs, structured correction output (corrected sentence + one-line explanation), prompt guardrails, response length tuned for speech.

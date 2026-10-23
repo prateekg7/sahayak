@@ -1120,6 +1120,129 @@
     }
   },
   {
+    "description": "Practice short conversational role-play sessions and get grammar-aware translations. Use when the user says 'Let us practice Spanish', 'Reply to conversation', 'Translate how much is this to Spanish', or 'End conversation'. Do not use for spaced repetition flashcards or daily word; use vocab instead.",
+    "name": "language_practice",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "start_conversation",
+          "title": "Action",
+          "type": "string"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Level"
+        },
+        "max_turns": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 5,
+          "title": "Max Turns"
+        },
+        "query": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Query"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "scenario": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scenario"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Id"
+        },
+        "target_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Language"
+        },
+        "user_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Message"
+        }
+      },
+      "title": "language_practiceArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Manage customer credit, dues, and payments for a small business. Use when the user says 'Ramesh owes 200 rupees', 'Record 500 payment from Priya', 'How much does Anita owe', or 'Who owes me money'. Do not use for product orders; use orders instead.",
     "name": "ledger",
     "parameters": {

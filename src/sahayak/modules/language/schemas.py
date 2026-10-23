@@ -100,3 +100,96 @@ class VocabResponseData(BaseModel):
     user_word: UserWordData | None = None
     next_due_words: list[UserWordData] = Field(default_factory=list)
     stats: dict[str, Any] = Field(default_factory=dict)
+
+
+class LanguagePracticeAction(StrEnum):
+    """Supported actions for the language_practice MCP tool."""
+
+    START_CONVERSATION = "start_conversation"
+    REPLY = "reply"
+    TRANSLATE_EXPLAIN = "translate_explain"
+    END = "end"
+
+
+class LanguagePracticeRequest(BaseModel):
+    """Input payload for the language_practice tool."""
+
+    action: LanguagePracticeAction = Field(
+        ...,
+        description="Action to execute: start_conversation, reply, translate_explain, end.",
+    )
+    session_id: str | None = Field(
+        None,
+        description="ID of active conversation session for reply or end turns.",
+    )
+    language: str | None = Field(
+        None,
+        description="Target language (e.g. 'spanish', 'french', 'german', 'hindi').",
+    )
+    scenario: str | None = Field(
+        None,
+        description="Role-play scenario: general, ordering_food, asking_directions.",
+    )
+    level: str | None = Field(
+        None,
+        description="Proficiency level (beginner, intermediate, advanced).",
+    )
+    user_message: str | None = Field(
+        None,
+        description="User's spoken reply in the target language during conversation.",
+    )
+    query: str | None = Field(
+        None,
+        description="Phrase or sentence to translate and explain.",
+    )
+    target_language: str | None = Field(
+        None,
+        description="Target language for translation.",
+    )
+    max_turns: int | None = Field(
+        5,
+        description="Maximum turns before session automatically concludes (default 5, max 10).",
+    )
+
+
+class PracticeSessionData(BaseModel):
+    """Conversational practice session details."""
+
+    id: str
+    language: str
+    scenario: str
+    level: str
+    turns_completed: int
+    max_turns: int
+    status: str
+    expires_at: str
+
+
+class CorrectionData(BaseModel):
+    """Grammar or vocabulary feedback."""
+
+    corrected_sentence: str
+    explanation: str
+
+
+class TranslateExplainData(BaseModel):
+    """Grammar-aware translation and explanation."""
+
+    original: str
+    translation: str
+    pronunciation_hint: str
+    grammar_note: str
+    example_sentence: str
+
+
+class LanguagePracticeResponseData(BaseModel):
+    """Structured data returned in language_practice MCP responses."""
+
+    action: str
+    language: str
+    session: PracticeSessionData | None = None
+    partner_response: str | None = None
+    partner_response_english: str | None = None
+    correction: CorrectionData | None = None
+    translate_explain: TranslateExplainData | None = None
+    turns_remaining: int | None = None
