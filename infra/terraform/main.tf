@@ -50,3 +50,21 @@ module "idp" {
   cognito_domain_prefix       = "${var.cognito_domain_prefix}-${var.environment}"
   alexa_redirect_uris         = var.alexa_redirect_uris
 }
+
+# 6. ECS Application Platform, ALB, TLS, DNS (T4.2)
+module "app" {
+  source = "./modules/app"
+
+  environment            = var.environment
+  vpc_id                 = module.vpc.vpc_id
+  public_subnet_ids      = module.vpc.public_subnet_ids
+  private_app_subnet_ids = module.vpc.private_app_subnet_ids
+  alb_security_group_id  = module.security_groups.alb_security_group_id
+  ecs_security_group_id  = module.security_groups.ecs_security_group_id
+
+  domain_name            = var.domain_name
+  route53_zone_id        = var.route53_zone_id
+  database_endpoint      = module.database.db_endpoint
+  database_name          = module.database.db_name
+  redis_endpoint         = module.cache.primary_endpoint_address
+}

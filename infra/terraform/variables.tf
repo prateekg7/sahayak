@@ -73,3 +73,15 @@ variable "alexa_redirect_uris" {
     "https://alexa.amazon.co.jp/api/skill/link/MOCK_SKILL_ID"
   ]
 }
+
+variable "domain_name" {
+  description = "Public domain name (e.g. api.sahayak.app)"
+  type        = string
+  default     = "api.sahayak.app"
+}
+
+variable "route53_zone_id" {
+  description = "Route 53 hosted zone ID for public DNS record"
+  type        = string
+  default     = null
+}

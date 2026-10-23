@@ -52,3 +52,33 @@ output "cognito_issuer_url" {
   description = "Cognito Issuer URL"
   value       = module.idp.cognito_issuer_url
 }
+
+output "public_url" {
+  description = "Public service HTTPS URL"
+  value       = module.app.public_url
+}
+
+output "ecr_repository_url" {
+  description = "ECR Repository URL"
+  value       = module.app.ecr_repository_url
+}
+
+output "alb_dns_name" {
+  description = "Application Load Balancer DNS name"
+  value       = module.app.alb_dns_name
+}
+
+output "ecs_cluster_name" {
+  description = "ECS cluster name"
+  value       = module.app.ecs_cluster_name
+}
+
+output "app_service_name" {
+  description = "ECS app service name"
+  value       = module.app.app_service_name
+}
+
+output "worker_service_name" {
+  description = "ECS worker service name"
+  value       = module.app.worker_service_name
+}
