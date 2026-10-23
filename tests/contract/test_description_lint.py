@@ -19,7 +19,7 @@ def test_tool_descriptions_conform_to_voice_lint_rules() -> None:
     """All registered tool descriptions must satisfy the required voice format."""
     settings = get_settings()
     registry = ModuleRegistry()
-    registry.load(("_template",))
+    registry.load(("_template", "academics"))
     server = create_mcp_server(settings=settings, registry=registry)
 
     tools = server._tool_manager.list_tools()

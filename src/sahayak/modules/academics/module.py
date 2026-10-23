@@ -30,8 +30,35 @@ class AcademicsModule:
     def register_tools(self, mcp: Any, deps: Deps) -> None:
         """Register MCP tools provided by the academics module."""
         self._deps = deps
-        # Tools will be registered in subsequent Phase 3 tasks
-        # (T3.6, T3.7, T3.10, T3.12, T3.13, T3.14)
+        if deps.session_factory is not None:
+            from sahayak.core.config import get_settings
+            from sahayak.modules.academics.adapters.generation import QuestionGenerationPipeline
+            from sahayak.modules.academics.adapters.verification import QuestionVerifier
+            from sahayak.modules.academics.service.quiz import QuizService
+            from sahayak.modules.academics.tools.quiz import set_quiz_service
+
+            settings = get_settings()
+            generator = None
+            if deps.llm_client is not None:
+                verifier = QuestionVerifier(llm_client=deps.llm_client)
+                generator = QuestionGenerationPipeline(
+                    llm_client=deps.llm_client,
+                    verifier=verifier,
+                )
+            service = QuizService(
+                session_factory=deps.session_factory,
+                generator=generator,
+                quiz_ttl_minutes=settings.quiz_ttl_minutes,
+            )
+            set_quiz_service(service)
+
+        from sahayak.modules.academics.tools.quiz import QUIZ_START_DESCRIPTION, quiz_start
+
+        tool_decorator = getattr(mcp, "tool", None)
+        if callable(tool_decorator):
+            tool_decorator(name="quiz_start", description=QUIZ_START_DESCRIPTION)(quiz_start)
+        elif hasattr(mcp, "add_tool"):
+            mcp.add_tool(quiz_start, name="quiz_start", description=QUIZ_START_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs owned by the academics module."""

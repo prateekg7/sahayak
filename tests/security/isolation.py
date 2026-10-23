@@ -168,3 +168,11 @@ register_isolation_spec(
         sample_args={"message": "hello security"},
     )
 )
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="quiz_start",
+        allows_anonymous=True,
+        sample_args={"topic": "General Science", "num_questions": 3},
+    )
+)

@@ -1,21 +1,43 @@
 [
   {
-    "description": "Echoes back a test message to verify that the Sahayak MCP connection is healthy. Use when testing connectivity or confirming the server is online, e.g. 'Alexa, ask Sahayak to ping'. Do not use for academic quizzes, flashcards, or study plans.",
-    "name": "ping_echo",
+    "description": "Starts an interactive multiple-choice quiz on any academic topic. Use when the user asks to start a quiz or be tested, such as 'Alexa, quiz me on photosynthesis'. Do not use for answering questions in an active quiz; use quiz_answer instead.",
+    "name": "quiz_start",
     "parameters": {
       "properties": {
-        "message": {
-          "default": "ping",
-          "title": "Message",
+        "difficulty": {
+          "default": "medium",
+          "title": "Difficulty",
           "type": "string"
+        },
+        "num_questions": {
+          "default": 5,
+          "title": "Num Questions",
+          "type": "integer"
         },
         "request_id": {
           "default": "",
           "title": "Request Id",
           "type": "string"
+        },
+        "source": {
+          "default": "topic",
+          "title": "Source",
+          "type": "string"
+        },
+        "topic": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topic"
         }
       },
-      "title": "ping_echoArguments",
+      "title": "quiz_startArguments",
       "type": "object"
     }
   }

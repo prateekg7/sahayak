@@ -11,7 +11,7 @@ def test_tool_count_within_global_and_module_budgets() -> None:
     """Total tools must not exceed MAX_TOOLS and module limit MAX_TOOLS_PER_MODULE."""
     settings = get_settings()
     registry = ModuleRegistry()
-    registry.load(("_template",))
+    registry.load(("_template", "academics"))
     server = create_mcp_server(settings=settings, registry=registry)
 
     tools = server._tool_manager.list_tools()
