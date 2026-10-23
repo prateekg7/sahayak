@@ -39,6 +39,7 @@ repos:
           - opentelemetry-api>=1.20,<2
           - alembic>=1.14,<2
           - pyjwt>=2.8,<3
+          - respx>=0.22,<1
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.27.2
     hooks:

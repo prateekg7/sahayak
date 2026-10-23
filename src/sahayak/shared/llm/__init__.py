@@ -5,6 +5,8 @@ from __future__ import annotations
 from sahayak.shared.llm.budget import DailyBudgetManager
 from sahayak.shared.llm.circuit_breaker import CircuitBreaker, CircuitState
 from sahayak.shared.llm.fake import FakeLLMClient
+from sahayak.shared.llm.gemini import GeminiClient
+from sahayak.shared.llm.groq import GroqClient
 from sahayak.shared.llm.ports import (
     BudgetExceededError,
     CircuitBreakerOpenError,
@@ -25,6 +27,8 @@ __all__ = [
     "CircuitState",
     "DailyBudgetManager",
     "FakeLLMClient",
+    "GeminiClient",
+    "GroqClient",
     "InvalidLLMResponseError",
     "LLMClient",
     "LLMError",

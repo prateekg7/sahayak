@@ -37,6 +37,7 @@ dev = [
   "pytest>=9.0.3,<10",
   "pytest-asyncio>=1,<2",
   "pytest-cov>=6.1,<7",
+  "respx>=0.22,<1",
   "ruff>=0.11,<0.12",
 ]
 
@@ -46,7 +47,10 @@ packages = ["src/sahayak"]
 [tool.pytest.ini_options]
 addopts = "--strict-markers --cov=sahayak --cov-report=term-missing --cov-fail-under=85"
 testpaths = ["tests"]
-markers = ["integration: requires a real service"]
+markers = [
+  "integration: requires a real service",
+  "live: opt-in real network/provider tests",
+]
 
 [tool.coverage.run]
 branch = true
