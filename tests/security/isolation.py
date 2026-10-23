@@ -872,3 +872,53 @@ register_isolation_spec(
         custom_isolation_check=_interview_practice_cross_user_isolation,
     )
 )
+
+
+async def _application_tracker_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A adds an application
+    res_a = await session_a.call_tool(
+        "application_tracker",
+        {"action": "add", "company": "Acme Corp", "role": "Lead Architect"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    app_id = data_a.get("data", {}).get("application_id")
+    assert app_id is not None
+
+    # User B lists applications - User A's application must not appear
+    res_b_list = await session_b.call_tool("application_tracker", {"action": "list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_apps = data_b_list.get("data", {}).get("applications", [])
+    b_app_ids = [a.get("id") for a in b_apps]
+    assert app_id not in b_app_ids
+
+    # User B attempts to update User A's application - must fail with not_found
+    res_b_upd = await session_b.call_tool(
+        "application_tracker",
+        {"action": "update_status", "application_id": app_id, "status": "interviewing"},
+    )
+    data_b_upd = json.loads(getattr(res_b_upd.content[0], "text", "{}"))
+    assert data_b_upd.get("ok") is False
+    assert data_b_upd.get("error_code") == "not_found"
+
+    # User B attempts to delete User A's application - must fail with not_found
+    res_b_del = await session_b.call_tool(
+        "application_tracker",
+        {"action": "delete", "application_id": app_id},
+    )
+    data_b_del = json.loads(getattr(res_b_del.content[0], "text", "{}"))
+    assert data_b_del.get("ok") is False
+    assert data_b_del.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="application_tracker",
+        allows_anonymous=False,
+        sample_args={"action": "list"},
+        custom_isolation_check=_application_tracker_cross_user_isolation,
+    )
+)

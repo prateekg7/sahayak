@@ -11,6 +11,7 @@ from sahayak.core.config import get_settings
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps
 from sahayak.modules.career.module import module as career_module
+from sahayak.modules.career.service.applications import ApplicationService
 from sahayak.modules.career.service.interview import InterviewService
 from sahayak.shared.users.models import User
 
@@ -30,6 +31,7 @@ async def test_career_privacy_export_and_delete() -> None:
     career_module.register_tools(None, deps=deps)
 
     service = InterviewService(session_factory=session_factory)
+    app_service = ApplicationService(session_factory=session_factory)
 
     try:
         # Start a session
@@ -48,6 +50,14 @@ async def test_career_privacy_export_and_delete() -> None:
             answer="I built scalable microservices with gRPC and Python.",
         )
 
+        # Add job application
+        await app_service.add_application(
+            user_id=user_id,
+            company="OpenAI",
+            role="Research Engineer",
+            status="applied",
+        )
+
         # 1. Export user data
         exported = await career_module.export_user_data(str(user_id))
         assert "interview_sessions" in exported
@@ -57,11 +67,17 @@ async def test_career_privacy_export_and_delete() -> None:
         assert len(sessions[0]["turns"]) == 1
         assert "microservices" in sessions[0]["turns"][0]["user_answer"]
 
+        assert "applications" in exported
+        apps = exported["applications"]
+        assert len(apps) == 1
+        assert apps[0]["company"] == "OpenAI"
+
         # 2. Delete user data (GDPR Right to Erasure)
         await career_module.delete_user_data(str(user_id))
 
         # 3. Export again should be completely empty
         post_delete = await career_module.export_user_data(str(user_id))
         assert len(post_delete.get("interview_sessions", [])) == 0
+        assert len(post_delete.get("applications", [])) == 0
     finally:
         await engine.dispose()

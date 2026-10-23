@@ -72,3 +72,45 @@ class InterviewSessionPayload(BaseModel):
     created_at: str | None = None
     finished_at: str | None = None
     turns: list[dict[str, Any]] = Field(default_factory=list)
+
+
+ApplicationAction = Literal["add", "update_status", "list", "due_followups", "delete"]
+
+
+class ApplicationRequest(BaseModel):
+    """Input payload for application_tracker tool (T8.2)."""
+
+    action: ApplicationAction = Field(
+        ...,
+        description="Action: 'add', 'update_status', 'list', 'due_followups', or 'delete'",
+    )
+    company: str | None = Field(
+        default=None,
+        description="Company name, e.g. 'Google' or 'Stripe'",
+    )
+    role: str | None = Field(
+        default=None,
+        description="Job role or title, e.g. 'Software Engineer'",
+    )
+    status: str | None = Field(
+        default=None,
+        description="Optional status filter or application status (e.g. 'applied', 'interviewing')",
+    )
+    follow_up_at: str | None = Field(
+        default=None,
+        description="Follow-up deadline, e.g. 'in 3 days', 'tomorrow', 'next week', or ISO date",
+    )
+    notes: str | None = Field(
+        default=None,
+        description="Optional notes regarding the application or interview process",
+    )
+    application_id: str | None = Field(
+        default=None,
+        description="UUID of the application (required for 'update_status' and 'delete')",
+    )
+    limit: int = Field(
+        default=10,
+        ge=1,
+        le=50,
+        description="Maximum number of applications to list",
+    )

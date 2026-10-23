@@ -182,3 +182,81 @@ class InterviewTurn(Base):
             "prompt_version": self.prompt_version,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+
+class Application(Base):
+    """Job application tracker entity (T8.2)."""
+
+    __tablename__ = "applications"
+    __table_args__ = (
+        Index("ix_career_apps_user_status", "user_id", "status"),
+        Index("ix_career_apps_user_follow_up", "user_id", "follow_up_at"),
+        {"schema": "career"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    company: Mapped[str] = mapped_column(
+        String(128),
+        nullable=False,
+        comment="Company name, e.g. 'Google' or 'Stripe'",
+    )
+    role: Mapped[str] = mapped_column(
+        String(128),
+        nullable=False,
+        comment="Job title / role applied for",
+    )
+    status: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="applied",
+        comment="Application status: applied, screening, interviewing, offer, rejected, withdrawn",
+    )
+    applied_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+    follow_up_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        default=None,
+    )
+    notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        default=None,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "company": self.company,
+            "role": self.role,
+            "status": self.status,
+            "applied_at": self.applied_at.isoformat() if self.applied_at else None,
+            "follow_up_at": self.follow_up_at.isoformat() if self.follow_up_at else None,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }

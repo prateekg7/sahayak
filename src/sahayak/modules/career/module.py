@@ -1,4 +1,4 @@
-"""Career module definition satisfying the Module protocol (T8.1)."""
+"""Career module definition satisfying the Module protocol (T8.1, T8.2)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from sqlalchemy import delete, select
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.career.models import InterviewSession, InterviewTurn
+from sahayak.modules.career.models import Application, InterviewSession, InterviewTurn
 
 
 class CareerModule:
@@ -30,24 +30,46 @@ class CareerModule:
 
     @property
     def api(self) -> Any:
-        return None
+        if self._api is None:
+            if self._deps is None or self._deps.session_factory is None:
+                return None
+            from sahayak.modules.career.api import CareerAPI
+
+            self._api = CareerAPI(session_factory=self._deps.session_factory)
+        return self._api
 
     def register_tools(self, mcp: Any, deps: Deps) -> None:
         """Register MCP tools provided by the career module."""
         self._deps = deps
         if deps.session_factory is not None:
+            from sahayak.modules.career.service.applications import ApplicationService
             from sahayak.modules.career.service.interview import InterviewService
+            from sahayak.modules.career.tools.application_tracker import (
+                set_application_service,
+            )
             from sahayak.modules.career.tools.interview_practice import (
                 set_interview_service,
             )
 
             llm_client = getattr(deps, "llm", None)
+            clock_fn = getattr(deps, "clock", None)
+
             interview_service = InterviewService(
                 session_factory=deps.session_factory,
                 llm_client=llm_client,
             )
             set_interview_service(interview_service)
 
+            app_service = ApplicationService(
+                session_factory=deps.session_factory,
+                clock=clock_fn,
+            )
+            set_application_service(app_service)
+
+        from sahayak.modules.career.tools.application_tracker import (
+            APPLICATION_TRACKER_DESCRIPTION,
+            application_tracker,
+        )
         from sahayak.modules.career.tools.interview_practice import (
             INTERVIEW_PRACTICE_DESCRIPTION,
             interview_practice,
@@ -58,11 +80,19 @@ class CareerModule:
             tool_decorator(name="interview_practice", description=INTERVIEW_PRACTICE_DESCRIPTION)(
                 interview_practice
             )
+            tool_decorator(name="application_tracker", description=APPLICATION_TRACKER_DESCRIPTION)(
+                application_tracker
+            )
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(
                 interview_practice,
                 name="interview_practice",
                 description=INTERVIEW_PRACTICE_DESCRIPTION,
+            )
+            mcp.add_tool(
+                application_tracker,
+                name="application_tracker",
+                description=APPLICATION_TRACKER_DESCRIPTION,
             )
 
     def register_jobs(self, worker: Any) -> None:
@@ -82,7 +112,7 @@ class CareerModule:
         pass
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
-        """GDPR Right to Access: export user interview sessions and turns."""
+        """GDPR Right to Access: export user interview sessions, turns, and applications."""
         if self._deps is None or self._deps.session_factory is None:
             return {}
 
@@ -110,8 +140,14 @@ class CareerModule:
                 s_dict["turns"] = [t.to_dict() for t in turns_by_session.get(s.id, [])]
                 exported_sessions.append(s_dict)
 
+            res_apps = await uow.session.execute(
+                select(Application).where(Application.user_id == uid)
+            )
+            apps = res_apps.scalars().all()
+
             return {
                 "interview_sessions": exported_sessions,
+                "applications": [a.to_dict() for a in apps],
             }
 
     async def delete_user_data(self, user_id: str) -> None:
@@ -121,6 +157,10 @@ class CareerModule:
 
         uid = uuid.UUID(user_id) if isinstance(user_id, str) else user_id
         async with UnitOfWork(self._deps.session_factory) as uow:
+            # Delete applications
+            await uow.session.execute(delete(Application).where(Application.user_id == uid))
+
+            # Delete sessions & turns
             res = await uow.session.execute(
                 select(InterviewSession.id).where(InterviewSession.user_id == uid)
             )

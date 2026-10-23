@@ -76,3 +76,57 @@ class InterviewEvaluationPort(Protocol):
         question: str,
         answer: str,
     ) -> RubricScore: ...
+
+
+class ApplicationRepositoryPort(Protocol):
+    """Port for persisting job applications and follow-up deadlines (T8.2)."""
+
+    async def create_application(
+        self,
+        *,
+        user_id: uuid.UUID,
+        company: str,
+        role: str,
+        status: str = "applied",
+        follow_up_at: Any | None = None,
+        notes: str | None = None,
+    ) -> Any: ...
+
+    async def update_status(
+        self,
+        *,
+        user_id: uuid.UUID,
+        application_id: uuid.UUID,
+        status: str,
+        notes: str | None = None,
+    ) -> Any | None: ...
+
+    async def get_application(
+        self,
+        *,
+        user_id: uuid.UUID,
+        application_id: uuid.UUID,
+    ) -> Any | None: ...
+
+    async def list_applications(
+        self,
+        *,
+        user_id: uuid.UUID,
+        status: str | None = None,
+        limit: int = 10,
+    ) -> list[Any]: ...
+
+    async def list_due_followups(
+        self,
+        *,
+        user_id: uuid.UUID,
+        before_time: Any | None = None,
+        limit: int = 10,
+    ) -> list[Any]: ...
+
+    async def delete_application(
+        self,
+        *,
+        user_id: uuid.UUID,
+        application_id: uuid.UUID,
+    ) -> bool: ...

@@ -1,5 +1,109 @@
 [
   {
+    "description": "Track job applications, interview stages, and follow-up deadlines. Use when the user says 'Add an application for Google as Software Engineer', 'What is the status of my job applications?', 'Update my Meta application to interviewing', or 'What follow-ups are due today?'. Do not use for logging personal tasks, expenses, or health metrics.",
+    "name": "application_tracker",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "list",
+          "title": "Action",
+          "type": "string"
+        },
+        "application_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Application Id"
+        },
+        "company": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Company"
+        },
+        "follow_up_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Follow Up At"
+        },
+        "limit": {
+          "default": 10,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        }
+      },
+      "title": "application_trackerArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Manage monthly category budgets and track spending against targets. Use when the user says 'Set groceries budget to 5000 rupees', 'How much grocery budget do I have left?', 'List my budgets', or 'Remove my dining budget'. Do not use for logging individual transactions; use expense_log instead.",
     "name": "budget",
     "parameters": {
