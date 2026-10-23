@@ -162,3 +162,69 @@ class HabitsResponseData(BaseModel):
     habit: HabitData | None = None
     habits: list[HabitData] = Field(default_factory=list)
     count: int = 0
+
+
+class NoteAction(str, Enum):
+    """Supported voice note actions."""
+
+    ADD = "add"
+    SEARCH = "search"
+    READ_LATEST = "read_latest"
+    DELETE = "delete"
+
+
+class NotesRequest(BaseModel):
+    """Input payload for the 'notes' MCP tool."""
+
+    action: NoteAction = Field(
+        ...,
+        description="Note management action: 'add', 'search', 'read_latest', or 'delete'.",
+    )
+    content: str | None = Field(
+        default=None,
+        max_length=2000,
+        description="Note content text (required for 'add').",
+    )
+    query: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Search query words (required for 'search').",
+    )
+    note_id: str | None = Field(
+        default=None,
+        description="Note UUID (required for 'delete').",
+    )
+    tags: list[str] = Field(
+        default_factory=list,
+        description="Optional categorization tags.",
+    )
+    limit: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum search results to return.",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional idempotency key for mutations.",
+    )
+
+
+class NoteData(BaseModel):
+    """Representation of an individual voice note."""
+
+    id: str
+    user_id: str
+    content: str
+    tags: list[str] = Field(default_factory=list)
+    created_at: str | None = None
+
+
+class NotesResponseData(BaseModel):
+    """Output payload for the 'notes' tool inside the standard envelope."""
+
+    action: str
+    note: NoteData | None = None
+    notes: list[NoteData] = Field(default_factory=list)
+    count: int = 0
+    has_more: bool = False

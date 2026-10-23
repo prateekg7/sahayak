@@ -13,6 +13,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     UniqueConstraint,
     func,
 )
@@ -160,5 +161,40 @@ class HabitLog(Base):
             "user_id": str(self.user_id),
             "logged_date": self.logged_date.isoformat(),
             "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class Note(Base):
+    """Voice note entity stored in productivity.notes table."""
+
+    __tablename__ = "notes"
+    __table_args__ = (
+        Index("ix_productivity_notes_user_created", "user_id", "created_at"),
+        {"schema": "productivity"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    tags: Mapped[list[str]] = mapped_column(
+        JSONB, nullable=False, default=list, server_default="[]"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now()
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert note to dictionary representation."""
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "content": self.content,
+            "tags": list(self.tags) if self.tags else [],
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }

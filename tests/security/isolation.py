@@ -449,3 +449,48 @@ register_isolation_spec(
         custom_isolation_check=_habits_cross_user_isolation,
     )
 )
+
+
+async def _notes_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A creates a note
+    res_a = await session_a.call_tool(
+        "notes",
+        {
+            "action": "add",
+            "content": "Secret password phrase 12345",
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    note_id = data_a.get("data", {}).get("note", {}).get("id")
+    assert note_id
+
+    # User B searches notes for phrase - User A's note must not appear
+    res_b_search = await session_b.call_tool(
+        "notes",
+        {"action": "search", "query": "Secret"},
+    )
+    data_b_search = json.loads(getattr(res_b_search.content[0], "text", "{}"))
+    assert data_b_search.get("ok") is True
+    b_notes = data_b_search.get("data", {}).get("notes", [])
+    b_note_ids = [n.get("id") for n in b_notes]
+    assert note_id not in b_note_ids
+
+    # User B attempts to delete User A's note - must fail with not_found
+    res_b_del = await session_b.call_tool(
+        "notes",
+        {"action": "delete", "note_id": note_id},
+    )
+    data_b_del = json.loads(getattr(res_b_del.content[0], "text", "{}"))
+    assert data_b_del.get("ok") is False
+    assert data_b_del.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="notes",
+        allows_anonymous=False,
+        sample_args={"action": "add", "content": "Sample note content"},
+        custom_isolation_check=_notes_cross_user_isolation,
+    )
+)

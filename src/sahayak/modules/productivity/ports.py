@@ -6,7 +6,7 @@ import uuid
 from datetime import date, datetime
 from typing import Protocol
 
-from sahayak.modules.productivity.models import Habit, HabitLog, Task
+from sahayak.modules.productivity.models import Habit, HabitLog, Note, Task
 
 
 class TaskRepositoryPort(Protocol):
@@ -141,4 +141,38 @@ class HabitRepositoryPort(Protocol):
         habit_id: uuid.UUID,
     ) -> Habit | None:
         """Archive a habit, scoped by user_id."""
+        ...
+
+
+class NoteRepositoryPort(Protocol):
+    """Repository port interface for voice note storage and full-text search."""
+
+    async def create_note(
+        self,
+        user_id: uuid.UUID,
+        content: str,
+        tags: list[str] | None = None,
+    ) -> Note:
+        """Persist a new voice note."""
+        ...
+
+    async def get_note(self, user_id: uuid.UUID, note_id: uuid.UUID) -> Note | None:
+        """Retrieve note by ID, scoped by user_id."""
+        ...
+
+    async def get_latest_note(self, user_id: uuid.UUID) -> Note | None:
+        """Retrieve most recently created note for user."""
+        ...
+
+    async def search_notes(
+        self,
+        user_id: uuid.UUID,
+        query: str,
+        limit: int = 5,
+    ) -> list[Note]:
+        """Search notes using full-text search and partial matching, scoped by user_id."""
+        ...
+
+    async def delete_note(self, user_id: uuid.UUID, note_id: uuid.UUID) -> bool:
+        """Delete note by ID, scoped by user_id."""
         ...

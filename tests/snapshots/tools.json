@@ -162,6 +162,91 @@
     }
   },
   {
+    "description": "Capture quick voice notes, search past notes by keyword, and read back your thoughts. Use when the user says 'Take a note: meeting ideas', 'Search my notes for recipe', or 'Read my latest note'. Do not use for to-do items or deadlines; use the tasks tool instead.",
+    "name": "notes",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "note_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note Id"
+        },
+        "query": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Query"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tags"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "notesArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Inspect academic quiz performance, study streaks, weak topics, and weekly summaries. Use when the student asks 'How am I doing?', 'What are my weak topics?', 'What is my streak?', or 'How did I do this week?'. Do not use for starting quizzes or scheduling study plans; use 'quiz_start' or 'study_plan' instead.",
     "name": "progress_report",
     "parameters": {

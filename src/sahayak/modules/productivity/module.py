@@ -10,7 +10,7 @@ from sqlalchemy import delete, select
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.productivity.models import Habit, HabitLog, Task
+from sahayak.modules.productivity.models import Habit, HabitLog, Note, Task
 
 
 class ProductivityModule:
@@ -48,8 +48,10 @@ class ProductivityModule:
         self._deps = deps
         if deps.session_factory is not None:
             from sahayak.modules.productivity.service.habits import HabitService
+            from sahayak.modules.productivity.service.notes import NoteService
             from sahayak.modules.productivity.service.tasks import TaskService
             from sahayak.modules.productivity.tools.habits import set_habit_service
+            from sahayak.modules.productivity.tools.notes import set_note_service
             from sahayak.modules.productivity.tools.tasks import set_task_service
 
             clock_fn = getattr(deps, "clock", None)
@@ -59,16 +61,22 @@ class ProductivityModule:
             habit_service = HabitService(session_factory=deps.session_factory, clock=clock_fn)
             set_habit_service(habit_service)
 
+            note_service = NoteService(session_factory=deps.session_factory)
+            set_note_service(note_service)
+
         from sahayak.modules.productivity.tools.habits import HABITS_DESCRIPTION, habits
+        from sahayak.modules.productivity.tools.notes import NOTES_DESCRIPTION, notes
         from sahayak.modules.productivity.tools.tasks import TASKS_DESCRIPTION, tasks
 
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="tasks", description=TASKS_DESCRIPTION)(tasks)
             tool_decorator(name="habits", description=HABITS_DESCRIPTION)(habits)
+            tool_decorator(name="notes", description=NOTES_DESCRIPTION)(notes)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(tasks, name="tasks", description=TASKS_DESCRIPTION)
             mcp.add_tool(habits, name="habits", description=HABITS_DESCRIPTION)
+            mcp.add_tool(notes, name="notes", description=NOTES_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background jobs for productivity module."""
@@ -87,7 +95,7 @@ class ProductivityModule:
         pass
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
-        """GDPR Right to Access: export all tasks, habits, and logs owned by user_id."""
+        """GDPR Right to Access: export all tasks, habits, and notes owned by user_id."""
         if self._deps is None or self._deps.session_factory is None:
             return {}
 
@@ -102,10 +110,14 @@ class ProductivityModule:
             logs_res = await uow.session.execute(select(HabitLog).where(HabitLog.user_id == uid))
             logs_list = logs_res.scalars().all()
 
+            notes_res = await uow.session.execute(select(Note).where(Note.user_id == uid))
+            notes_list = notes_res.scalars().all()
+
             return {
                 "tasks": [t.to_dict() for t in tasks_list],
                 "habits": [h.to_dict() for h in habits_list],
                 "habit_logs": [log.to_dict() for log in logs_list],
+                "notes": [n.to_dict() for n in notes_list],
             }
 
     async def delete_user_data(self, user_id: str) -> None:
@@ -115,6 +127,7 @@ class ProductivityModule:
 
         uid = uuid.UUID(user_id) if isinstance(user_id, str) else user_id
         async with UnitOfWork(self._deps.session_factory) as uow:
+            await uow.session.execute(delete(Note).where(Note.user_id == uid))
             await uow.session.execute(delete(HabitLog).where(HabitLog.user_id == uid))
             await uow.session.execute(delete(Habit).where(Habit.user_id == uid))
             await uow.session.execute(delete(Task).where(Task.user_id == uid))
