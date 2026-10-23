@@ -303,3 +303,26 @@ class FocusResponseData(BaseModel):
     session: FocusSessionData | None = None
     sessions: list[FocusSessionData] = Field(default_factory=list)
     stats: FocusStatsData | None = None
+
+
+class DailyBriefingRequest(BaseModel):
+    """Input payload for the 'daily_briefing' tool."""
+
+    timezone: str = Field(
+        default="UTC",
+        description="User's IANA timezone for calculating today's schedule and deadlines.",
+    )
+
+
+class DailyBriefingData(BaseModel):
+    """Output payload for the 'daily_briefing' tool inside the standard envelope."""
+
+    tasks_due_count: int = 0
+    tasks_due: list[str] = Field(default_factory=list)
+    habits_pending_count: int = 0
+    habits_pending: list[str] = Field(default_factory=list)
+    academics_enabled: bool = False
+    flashcards_due_count: int | None = None
+    study_tasks: list[str] = Field(default_factory=list)
+    study_streak: int | None = None
+    focus_today_completed: int = 0

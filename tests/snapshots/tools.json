@@ -1,5 +1,32 @@
 [
   {
+    "description": "Get a unified spoken summary of your day including tasks, habits, and study goals. Use when the user says 'Give me my daily briefing', 'What does my day look like?', or 'Good morning sahayak'. Do not use for creating individual tasks or habits; use tasks or habits instead.",
+    "name": "daily_briefing",
+    "parameters": {
+      "properties": {
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        }
+      },
+      "title": "daily_briefingArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Manages flashcards and spaced repetition study reviews. Use when the user wants to create, review, grade, or list study flashcards, such as 'Alexa, add a flashcard: capital of Australia is Canberra' or 'Alexa, review my flashcards'. Do not use for taking multiple-choice quizzes; use quiz_start or quiz_answer instead.",
     "name": "flashcards",
     "parameters": {

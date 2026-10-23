@@ -50,6 +50,18 @@ class AcademicsModuleAPI(Protocol):
         """Return structured summary of the user's learning activity over the past 7 days."""
         ...
 
+    async def get_due_flashcard_count(
+        self, user_id: str | uuid.UUID, before: datetime | None = None
+    ) -> int:
+        """Return count of due flashcards for a user on or before the given timestamp."""
+        ...
+
+    async def get_today_study_tasks(
+        self, user_id: str | uuid.UUID, timezone_str: str = "UTC"
+    ) -> list[str]:
+        """Return list of today's study plan task topics for user."""
+        ...
+
 
 class AcademicsAPI:
     """Implementation of AcademicsModuleAPI backed by SQLAlchemy and domain services."""
@@ -145,3 +157,33 @@ class AcademicsAPI:
                 "cards_reviewed": summary.cards_reviewed,
                 "accuracy_pct": summary.accuracy_pct,
             }
+
+    async def get_due_flashcard_count(
+        self, user_id: str | uuid.UUID, before: datetime | None = None
+    ) -> int:
+        """Return count of due flashcards for a user on or before the given timestamp."""
+        uid = self._normalize_uuid(user_id)
+        now = before or self._clock()
+        async with UnitOfWork(self._session_factory) as uow:
+            from sahayak.modules.academics.adapters.flashcards import SQLAlchemyFlashcardRepository
+
+            repo = SQLAlchemyFlashcardRepository(uow.session)
+            return await repo.count_due_cards(uid, before=now)
+
+    async def get_today_study_tasks(
+        self, user_id: str | uuid.UUID, timezone_str: str = "UTC"
+    ) -> list[str]:
+        """Return list of today's study plan task topics for user."""
+        uid = self._normalize_uuid(user_id)
+        today = resolve_current_date(self._clock, user_timezone=timezone_str)
+        async with UnitOfWork(self._session_factory) as uow:
+            from sahayak.modules.academics.adapters.study_plans import (
+                SQLAlchemyStudyPlanRepository,
+            )
+
+            repo = SQLAlchemyStudyPlanRepository(uow.session)
+            active_plan = await repo.get_active_plan(uid, as_of=today)
+            if active_plan is None:
+                return []
+            tasks = await repo.get_tasks_for_date(active_plan.id, target_date=today)
+            return [t.topic for t in tasks if t.done_at is None]

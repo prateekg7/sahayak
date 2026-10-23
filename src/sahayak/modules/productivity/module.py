@@ -47,10 +47,12 @@ class ProductivityModule:
         """Register MCP tools provided by the productivity module."""
         self._deps = deps
         if deps.session_factory is not None:
+            from sahayak.modules.productivity.service.briefing import BriefingService
             from sahayak.modules.productivity.service.focus import FocusService
             from sahayak.modules.productivity.service.habits import HabitService
             from sahayak.modules.productivity.service.notes import NoteService
             from sahayak.modules.productivity.service.tasks import TaskService
+            from sahayak.modules.productivity.tools.briefing import set_briefing_service
             from sahayak.modules.productivity.tools.focus import set_focus_service
             from sahayak.modules.productivity.tools.habits import set_habit_service
             from sahayak.modules.productivity.tools.notes import set_note_service
@@ -69,6 +71,23 @@ class ProductivityModule:
             focus_service = FocusService(session_factory=deps.session_factory, clock=clock_fn)
             set_focus_service(focus_service)
 
+            def _get_academics_api() -> Any:
+                from sahayak.core.module import get_registry
+
+                mod = get_registry().get("academics")
+                return getattr(mod, "api", None) if mod is not None else None
+
+            briefing_service = BriefingService(
+                session_factory=deps.session_factory,
+                academics_api_getter=_get_academics_api,
+                clock=clock_fn,
+            )
+            set_briefing_service(briefing_service)
+
+        from sahayak.modules.productivity.tools.briefing import (
+            DAILY_BRIEFING_DESCRIPTION,
+            daily_briefing,
+        )
         from sahayak.modules.productivity.tools.focus import FOCUS_TIMER_DESCRIPTION, focus_timer
         from sahayak.modules.productivity.tools.habits import HABITS_DESCRIPTION, habits
         from sahayak.modules.productivity.tools.notes import NOTES_DESCRIPTION, notes
@@ -80,11 +99,17 @@ class ProductivityModule:
             tool_decorator(name="habits", description=HABITS_DESCRIPTION)(habits)
             tool_decorator(name="notes", description=NOTES_DESCRIPTION)(notes)
             tool_decorator(name="focus_timer", description=FOCUS_TIMER_DESCRIPTION)(focus_timer)
+            tool_decorator(name="daily_briefing", description=DAILY_BRIEFING_DESCRIPTION)(
+                daily_briefing
+            )
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(tasks, name="tasks", description=TASKS_DESCRIPTION)
             mcp.add_tool(habits, name="habits", description=HABITS_DESCRIPTION)
             mcp.add_tool(notes, name="notes", description=NOTES_DESCRIPTION)
             mcp.add_tool(focus_timer, name="focus_timer", description=FOCUS_TIMER_DESCRIPTION)
+            mcp.add_tool(
+                daily_briefing, name="daily_briefing", description=DAILY_BRIEFING_DESCRIPTION
+            )
 
     def register_jobs(self, worker: Any) -> None:
         """Register background jobs for productivity module."""

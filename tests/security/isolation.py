@@ -548,3 +548,42 @@ register_isolation_spec(
         custom_isolation_check=_focus_timer_cross_user_isolation,
     )
 )
+
+
+async def _daily_briefing_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A creates a task due today
+    res_a_task = await session_a.call_tool(
+        "tasks",
+        {
+            "action": "create",
+            "title": "Private briefing task for User A",
+            "due_date": "today",
+        },
+    )
+    data_a_task = json.loads(getattr(res_a_task.content[0], "text", "{}"))
+    assert data_a_task.get("ok") is True
+
+    # User A daily briefing includes the task
+    res_a_brief = await session_a.call_tool("daily_briefing", {})
+    data_a_brief = json.loads(getattr(res_a_brief.content[0], "text", "{}"))
+    assert data_a_brief.get("ok") is True
+    assert data_a_brief.get("data", {}).get("tasks_due_count", 0) >= 1
+
+    # User B daily briefing does NOT include User A's task
+    res_b_brief = await session_b.call_tool("daily_briefing", {})
+    data_b_brief = json.loads(getattr(res_b_brief.content[0], "text", "{}"))
+    assert data_b_brief.get("ok") is True
+    b_tasks = data_b_brief.get("data", {}).get("tasks_due", [])
+    assert "Private briefing task for User A" not in b_tasks
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="daily_briefing",
+        allows_anonymous=False,
+        sample_args={},
+        custom_isolation_check=_daily_briefing_cross_user_isolation,
+    )
+)

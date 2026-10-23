@@ -220,3 +220,23 @@ class FocusSessionRepositoryPort(Protocol):
     ) -> tuple[int, int, int]:
         """Get (total_completed, total_minutes_focused, today_completed)."""
         ...
+
+
+class AcademicsAPIPort(Protocol):
+    """Structural protocol for invoking Academics cross-module API without AST import."""
+
+    async def get_streak(self, user_id: str | uuid.UUID, timezone_str: str = "UTC") -> int:
+        """Return the current consecutive daily study streak count for a user."""
+        ...
+
+    async def get_due_flashcard_count(
+        self, user_id: str | uuid.UUID, before: datetime | None = None
+    ) -> int:
+        """Return count of due flashcards for a user on or before the given timestamp."""
+        ...
+
+    async def get_today_study_tasks(
+        self, user_id: str | uuid.UUID, timezone_str: str = "UTC"
+    ) -> list[str]:
+        """Return list of today's study plan task topics for user."""
+        ...
