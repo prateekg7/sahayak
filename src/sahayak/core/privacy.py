@@ -134,7 +134,9 @@ class PrivacyCoordinator:
         # 1. Instruct each module to delete user data
         for mod in self._registry.modules.values():
             try:
-                mod.delete_user_data(str(uid))
+                res = mod.delete_user_data(str(uid))
+                if inspect.isawaitable(res):
+                    await res
             except Exception as exc:
                 logger.error("module_delete_failed module=%s user_id=%s: %s", mod.name, uid, exc)
                 raise

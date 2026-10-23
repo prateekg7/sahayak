@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 QUIZ_START_DESCRIPTION = (
     "Starts an interactive multiple-choice quiz on any academic topic. "
     "Use when the user asks to start a quiz or be tested, such as "
-    "'Alexa, quiz me on photosynthesis'. "
+    "'Alexa, quiz me on photosynthesis' or 'Alexa, quiz me on my weak topics'. "
     "Do not use for answering questions in an active quiz; use quiz_answer instead."
 )
 

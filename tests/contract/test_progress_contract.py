@@ -72,6 +72,31 @@ async def test_progress_report_mcp_contract_full_lifecycle(
     service = ProgressService(session_factory=session_factory)
     set_progress_service(service)
 
+    # Seed questions for isolation check which calls quiz_start on General Science
+    from sahayak.core.db.session import UnitOfWork
+    from sahayak.modules.academics.adapters.question_bank import SQLAlchemyQuestionBank
+    from sahayak.modules.academics.models import DifficultyLevel, Question
+
+    async with UnitOfWork(session_factory) as uow:
+        bank = SQLAlchemyQuestionBank(uow.session)
+        topic = await bank.get_or_create_topic("general-science", "General Science")
+        seeded = [
+            Question(
+                topic_id=topic.id,
+                difficulty=DifficultyLevel.MEDIUM,
+                stem=f"General science question {i}?",
+                options={"A": "Alpha", "B": "Beta", "C": "Gamma", "D": "Delta"},
+                correct_key="A",
+                explanation="General science fact",
+                content_hash=f"gen_sci_prog_{uuid.uuid4().hex[:12]}",
+                prompt_version="v1",
+                model="test-model",
+            )
+            for i in range(3)
+        ]
+        await bank.insert_questions(seeded)
+        await uow.session.commit()
+
     # Configure JWT validator with mock JWKS
     jwk_dict = dict(json.loads(RSAAlgorithm.to_jwk(contract_rsa_key.public_key())))
     jwk_dict["kid"] = "sec-test-key"

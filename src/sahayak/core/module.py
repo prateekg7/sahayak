@@ -94,18 +94,18 @@ class Module(Protocol):
         """
         ...
 
-    def export_user_data(self, user_id: str) -> dict[str, Any]:
+    def export_user_data(self, user_id: str) -> Any:
         """Return all data owned by the given user for privacy export.
 
         Args:
             user_id: The platform user identifier.
 
         Returns:
-            A JSON-serializable dictionary keyed by data category.
+            A JSON-serializable dictionary or coroutine yielding one.
         """
         ...
 
-    def delete_user_data(self, user_id: str) -> None:
+    def delete_user_data(self, user_id: str) -> Any:
         """Permanently erase all data owned by the given user.
 
         Args:

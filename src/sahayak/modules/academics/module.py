@@ -16,6 +16,7 @@ from sahayak.modules.academics.models import (
     Deck,
     PlanTask,
     Quiz,
+    QuizQuestion,
     StudyPlan,
     TopicStats,
 )
@@ -27,6 +28,7 @@ class AcademicsModule:
     def __init__(self) -> None:
         self._deps: Deps | None = None
         self._progress_service: Any = None
+        self._api: Any = None
 
     @property
     def name(self) -> str:
@@ -35,6 +37,21 @@ class AcademicsModule:
     @property
     def version(self) -> str:
         return "0.1.0"
+
+    @property
+    def api(self) -> Any:
+        """Cross-module API instance for querying streak, weak topics, and progress."""
+        if self._api is None:
+            if self._deps is None or self._deps.session_factory is None:
+                raise RuntimeError("AcademicsModule has not been initialized with dependencies")
+            from sahayak.modules.academics.api import AcademicsAPI
+
+            clock_fn = getattr(self._deps, "clock", None)
+            self._api = AcademicsAPI(
+                session_factory=self._deps.session_factory,
+                clock=clock_fn,
+            )
+        return self._api
 
     def register_tools(self, mcp: Any, deps: Deps) -> None:
         """Register MCP tools provided by the academics module."""
@@ -242,6 +259,22 @@ class AcademicsModule:
             )
             activities = list(activity_res.scalars().all())
 
+            # 6. Plan Tasks
+            tasks_res = await uow.session.execute(
+                select(PlanTask).where(
+                    PlanTask.plan_id.in_(select(StudyPlan.id).where(StudyPlan.user_id == uid))
+                )
+            )
+            tasks = list(tasks_res.scalars().all())
+
+            # 7. Quiz Questions
+            qq_res = await uow.session.execute(
+                select(QuizQuestion).where(
+                    QuizQuestion.quiz_id.in_(select(Quiz.id).where(Quiz.user_id == uid))
+                )
+            )
+            quiz_questions = list(qq_res.scalars().all())
+
             return {
                 "decks": [
                     {"id": str(d.id), "name": d.name, "created_at": d.created_at.isoformat()}
@@ -268,6 +301,16 @@ class AcademicsModule:
                     }
                     for p in plans
                 ],
+                "plan_tasks": [
+                    {
+                        "plan_id": str(t.plan_id),
+                        "date": t.date.isoformat(),
+                        "topic": t.topic,
+                        "minutes": t.minutes,
+                        "done_at": t.done_at.isoformat() if t.done_at else None,
+                    }
+                    for t in tasks
+                ],
                 "topic_stats": [
                     {
                         "topic_id": str(s.topic_id),
@@ -289,6 +332,17 @@ class AcademicsModule:
                     }
                     for q in quizzes
                 ],
+                "quiz_questions": [
+                    {
+                        "quiz_id": str(qq.quiz_id),
+                        "position": qq.position,
+                        "question_id": str(qq.question_id),
+                        "answered_at": qq.answered_at.isoformat() if qq.answered_at else None,
+                        "selected_key": qq.selected_key,
+                        "is_correct": qq.is_correct,
+                    }
+                    for qq in quiz_questions
+                ],
                 "activity_log": [
                     {
                         "id": str(a.id),
@@ -307,17 +361,28 @@ class AcademicsModule:
 
         uid = uuid.UUID(user_id)
         async with UnitOfWork(self._deps.session_factory) as uow:
-            # Cascading deletes clean up associated cards and plan tasks automatically
-            await uow.session.execute(delete(Card).where(Card.user_id == uid))
-            await uow.session.execute(delete(Deck).where(Deck.user_id == uid))
+            # 1. Delete quiz questions then quizzes
+            await uow.session.execute(
+                delete(QuizQuestion).where(
+                    QuizQuestion.quiz_id.in_(select(Quiz.id).where(Quiz.user_id == uid))
+                )
+            )
+            await uow.session.execute(delete(Quiz).where(Quiz.user_id == uid))
+
+            # 2. Delete plan tasks then study plans
             await uow.session.execute(
                 delete(PlanTask).where(
                     PlanTask.plan_id.in_(select(StudyPlan.id).where(StudyPlan.user_id == uid))
                 )
             )
             await uow.session.execute(delete(StudyPlan).where(StudyPlan.user_id == uid))
+
+            # 3. Delete cards then decks
+            await uow.session.execute(delete(Card).where(Card.user_id == uid))
+            await uow.session.execute(delete(Deck).where(Deck.user_id == uid))
+
+            # 4. Delete topic stats and activity logs
             await uow.session.execute(delete(TopicStats).where(TopicStats.user_id == uid))
-            await uow.session.execute(delete(Quiz).where(Quiz.user_id == uid))
             await uow.session.execute(delete(ActivityLog).where(ActivityLog.user_id == uid))
             await uow.session.commit()
 
