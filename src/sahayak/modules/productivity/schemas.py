@@ -96,3 +96,69 @@ class TasksResponseData(BaseModel):
     task: TaskData | None = None
     tasks: list[TaskData] = Field(default_factory=list)
     count: int = 0
+
+
+class HabitAction(str, Enum):
+    """Supported habit management actions."""
+
+    CREATE = "create"
+    LOG = "log"
+    STATUS = "status"
+    LIST = "list"
+
+
+class HabitsRequest(BaseModel):
+    """Input payload for the 'habits' MCP tool."""
+
+    action: HabitAction = Field(
+        ...,
+        description="Habit management action: 'create', 'log', 'status', or 'list'.",
+    )
+    name: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Habit name (e.g. 'morning meditation', 'read 20 pages').",
+    )
+    habit_id: str | None = Field(
+        default=None,
+        description="Optional habit UUID.",
+    )
+    frequency: str = Field(
+        default="daily",
+        pattern=r"^(daily|weekly)$",
+        description="Target frequency: 'daily' or 'weekly'.",
+    )
+    date: str | None = Field(
+        default=None,
+        description="Optional completion date (YYYY-MM-DD), defaults to today.",
+    )
+    timezone: str = Field(
+        default="UTC",
+        description="User's IANA timezone (e.g. 'America/New_York', 'Asia/Kolkata').",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional idempotency key for mutations.",
+    )
+
+
+class HabitData(BaseModel):
+    """Representation of an individual habit."""
+
+    id: str
+    user_id: str
+    name: str
+    target_frequency: str
+    streak_current: int = 0
+    streak_longest: int = 0
+    last_logged_date: str | None = None
+    created_at: str | None = None
+
+
+class HabitsResponseData(BaseModel):
+    """Output payload for the 'habits' tool inside the standard envelope."""
+
+    action: str
+    habit: HabitData | None = None
+    habits: list[HabitData] = Field(default_factory=list)
+    count: int = 0

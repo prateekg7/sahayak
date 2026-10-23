@@ -87,6 +87,81 @@
     }
   },
   {
+    "description": "Track daily habits, log completions, and monitor streaks over time. Use when the user wants to manage recurring routines or check streaks, such as 'Alexa, log meditation', 'Track a habit: read 20 pages', or 'What is my habit streak?'. Do not use for one-time to-do list tasks or deadlines; use the tasks tool instead.",
+    "name": "habits",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "frequency": {
+          "default": "daily",
+          "title": "Frequency",
+          "type": "string"
+        },
+        "habit_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Habit Id"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "habitsArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Inspect academic quiz performance, study streaks, weak topics, and weekly summaries. Use when the student asks 'How am I doing?', 'What are my weak topics?', 'What is my streak?', or 'How did I do this week?'. Do not use for starting quizzes or scheduling study plans; use 'quiz_start' or 'study_plan' instead.",
     "name": "progress_report",
     "parameters": {

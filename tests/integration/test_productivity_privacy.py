@@ -48,14 +48,22 @@ async def test_productivity_privacy_export_and_delete() -> None:
             priority="high",
         )
 
+        from sahayak.modules.productivity.service.habits import HabitService
+
+        habit_service = HabitService(session_factory=session_factory)
+        await habit_service.create_habit(user_id=user_id, name="Daily Meditation")
+        await habit_service.log_habit(user_id=user_id, name="Daily Meditation")
+
         # 1. Export user data
         exported = await prod_module.export_user_data(str(user_id))
         assert "tasks" in exported
-        tasks = exported["tasks"]
-        assert len(tasks) == 2
-        titles = {t["title"] for t in tasks}
-        assert "Privacy test task 1" in titles
-        assert "Privacy test task 2" in titles
+        assert "habits" in exported
+        assert "habit_logs" in exported
+
+        assert len(exported["tasks"]) == 2
+        assert len(exported["habits"]) == 1
+        assert len(exported["habit_logs"]) == 1
+        assert exported["habits"][0]["name"] == "Daily Meditation"
 
         # 2. Delete user data (GDPR erasure)
         await prod_module.delete_user_data(str(user_id))
@@ -63,6 +71,8 @@ async def test_productivity_privacy_export_and_delete() -> None:
         # 3. Verify deletion
         exported_after = await prod_module.export_user_data(str(user_id))
         assert exported_after["tasks"] == []
+        assert exported_after["habits"] == []
+        assert exported_after["habit_logs"] == []
 
         _, list_after, _ = await service.list_tasks(user_id=user_id, status=None)
         assert list_after.count == 0

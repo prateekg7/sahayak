@@ -408,3 +408,44 @@ register_isolation_spec(
         custom_isolation_check=_tasks_cross_user_isolation,
     )
 )
+
+
+async def _habits_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A creates a habit
+    res_a = await session_a.call_tool(
+        "habits",
+        {
+            "action": "create",
+            "name": "User A Private Meditation",
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    habit_id = data_a.get("data", {}).get("habit", {}).get("id")
+    assert habit_id
+
+    # User B lists habits - User A's habit must not appear
+    res_b_list = await session_b.call_tool("habits", {"action": "list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_habit_ids = [h.get("id") for h in data_b_list.get("data", {}).get("habits", [])]
+    assert habit_id not in b_habit_ids
+
+    # User B attempts to log User A's habit - must fail with not_found
+    res_b_log = await session_b.call_tool(
+        "habits",
+        {"action": "log", "habit_id": habit_id},
+    )
+    data_b_log = json.loads(getattr(res_b_log.content[0], "text", "{}"))
+    assert data_b_log.get("ok") is False
+    assert data_b_log.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="habits",
+        allows_anonymous=False,
+        sample_args={"action": "list"},
+        custom_isolation_check=_habits_cross_user_isolation,
+    )
+)

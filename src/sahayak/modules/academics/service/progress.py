@@ -151,6 +151,45 @@ class ProgressService:
             )
             return True
 
+    async def handle_habit_completed(self, event: DomainEvent) -> bool:
+        """Handle 'habit.completed' event to count study habits toward streak summaries.
+
+        Returns:
+            True if event was processed, False if already processed (idempotent).
+        """
+        payload = event.payload
+        raw_uid = payload.get("user_id")
+        if not raw_uid:
+            return True
+
+        user_id = uuid.UUID(raw_uid)
+        habit_name = str(payload.get("name", "")).lower()
+        study_keywords = (
+            "study",
+            "read",
+            "math",
+            "science",
+            "homework",
+            "quiz",
+            "revision",
+            "academic",
+            "exam",
+            "learn",
+        )
+        if not any(kw in habit_name for kw in study_keywords):
+            return True
+
+        async with UnitOfWork(self._session_factory) as uow:
+            progress_repo: ProgressPort = SQLAlchemyProgressRepository(uow.session)
+            recorded = await progress_repo.record_activity(
+                user_id=user_id,
+                activity_type="study_habit",
+                event_id=event.id,
+                created_at=event.created_at,
+                meta=payload,
+            )
+            return recorded
+
     # ---------------------------------------------------------------------------
     # Progress Report Query
     # ---------------------------------------------------------------------------

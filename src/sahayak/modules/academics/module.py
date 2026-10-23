@@ -224,6 +224,8 @@ class AcademicsModule:
             await self._progress_service.handle_quiz_finished(event)
         elif event.type == "academics.flashcard.graded":
             await self._progress_service.handle_flashcard_graded(event)
+        elif event.type == "habit.completed":
+            await self._progress_service.handle_habit_completed(event)
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
         """Return all academics data owned by the given user for privacy export."""
