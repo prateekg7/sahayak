@@ -1,0 +1,127 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Service Availability (SLO Target: 99.9%)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(sahayak_tool_calls_total{outcome=\"success\"}[30d])) / sum(rate(sahayak_tool_calls_total[30d])) * 100",
+          "legendFormat": "30-day Availability %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 99.5 },
+              { "color": "green", "value": 99.9 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Total Tool Invocations Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (tool) (rate(sahayak_tool_calls_total[1m]))",
+          "legendFormat": "{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Per-Tool Latency (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (tool, le) (rate(sahayak_tool_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{tool}} p95"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 0.8 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Per-Tool Error Rate (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "sum by (tool) (rate(sahayak_tool_calls_total{outcome!=\"success\"}[5m])) / sum by (tool) (rate(sahayak_tool_calls_total[5m])) * 100",
+          "legendFormat": "{{tool}} error %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1.0 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "LLM Provider Calls & Fallbacks",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 10 },
+      "targets": [
+        {
+          "expr": "sum by (provider, outcome) (rate(sahayak_llm_requests_total[1m]))",
+          "legendFormat": "{{provider}} ({{outcome}})"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Background Worker Job Executions",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 10 },
+      "targets": [
+        {
+          "expr": "sum by (job, outcome) (rate(sahayak_job_executions_total[1m]))",
+          "legendFormat": "{{job}} ({{outcome}})"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["sahayak", "voice", "mcp", "alexa"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "utc",
+  "title": "Sahayak Production Operations Dashboard"
+}
