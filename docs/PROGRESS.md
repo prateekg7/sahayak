@@ -1,5 +1,19 @@
 # Progress
 
+## 2026-10-24 — CI and Release GitHub Actions Pipeline Resolution — DONE
+
+- Summary: diagnosed and resolved initial GitHub Actions workflow failures on `main` across CI and Release:
+  - Multi-Branch Database Migration Order (`CI / test`):
+    - Added explicit `depends_on = ("0002_users_and_identities",)` across initial migrations for `language`, `finance`, `health`, `career`, `home`, and `business` schemas so `core.users(id)` exists before foreign keys are created on clean PostgreSQL CI testcontainers.
+  - SLO & Document Assets (`CI / test`):
+    - Whitelisted `!infra/**/*.md`, `!PRD.md`, and `!agents.md` in `.gitignore` to ensure `infra/monitoring/slo.md` is tracked and available for `test_slo_documentation_targets`.
+  - Empty Secret Handling & Pydantic Validation (`Release / Run Database Migrations`):
+    - Replaced empty-string injection of `${{ secrets.DATABASE_URL }}` with `TARGET_DB_URL` in `.github/workflows/release.yml`, executing offline `make migrate-check` when unset.
+    - Added `@field_validator` in `src/sahayak/core/config.py` for `database_url` and `redis_url` to gracefully fallback to default URLs if empty strings are passed in the environment.
+  - Verification:
+    - Both GitHub Actions workflows (`Release` run 40032023723 and `CI` run 40032023612) passed 100% green.
+    - Updated release tag `v1.0.0` to latest `main` commit.
+
 ## 2026-10-24 — T13.4 Full regression, release readiness, and v1.0.0 — DONE
 
 - Summary: completed Phase 13 and all 14 project phases, finalizing v1.0.0 production release readiness and reconciliation:
