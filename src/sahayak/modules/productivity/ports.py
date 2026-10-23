@@ -6,7 +6,7 @@ import uuid
 from datetime import date, datetime
 from typing import Protocol
 
-from sahayak.modules.productivity.models import Habit, HabitLog, Note, Task
+from sahayak.modules.productivity.models import FocusSession, Habit, HabitLog, Note, Task
 
 
 class TaskRepositoryPort(Protocol):
@@ -175,4 +175,48 @@ class NoteRepositoryPort(Protocol):
 
     async def delete_note(self, user_id: uuid.UUID, note_id: uuid.UUID) -> bool:
         """Delete note by ID, scoped by user_id."""
+        ...
+
+
+class FocusSessionRepositoryPort(Protocol):
+    """Repository port interface for focus timer sessions."""
+
+    async def create_session(
+        self,
+        user_id: uuid.UUID,
+        duration_minutes: int,
+        started_at: datetime,
+        planned_end_at: datetime,
+        task_label: str | None = None,
+    ) -> FocusSession:
+        """Create and persist a new focus session."""
+        ...
+
+    async def get_active_session(self, user_id: uuid.UUID) -> FocusSession | None:
+        """Get currently active focus session for user, if any."""
+        ...
+
+    async def update_session_status(
+        self,
+        session_id: uuid.UUID,
+        status: str,
+        actual_end_at: datetime | None = None,
+    ) -> FocusSession | None:
+        """Update session status and optional actual completion timestamp."""
+        ...
+
+    async def list_sessions(
+        self,
+        user_id: uuid.UUID,
+        limit: int = 10,
+    ) -> list[FocusSession]:
+        """List recent focus sessions for user."""
+        ...
+
+    async def get_session_stats(
+        self,
+        user_id: uuid.UUID,
+        since_today: datetime,
+    ) -> tuple[int, int, int]:
+        """Get (total_completed, total_minutes_focused, today_completed)."""
         ...

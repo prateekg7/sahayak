@@ -228,3 +228,78 @@ class NotesResponseData(BaseModel):
     notes: list[NoteData] = Field(default_factory=list)
     count: int = 0
     has_more: bool = False
+
+
+class FocusAction(str, Enum):
+    """Supported focus timer actions."""
+
+    START = "start"
+    STATUS = "status"
+    STOP = "stop"
+    HISTORY = "history"
+
+
+class FocusRequest(BaseModel):
+    """Input payload for the 'focus_timer' MCP tool."""
+
+    action: FocusAction = Field(
+        ...,
+        description="Focus timer action: 'start', 'status', 'stop', or 'history'.",
+    )
+    duration_minutes: int = Field(
+        default=25,
+        ge=1,
+        le=180,
+        description="Duration of the focus session in minutes (1-180, default 25).",
+    )
+    task_label: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Optional label describing the task or study goal.",
+    )
+    limit: int = Field(
+        default=10,
+        ge=1,
+        le=50,
+        description="Maximum session history records to return.",
+    )
+    timezone: str = Field(
+        default="UTC",
+        description="User's IANA timezone for calculating today's boundary.",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional idempotency key for mutations.",
+    )
+
+
+class FocusSessionData(BaseModel):
+    """Representation of an individual focus session."""
+
+    id: str
+    user_id: str
+    task_label: str | None = None
+    duration_minutes: int
+    started_at: str | None = None
+    planned_end_at: str | None = None
+    actual_end_at: str | None = None
+    status: str
+    remaining_seconds: int = 0
+    created_at: str | None = None
+
+
+class FocusStatsData(BaseModel):
+    """Aggregated focus session metrics."""
+
+    total_completed: int = 0
+    total_minutes_focused: int = 0
+    today_completed: int = 0
+
+
+class FocusResponseData(BaseModel):
+    """Output payload for the 'focus_timer' tool inside the standard envelope."""
+
+    action: str
+    session: FocusSessionData | None = None
+    sessions: list[FocusSessionData] = Field(default_factory=list)
+    stats: FocusStatsData | None = None

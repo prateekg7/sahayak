@@ -494,3 +494,57 @@ register_isolation_spec(
         custom_isolation_check=_notes_cross_user_isolation,
     )
 )
+
+
+async def _focus_timer_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A starts a 25 minute focus session
+    res_a = await session_a.call_tool(
+        "focus_timer",
+        {
+            "action": "start",
+            "duration_minutes": 25,
+            "task_label": "User A Private Study",
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    session_id = data_a.get("data", {}).get("session", {}).get("id")
+    assert session_id
+
+    # User B checks status - User B must have no active session
+    res_b_stat = await session_b.call_tool(
+        "focus_timer",
+        {"action": "status"},
+    )
+    data_b_stat = json.loads(getattr(res_b_stat.content[0], "text", "{}"))
+    assert data_b_stat.get("ok") is True
+    assert "not have an active focus session" in data_b_stat.get("spoken_summary", "")
+
+    # User B attempts to stop session - must fail with not_found
+    res_b_stop = await session_b.call_tool(
+        "focus_timer",
+        {"action": "stop"},
+    )
+    data_b_stop = json.loads(getattr(res_b_stop.content[0], "text", "{}"))
+    assert data_b_stop.get("ok") is False
+    assert data_b_stop.get("error_code") == "not_found"
+
+    # User A stops their own session
+    res_a_stop = await session_a.call_tool(
+        "focus_timer",
+        {"action": "stop"},
+    )
+    data_a_stop = json.loads(getattr(res_a_stop.content[0], "text", "{}"))
+    assert data_a_stop.get("ok") is True
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="focus_timer",
+        allows_anonymous=False,
+        sample_args={"action": "status"},
+        custom_isolation_check=_focus_timer_cross_user_isolation,
+    )
+)

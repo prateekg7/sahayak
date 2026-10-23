@@ -48,6 +48,7 @@ async def test_productivity_privacy_export_and_delete() -> None:
             priority="high",
         )
 
+        from sahayak.modules.productivity.service.focus import FocusService
         from sahayak.modules.productivity.service.habits import HabitService
         from sahayak.modules.productivity.service.notes import NoteService
 
@@ -58,19 +59,27 @@ async def test_productivity_privacy_export_and_delete() -> None:
         note_service = NoteService(session_factory=session_factory)
         await note_service.add_note(user_id=user_id, content="Secret privacy note")
 
+        focus_service = FocusService(session_factory=session_factory)
+        await focus_service.start_session(
+            user_id=user_id, duration_minutes=25, task_label="Privacy study"
+        )
+
         # 1. Export user data
         exported = await prod_module.export_user_data(str(user_id))
         assert "tasks" in exported
         assert "habits" in exported
         assert "habit_logs" in exported
         assert "notes" in exported
+        assert "focus_sessions" in exported
 
         assert len(exported["tasks"]) == 2
         assert len(exported["habits"]) == 1
         assert len(exported["habit_logs"]) == 1
         assert len(exported["notes"]) == 1
+        assert len(exported["focus_sessions"]) == 1
         assert exported["habits"][0]["name"] == "Daily Meditation"
         assert exported["notes"][0]["content"] == "Secret privacy note"
+        assert exported["focus_sessions"][0]["task_label"] == "Privacy study"
 
         # 2. Delete user data (GDPR erasure)
         await prod_module.delete_user_data(str(user_id))
@@ -81,6 +90,7 @@ async def test_productivity_privacy_export_and_delete() -> None:
         assert exported_after["habits"] == []
         assert exported_after["habit_logs"] == []
         assert exported_after["notes"] == []
+        assert exported_after["focus_sessions"] == []
 
         _, list_after, _ = await service.list_tasks(user_id=user_id, status=None)
         assert list_after.count == 0

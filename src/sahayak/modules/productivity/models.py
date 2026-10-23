@@ -198,3 +198,47 @@ class Note(Base):
             "tags": list(self.tags) if self.tags else [],
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+
+class FocusSession(Base):
+    """Focus timer session record in productivity.focus_sessions table."""
+
+    __tablename__ = "focus_sessions"
+    __table_args__ = (
+        Index("ix_productivity_focus_sessions_user_status", "user_id", "status"),
+        Index("ix_productivity_focus_sessions_user_started", "user_id", "started_at"),
+        {"schema": "productivity"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    task_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=25)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    planned_end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    actual_end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="active", server_default="active"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now()
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert focus session to dictionary representation."""
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "task_label": self.task_label,
+            "duration_minutes": self.duration_minutes,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "planned_end_at": self.planned_end_at.isoformat() if self.planned_end_at else None,
+            "actual_end_at": self.actual_end_at.isoformat() if self.actual_end_at else None,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
