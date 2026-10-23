@@ -113,3 +113,83 @@ class HealthLogResponseData(BaseModel):
     entries: list[HealthEntryData] = Field(default_factory=list)
     count: int = 0
     disclaimer: str = HEALTH_DISCLAIMER
+
+
+class HealthSummaryAction(str, Enum):
+    """Supported health summary and medicine actions."""
+
+    TODAY = "today"
+    WEEK = "week"
+    MEDICINES_DUE = "medicines_due"
+    MARK_TAKEN = "mark_taken"
+    ADD_MEDICINE = "add_medicine"
+    LIST_MEDICINES = "list_medicines"
+
+
+class HealthSummaryRequest(BaseModel):
+    """Input payload for the 'health_summary' MCP tool."""
+
+    action: HealthSummaryAction = Field(
+        default=HealthSummaryAction.TODAY,
+        description="Action: 'today', 'week', 'medicines_due', 'mark_taken', 'add_medicine'.",
+    )
+
+    medicine_name: str | None = Field(
+        default=None,
+        description="Medicine name for tracking, e.g. 'Vitamin D' or 'Metformin'.",
+    )
+    scheduled_time: str | None = Field(
+        default=None,
+        description="Scheduled dose time in HH:MM format, e.g. '09:00'.",
+    )
+    dosage_text: str | None = Field(
+        default="1 dose",
+        description="User-defined dose note, e.g. '1 tablet'.",
+    )
+    times: list[str] | None = Field(
+        default=None,
+        description="List of daily times in HH:MM, e.g. ['09:00', '21:00'].",
+    )
+    days: list[str] | None = Field(
+        default=None,
+        description="Optional list of active weekdays, e.g. ['mon', 'wed', 'fri'].",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional idempotency key for mutations.",
+    )
+
+
+class MedicineDueData(BaseModel):
+    """Item representing a scheduled medicine dose for today."""
+
+    id: str
+    medicine_id: str
+    name: str
+    dosage_text: str
+    scheduled_date: str
+    scheduled_time: str
+    status: str
+    taken_at: str | None = None
+
+
+class MedicineScheduleData(BaseModel):
+    """Item representing a configured medicine schedule."""
+
+    id: str
+    name: str
+    dosage_text: str
+    times: list[str]
+    days: list[str] | None = None
+    is_active: bool = True
+
+
+class HealthSummaryResponseData(BaseModel):
+    """Output payload for the 'health_summary' MCP tool."""
+
+    action: str
+    period: str | None = None
+    summary: dict[str, Any] = Field(default_factory=dict)
+    medicines_due: list[MedicineDueData] = Field(default_factory=list)
+    medicines: list[MedicineScheduleData] = Field(default_factory=list)
+    disclaimer: str = HEALTH_DISCLAIMER

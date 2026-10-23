@@ -1,4 +1,4 @@
-"""Integration tests for health module GDPR privacy export and deletion (T7.1)."""
+"""Integration tests for health module GDPR privacy export and deletion (T7.1, T7.2)."""
 
 from __future__ import annotations
 
@@ -11,8 +11,14 @@ from sahayak.core.config import get_settings
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps
 from sahayak.modules.health.module import HealthModule
-from sahayak.modules.health.schemas import HealthLogAction, HealthLogRequest
+from sahayak.modules.health.schemas import (
+    HealthLogAction,
+    HealthLogRequest,
+    HealthSummaryAction,
+    HealthSummaryRequest,
+)
 from sahayak.modules.health.service.health_log import HealthLogService
+from sahayak.modules.health.service.health_summary import HealthSummaryService
 from sahayak.shared.users.models import User
 
 
@@ -27,7 +33,8 @@ async def test_health_privacy_export_and_delete() -> None:
     deps = Deps(session_factory=session_factory)
     health_module._deps = deps
 
-    service = HealthLogService(session_factory=session_factory)
+    log_service = HealthLogService(session_factory=session_factory)
+    summary_service = HealthSummaryService(session_factory=session_factory)
 
     try:
         # Seed user
@@ -36,7 +43,7 @@ async def test_health_privacy_export_and_delete() -> None:
             await uow.session.flush()
 
         # Seed health entries
-        await service.execute(
+        await log_service.execute(
             user_id,
             HealthLogRequest(
                 action=HealthLogAction.LOG,
@@ -45,7 +52,7 @@ async def test_health_privacy_export_and_delete() -> None:
                 unit="ml",
             ),
         )
-        await service.execute(
+        await log_service.execute(
             user_id,
             HealthLogRequest(
                 action=HealthLogAction.LOG,
@@ -55,7 +62,7 @@ async def test_health_privacy_export_and_delete() -> None:
                 calories=300,
             ),
         )
-        await service.execute(
+        await log_service.execute(
             user_id,
             HealthLogRequest(
                 action=HealthLogAction.LOG,
@@ -65,20 +72,51 @@ async def test_health_privacy_export_and_delete() -> None:
             ),
         )
 
+        # Seed medicine and dose
+        await summary_service.execute(
+            user_id,
+            HealthSummaryRequest(
+                action=HealthSummaryAction.ADD_MEDICINE,
+                medicine_name="Daily Multi",
+                times=["09:00"],
+            ),
+        )
+        await summary_service.execute(
+            user_id,
+            HealthSummaryRequest(
+                action=HealthSummaryAction.MARK_TAKEN,
+                medicine_name="Daily Multi",
+                scheduled_time="09:00",
+            ),
+        )
+
         # 1. Export user data
         exported = await health_module.export_user_data(str(user_id))
         assert "health_entries" in exported
+        assert "health_medicines" in exported
+        assert "health_medicine_doses" in exported
+
         entries = exported["health_entries"]
         assert len(entries) == 3
         kinds = {e["kind"] for e in entries}
         assert kinds == {"water", "meal", "sleep"}
 
+        meds = exported["health_medicines"]
+        assert len(meds) == 1
+        assert meds[0]["name"] == "Daily Multi"
+
+        doses = exported["health_medicine_doses"]
+        assert len(doses) == 1
+        assert doses[0]["status"] == "taken"
+
         # 2. Delete user data (GDPR purge)
         await health_module.delete_user_data(str(user_id))
 
-        # 3. Export after delete must be empty
+        # 3. Export after delete must be empty across all tables
         exported_after = await health_module.export_user_data(str(user_id))
         assert len(exported_after["health_entries"]) == 0
+        assert len(exported_after["health_medicines"]) == 0
+        assert len(exported_after["health_medicine_doses"]) == 0
 
     finally:
         await engine.dispose()

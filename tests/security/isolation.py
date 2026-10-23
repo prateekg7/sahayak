@@ -783,3 +783,42 @@ register_isolation_spec(
         custom_isolation_check=_health_log_cross_user_isolation,
     )
 )
+
+
+async def _health_summary_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    med_name = f"Private Med {uuid.uuid4().hex[:6]}"
+    # User A adds medicine
+    res_a = await session_a.call_tool(
+        "health_summary",
+        {"action": "add_medicine", "medicine_name": med_name, "times": ["08:00"]},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+
+    # User B lists medicines - User A's medicine must not appear
+    res_b_list = await session_b.call_tool("health_summary", {"action": "list_medicines"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_meds = data_b_list.get("data", {}).get("medicines", [])
+    b_names = [m.get("name") for m in b_meds]
+    assert med_name not in b_names
+
+    # User B attempts to mark User A's medicine taken - must fail with not_found
+    res_b_mark = await session_b.call_tool(
+        "health_summary", {"action": "mark_taken", "medicine_name": med_name}
+    )
+    data_b_mark = json.loads(getattr(res_b_mark.content[0], "text", "{}"))
+    assert data_b_mark.get("ok") is False
+    assert data_b_mark.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="health_summary",
+        allows_anonymous=False,
+        sample_args={"action": "today"},
+        custom_isolation_check=_health_summary_cross_user_isolation,
+    )
+)

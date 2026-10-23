@@ -685,6 +685,99 @@
     }
   },
   {
+    "description": "Review daily health summaries, weekly adherence averages, and manage medicine schedules. Use when the user asks 'What is my health summary today?', 'How was my health this week?', 'What medicines are due today?', 'Mark my vitamin as taken', or 'Add pill to my schedule'. Do not use for logging individual water, meals, or workouts (use health_log), or for clinical medical diagnosis or dosing instructions.",
+    "name": "health_summary",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "today",
+          "title": "Action",
+          "type": "string"
+        },
+        "days": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Days"
+        },
+        "dosage_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "1 dose",
+          "title": "Dosage Text"
+        },
+        "medicine_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Medicine Name"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "scheduled_time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scheduled Time"
+        },
+        "times": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Times"
+        }
+      },
+      "title": "health_summaryArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Capture quick voice notes, search past notes by keyword, and read back your thoughts. Use when the user says 'Take a note: meeting ideas', 'Search my notes for recipe', or 'Read my latest note'. Do not use for to-do items or deadlines; use the tasks tool instead.",
     "name": "notes",
     "parameters": {
