@@ -101,3 +101,89 @@ class QuizAnswerResponseData(BaseModel):
         default=None,
         description="Final completion summary if finished.",
     )
+
+
+FlashcardAction = Literal["add", "review_next", "grade", "list_due"]
+FlashcardRating = Literal["again", "hard", "good", "easy"]
+
+
+class FlashcardsRequest(BaseModel):
+    """Input payload for flashcards tool."""
+
+    action: FlashcardAction = Field(
+        description="Action to perform: 'add', 'review_next', 'grade', or 'list_due'."
+    )
+    front: str | None = Field(
+        default=None,
+        max_length=2000,
+        description="Question or prompt on the front of the flashcard (required for 'add').",
+    )
+    back: str | None = Field(
+        default=None,
+        max_length=2000,
+        description="Answer or explanation on the back of the flashcard (required for 'add').",
+    )
+    deck: str | None = Field(
+        default=None,
+        max_length=120,
+        description="Optional deck name to group the flashcard into.",
+    )
+    card_id: str | None = Field(
+        default=None,
+        description="Identifier of the card being graded (required for 'grade').",
+    )
+    rating: FlashcardRating | None = Field(
+        default=None,
+        description="Review performance rating: 'again', 'hard', 'good', or 'easy'.",
+    )
+    limit: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum count of due cards to return for 'list_due'.",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional client request ID for idempotent execution.",
+    )
+
+
+class FlashcardCardData(BaseModel):
+    """Data representation of a single flashcard."""
+
+    card_id: str = Field(description="Unique identifier of the flashcard.")
+    front: str = Field(description="Front prompt or question.")
+    back: str | None = Field(default=None, description="Back answer or explanation.")
+    deck: str | None = Field(default=None, description="Deck name.")
+    ease: float | None = Field(default=None, description="SM-2 ease factor.")
+    interval_days: int | None = Field(
+        default=None, description="Interval in days until next review."
+    )
+    repetitions: int | None = Field(default=None, description="Number of successful reviews.")
+    due_at: str | None = Field(default=None, description="ISO timestamp when card is due.")
+
+
+class FlashcardsResponseData(BaseModel):
+    """Structured data payload returned by the flashcards tool."""
+
+    action: str = Field(description="The action executed.")
+    card: FlashcardCardData | None = Field(
+        default=None,
+        description="Card details for 'add', 'review_next', or 'grade'.",
+    )
+    total_due: int | None = Field(
+        default=None,
+        description="Total count of due cards for 'list_due' or 'review_next'.",
+    )
+    cards: list[FlashcardCardData] | None = Field(
+        default=None,
+        description="List of due cards for 'list_due'.",
+    )
+    rating: str | None = Field(
+        default=None,
+        description="Submitted rating for 'grade'.",
+    )
+    next_review_days: int | None = Field(
+        default=None,
+        description="Days until next review after grading.",
+    )

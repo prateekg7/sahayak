@@ -1,5 +1,92 @@
 [
   {
+    "description": "Manages flashcards and spaced repetition study reviews. Use when the user wants to create, review, grade, or list study flashcards, such as 'Alexa, add a flashcard: capital of Australia is Canberra' or 'Alexa, review my flashcards'. Do not use for taking multiple-choice quizzes; use quiz_start or quiz_answer instead.",
+    "name": "flashcards",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "back": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Back"
+        },
+        "card_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Card Id"
+        },
+        "deck": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deck"
+        },
+        "front": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Front"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "rating": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rating"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "flashcardsArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Submits an answer to the current question in an active quiz session. Use when the user answers a quiz question by letter, number, or text, such as 'Alexa, option B' or 'the answer is photosynthesis'. Do not use for starting a new quiz; use quiz_start instead.",
     "name": "quiz_answer",
     "parameters": {

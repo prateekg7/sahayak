@@ -63,6 +63,16 @@ class AcademicsModule:
             )
             set_quiz_service(service)
 
+            from sahayak.modules.academics.service.flashcards import FlashcardService
+            from sahayak.modules.academics.tools.flashcards import set_flashcard_service
+
+            flashcard_service = FlashcardService(session_factory=deps.session_factory)
+            set_flashcard_service(flashcard_service)
+
+        from sahayak.modules.academics.tools.flashcards import (
+            FLASHCARDS_DESCRIPTION,
+            flashcards,
+        )
         from sahayak.modules.academics.tools.quiz import (
             QUIZ_ANSWER_DESCRIPTION,
             QUIZ_START_DESCRIPTION,
@@ -74,9 +84,11 @@ class AcademicsModule:
         if callable(tool_decorator):
             tool_decorator(name="quiz_start", description=QUIZ_START_DESCRIPTION)(quiz_start)
             tool_decorator(name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)(quiz_answer)
+            tool_decorator(name="flashcards", description=FLASHCARDS_DESCRIPTION)(flashcards)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(quiz_start, name="quiz_start", description=QUIZ_START_DESCRIPTION)
             mcp.add_tool(quiz_answer, name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)
+            mcp.add_tool(flashcards, name="flashcards", description=FLASHCARDS_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs owned by the academics module."""

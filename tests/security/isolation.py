@@ -234,3 +234,43 @@ register_isolation_spec(
         custom_isolation_check=_quiz_answer_cross_user_isolation,
     )
 )
+
+
+async def _flashcards_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A creates a flashcard
+    res_a = await session_a.call_tool(
+        "flashcards",
+        {"action": "add", "front": "Mitosis stage 1", "back": "Prophase", "deck": "Biology"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to add flashcard: {data_a}"
+    card_id = data_a.get("data", {}).get("card", {}).get("card_id", "")
+    assert card_id, "Failed to get card_id from User A's response"
+
+    # User B lists due cards - User A's card must not appear
+    res_b_list = await session_b.call_tool("flashcards", {"action": "list_due"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_card_ids = [c.get("card_id") for c in data_b_list.get("data", {}).get("cards", [])]
+    assert card_id not in b_card_ids, "User A's card leaked into User B's due list"
+
+    # User B attempts to grade User A's card - must fail with not_found
+    res_b_grade = await session_b.call_tool(
+        "flashcards",
+        {"action": "grade", "card_id": card_id, "rating": "good"},
+    )
+    data_b_grade = json.loads(getattr(res_b_grade.content[0], "text", "{}"))
+    assert data_b_grade.get("ok") is False
+    assert data_b_grade.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="flashcards",
+        allows_anonymous=False,
+        sample_args={"action": "list_due"},
+        custom_isolation_check=_flashcards_cross_user_isolation,
+    )
+)
