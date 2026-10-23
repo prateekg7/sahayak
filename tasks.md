@@ -555,7 +555,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** ADR choosing an official or licensed API (do not scrape sites that forbid it), adapter, station/route name resolution with fuzzy matching, `tools/transit.py` (`next_departures, status`), clear "unavailable" spoken fallback, caching.
 - **Done when:** fixture-based tests pass; name resolution handles common misspellings and spoken forms.
 
-### [ ] T12.3 — `commodity_prices` tool **[VERIFY data source]**
+### [x] T12.3 — `commodity_prices` tool **[VERIFY data source]**
 - **Depends on:** T12.1 · **Est. LOC:** ~550
 - **What it does:** Crop/market prices ("what is the wheat price in my nearest mandi?").
 - **Implement:** ADR for the government open-data source and its terms, adapter, commodity/market alias tables, `tools/commodity.py` (`get_price, compare_markets, trend`), unit normalization (quintal/kg), date-freshness guard (warn when data is old).

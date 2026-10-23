@@ -1444,3 +1444,11 @@ register_isolation_spec(
         sample_args={"action": "status", "line": "yellow"},
     )
 )
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="commodity_prices",
+        allows_anonymous=True,
+        sample_args={"action": "get_price", "commodity": "wheat", "market": "Azadpur"},
+    )
+)

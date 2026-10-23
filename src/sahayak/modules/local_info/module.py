@@ -1,4 +1,4 @@
-"""Local and civic information module conforming to the Module protocol (T12.1, T12.2)."""
+"""Local and civic information module conforming to the Module protocol (T12.1, T12.2, T12.3)."""
 
 from __future__ import annotations
 
@@ -26,13 +26,14 @@ class LocalInfoModule:
     @property
     def api(self) -> LocalInfoAPI:
         if self._api is None:
-            self._api = DefaultLocalInfoAPI(registered_count=1)
+            self._api = DefaultLocalInfoAPI(registered_count=2)
         return self._api
 
     def register_tools(self, mcp: Any, deps: Deps) -> None:
         """Register MCP tools for local and civic information."""
         self._deps = deps
 
+        # Transit tool registration (T12.2)
         from sahayak.modules.local_info.adapters.transit import TransitHttpDataSource
         from sahayak.modules.local_info.service.transit import TransitService
         from sahayak.modules.local_info.tools.transit import (
@@ -45,10 +46,26 @@ class LocalInfoModule:
         transit_service = TransitService(data_source=transit_source)
         set_transit_service(transit_service)
 
+        # Commodity prices tool registration (T12.3)
+        from sahayak.modules.local_info.adapters.commodity import CommodityHttpDataSource
+        from sahayak.modules.local_info.service.commodity import CommodityService
+        from sahayak.modules.local_info.tools.commodity import (
+            COMMODITY_PRICES_DESCRIPTION,
+            commodity_prices,
+            set_commodity_service,
+        )
+
+        commodity_source = CommodityHttpDataSource(cache=deps.cache)
+        commodity_service = CommodityService(data_source=commodity_source)
+        set_commodity_service(commodity_service)
+
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="transit_status", description=TRANSIT_STATUS_DESCRIPTION)(
                 transit_status
+            )
+            tool_decorator(name="commodity_prices", description=COMMODITY_PRICES_DESCRIPTION)(
+                commodity_prices
             )
 
     def register_jobs(self, worker: Any) -> None:

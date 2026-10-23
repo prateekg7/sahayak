@@ -37,3 +37,24 @@ class TransitStatusRequest(BaseModel):
         None,
         description="Optional terminus or destination filter.",
     )
+
+
+class CommodityPriceRequest(BaseModel):
+    """Input payload for agricultural commodity prices tool."""
+
+    action: Literal["get_price", "compare_markets", "trend"] = Field(
+        "get_price",
+        description="Action to perform: 'get_price', 'compare_markets', or 'trend'.",
+    )
+    commodity: str | None = Field(
+        None,
+        description="Crop name (e.g., 'wheat', 'gehun', 'onion', 'tomato').",
+    )
+    market: str | None = Field(
+        None,
+        description="Wholesale mandi or market name (e.g., 'Azadpur', 'Ghazipur', 'Khanna').",
+    )
+    markets: list[str] | None = Field(
+        None,
+        description="List of mandis to compare for 'compare_markets' action.",
+    )

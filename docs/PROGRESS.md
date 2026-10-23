@@ -1,5 +1,32 @@
 # Progress
 
+## 2026-10-24 — T12.3 `commodity_prices` tool — DONE
+
+- Summary: implemented the `commodity_prices` MCP tool (30th platform tool) for agricultural mandi crop prices, wholesale market comparisons, and trends with Hindi/English crop aliasing, quintal-to-kg unit normalization, and date freshness warnings:
+  - Architecture Decision Record:
+    - `docs/adr/0014-commodity-prices-data-source.md`: Documented official Agmarknet / Open Government Data Platform India (data.gov.in) open data feeds under GODL-India license, bilingual phonetic crop aliasing, quintal wholesale to kg retail normalization, holiday freshness guards, and anonymous access policy per ADR 0009.
+    - Updated `docs/adr/index.md`.
+  - Domain Logic (`src/sahayak/modules/local_info/domain/commodity.py`):
+    - `PriceRecord`, `CommodityTrend` domain models.
+    - Canonical commodity aliases mapping Hindi and English terms ("gehun"/"wheat", "chawal"/"rice", "pyaz"/"onion", "aloo"/"potato", "tamatar"/"tomato", "chana"/"gram", "sarson"/"mustard", "makka"/"maize") with fuzzy fallback matching.
+    - Canonical market resolution for major wholesale mandis (Azadpur, Ghazipur, Okhla, Narela, Khanna, Lasalgaon, Karnal, Indore).
+    - Unit normalization converting wholesale prices in Rupees per Quintal (100 kg) to Rupees per Kilogram.
+    - Spoken summaries strictly $\le 300$ characters with automatic freshness warnings ("Note: Rates are from X days ago as markets may have been closed") when data is older than 24h or fetched on weekends/holidays.
+  - Adapter & Service (`src/sahayak/modules/local_info/`):
+    - `adapters/commodity.py`: `CommodityHttpDataSource` extending `BaseHttpDataSource` with 3600s cache, host allow-listing, and benchmark fallback rates when upstream is unreachable.
+    - `service/commodity.py`: `CommodityService` implementing `get_price`, `compare_markets`, and `get_trend` with days-old freshness detection and standard envelope shaping.
+  - Public MCP Tool & Snapshot:
+    - `tools/commodity.py`: `commodity_prices` MCP tool with `@allow_anonymous` supporting `get_price`, `compare_markets`, and `trend` actions.
+    - Registered tool in `local_info/module.py` and exported in `tools/__init__.py`.
+    - `tests/snapshots/tools.json`: Updated snapshot to 30 tools.
+  - Tests & Verification:
+    - `tests/unit/test_commodity_domain.py`: Commodity resolution across Hindi/English and fillers, market resolution, unit normalization (quintal to kg), fresh/stale spoken output, comparison, and trend formatting.
+    - `tests/unit/test_commodity_service.py`: Price fetching, market comparison, price trend, and benchmark fallback.
+    - `tests/contract/test_commodity_prices_contract.py`: Contract test over Streamable HTTP verifying anonymous execution with Hindi crop name, multi-market comparison, validation errors, and auto-isolation.
+    - `tests/security/isolation.py`: Registered `commodity_prices` in auto-isolation suite with `allows_anonymous=True`.
+  - Quality Gates: `make lint`, `make test` (671 passed, 85.57% coverage), `make snapshot-check` (30 tools), `make migrate-check`, `make security` all green.
+- Next: T12.4 `scheme_finder` tool.
+
 ## 2026-10-24 — T12.2 `transit_status` tool — DONE
 
 - Summary: implemented the `transit_status` MCP tool (29th platform tool) for real-time transit departures, operational line status, and delay alerts with fuzzy station matching and schedule headway fallback:

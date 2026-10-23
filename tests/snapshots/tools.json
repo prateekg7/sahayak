@@ -330,6 +330,60 @@
     }
   },
   {
+    "description": "Check daily agricultural mandi crop prices, wholesale market comparisons, and trends. Use when the user asks 'What is the wheat price in Azadpur mandi?', 'Compare onion prices between Azadpur and Ghazipur', or 'Is tomato price increasing?'. Do not use for tracking train schedules or finding welfare schemes; use 'transit_status' or 'scheme_finder' instead.",
+    "name": "commodity_prices",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "get_price",
+          "title": "Action",
+          "type": "string"
+        },
+        "commodity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commodity"
+        },
+        "market": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Market"
+        },
+        "markets": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Markets"
+        }
+      },
+      "title": "commodity_pricesArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Get a unified spoken summary of your day including tasks, habits, and study goals. Use when the user says 'Give me my daily briefing', 'What does my day look like?', or 'Good morning sahayak'. Do not use for creating individual tasks or habits; use tasks or habits instead.",
     "name": "daily_briefing",
     "parameters": {
