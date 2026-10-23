@@ -1,0 +1,67 @@
+{
+  "$schema": "https://developer.amazon.com/schemas/alexa-ai/addon-manifest-v1.json",
+  "addonId": "amzn1.alexa-addon.sahayak-study-v1",
+  "version": "1.0.0",
+  "name": "Sahayak",
+  "publisher": "Sahayak Team",
+  "locales": {
+    "en-US": {
+      "name": "Sahayak Study Assistant",
+      "shortDescription": "Quiz yourself on any topic, review flashcards, and plan your study time.",
+      "fullDescription": "Sahayak is your voice-first AI study companion. Generate grounded multi-choice quizzes on any topic from science to history, practice spaced repetition flashcards using the SM-2 algorithm, build structured daily exam study schedules, track your learning streaks and weak areas, and get concise Wikipedia-grounded topic briefs—completely hands-free.",
+      "examplePhrases": [
+        "Quiz me on photosynthesis.",
+        "Review my flashcards.",
+        "Make a study plan for my chemistry exam on the 15th.",
+        "How am I doing in my quizzes?",
+        "Give me a quick brief on the French Revolution.",
+        "Quiz me on my weak topics."
+      ]
+    },
+    "en-IN": {
+      "name": "Sahayak Study Assistant",
+      "shortDescription": "Quiz yourself on any topic, review flashcards, and plan your study time.",
+      "fullDescription": "Sahayak is your voice-first AI study companion. Generate grounded multi-choice quizzes on any topic, practice spaced repetition flashcards, build exam study schedules, track study streaks, and listen to quick fact briefs.",
+      "examplePhrases": [
+        "Quiz me on photosynthesis.",
+        "Review my flashcards.",
+        "Make a study plan for my chemistry exam on the 15th.",
+        "How am I doing in my quizzes?",
+        "Give me a quick brief on the French Revolution.",
+        "Quiz me on my weak topics."
+      ]
+    }
+  },
+  "server": {
+    "type": "MCP",
+    "transport": "STREAMABLE_HTTP",
+    "uri": "https://api.sahayak.app/mcp",
+    "protocolVersion": "2025-11-25"
+  },
+  "accountLinking": {
+    "type": "AUTH_CODE",
+    "grantType": "AUTHORIZATION_CODE",
+    "authorizationUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/authorize",
+    "tokenUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/token",
+    "clientId": "SAHAYAK_COGNITO_CLIENT_ID",
+    "scopes": [
+      "openid",
+      "email",
+      "profile",
+      "sahayak-api/academics.read",
+      "sahayak-api/academics.write"
+    ],
+    "domains": [
+      "sahayak-auth.auth.us-east-1.amazoncognito.com",
+      "api.sahayak.app"
+    ],
+    "privacyPolicyUrl": "https://sahayak.app/privacy",
+    "termsOfServiceUrl": "https://sahayak.app/terms"
+  },
+  "privacyAndCompliance": {
+    "allowsPurchases": false,
+    "usesHealthInfo": false,
+    "isChildDirected": false,
+    "containsAds": false
+  }
+}
