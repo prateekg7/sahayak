@@ -16,4 +16,6 @@ build/
 *.md
 !README.md
 !CONTRIBUTING.md
+!CHANGELOG.md
 !prompts/*.md
+!docs/**/*.md

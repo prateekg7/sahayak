@@ -589,7 +589,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** flag store (config + DB overrides, percent rollout by hashed `user_id`), user preference tool (`settings` with `enable_module/disable_module/status`) respecting the tool budget, admin CLI (`scripts/admin.py`: inspect user, flag question, quarantine topic, replay dead-letter events), audit logging of admin actions.
 - **Done when:** a flagged-off tool returns a graceful message; dead-letter replay works; admin actions are audited.
 
-### [ ] T13.4 — Full regression, release readiness, and v1.0
+### [x] T13.4 — Full regression, release readiness, and v1.0
 - **Depends on:** everything chosen for the release · **Est. LOC:** ~400 (tests/docs)
 - **What it does:** Final proof that the whole system works and is supportable.
 - **Implement:** run the complete contract + e2e + isolation + load suites against staging for every profile; Web Simulator regression for every add-on; dependency and container vulnerability review; SBOM and release notes; changelog; version tagging; final ADR/PRD reconciliation (PRD updated to match what was built); post-launch monitoring checklist (first 7 days).

@@ -1,5 +1,26 @@
 # Progress
 
+## 2026-10-24 — T13.4 Full regression, release readiness, and v1.0.0 — DONE
+
+- Summary: completed Phase 13 and all 14 project phases, finalizing v1.0.0 production release readiness and reconciliation:
+  - Documentation & Architectural Reconciliation:
+    - `PRD.md`: Reconciled document status to v1.0 Production Release, updated vision to reflect 10 active domains + settings, updated file tree, module contract with GDPR hooks, tool budget resolution via ADR 0016 (4 specialized Alexa+ add-on bundles), scalability milestones, and completed ADR index (0001 through 0016).
+    - `CHANGELOG.md`: Authored Keep-a-Changelog specification covering the full development arc across all 14 phases.
+    - `docs/release/v1.0.0.md`: Published comprehensive release notes, tool catalog (all 33 tools), multi-add-on deployment architecture, verification report, and post-launch 7-day operational monitoring playbook.
+    - `docs/release/sbom.json`: Generated CycloneDX 1.5 Software Bill of Materials with pinned production dependencies and licenses.
+    - `pyproject.toml`: Bumped project version to `1.0.0`.
+  - Comprehensive Regression & Security Verification:
+    - Static analysis: `make lint` clean (ruff 0 errors, mypy strict 0 errors, import-linter 3/3 architectural contracts kept).
+    - Automated tests: `make test` green (713 tests passed, 85.02% coverage $\ge 85\%$).
+    - Snapshot check: `make snapshot-check` verified all 5 profiles (`study`, `life`, `work`, `home`, `full`).
+    - Database migrations: `make migrate-check` passed offline up-down-up generation across all 10 schemas.
+    - Security audit: `make security` passed (bandit 0 medium/high vulnerabilities, pip-audit 0 CVEs).
+    - Auto-isolation suite: 100% pass across all 33 MCP tools.
+  - Release State:
+    - All tasks in `tasks.md` completed.
+    - Ready for v1.0.0 git tag.
+- Sahayak v1.0.0 Release Complete!
+
 ## 2026-10-24 — T13.3 Feature flags, user preferences, and admin CLI — DONE
 
 - Summary: implemented platform feature flags, per-user module preferences, `settings` MCP tool (33rd platform tool), and administrative CLI (`scripts/admin.py`):
