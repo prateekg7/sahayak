@@ -15,3 +15,4 @@ build/
 # Product planning and working notes remain local; GitHub keeps only the README.
 *.md
 !README.md
+!prompts/*.md
