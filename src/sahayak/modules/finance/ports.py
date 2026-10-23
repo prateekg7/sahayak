@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Protocol
 
 from sahayak.modules.finance.models import (
+    Bill,
     Budget,
     Expense,
     Group,
@@ -77,6 +78,16 @@ class ExpenseRepositoryPort(Protocol):
         until: datetime | None = None,
     ) -> int:
         """Sum active spending for a category in integer minor units for a given period."""
+        ...
+
+    async def get_spending_by_category(
+        self,
+        user_id: uuid.UUID,
+        currency: str,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> dict[str, int]:
+        """Return a mapping of category -> total minor units spent in the given period."""
         ...
 
 
@@ -172,4 +183,47 @@ class SplitBillRepositoryPort(Protocol):
 
     async def list_settlements(self, group_id: uuid.UUID) -> list[Settlement]:
         """List all recorded settlements for a group."""
+        ...
+
+
+class BillRepositoryPort(Protocol):
+    """Repository port interface for recurring bills and EMI due dates (T6.4)."""
+
+    async def create_bill(
+        self,
+        user_id: uuid.UUID,
+        name: str,
+        amount_minor: int,
+        due_day: int,
+        next_due_date: date,
+        currency: str = "INR",
+        frequency: str = "monthly",
+    ) -> Bill:
+        """Create a new recurring bill record."""
+        ...
+
+    async def get_bill(self, user_id: uuid.UUID, bill_id: uuid.UUID) -> Bill | None:
+        """Get a bill by ID scoped by user_id."""
+        ...
+
+    async def list_bills(
+        self,
+        user_id: uuid.UUID,
+        is_active: bool = True,
+        due_before: date | None = None,
+    ) -> list[Bill]:
+        """List bills for a user, optionally filtered by due_before date."""
+        ...
+
+    async def mark_bill_paid(
+        self,
+        user_id: uuid.UUID,
+        bill_id: uuid.UUID,
+        next_due_date: date,
+    ) -> Bill | None:
+        """Mark bill paid for the current cycle and roll forward next_due_date."""
+        ...
+
+    async def deactivate_bill(self, user_id: uuid.UUID, bill_id: uuid.UUID) -> bool:
+        """Deactivate a recurring bill."""
         ...

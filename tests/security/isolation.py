@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import time
+import uuid
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from typing import Any, cast
@@ -670,10 +671,11 @@ register_isolation_spec(
 async def _split_bill_cross_user_isolation(
     session_a: ClientSession, session_b: ClientSession
 ) -> None:
+    group_name = f"Private Trip {uuid.uuid4().hex[:6]}"
     # User A creates a group
     res_a = await session_a.call_tool(
         "split_bill",
-        {"action": "create_group", "group": "Private Trip", "participants": ["Bob"]},
+        {"action": "create_group", "group": group_name, "participants": ["Bob"]},
     )
     data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
     assert data_a.get("ok") is True
@@ -683,12 +685,10 @@ async def _split_bill_cross_user_isolation(
     data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
     assert data_b_list.get("ok") is True
     b_names = [g.get("name") for g in data_b_list.get("data", {}).get("groups", [])]
-    assert "Private Trip" not in b_names
+    assert group_name not in b_names
 
     # User B attempts to view balances of User A's group - must fail with not_found
-    res_b_bal = await session_b.call_tool(
-        "split_bill", {"action": "balances", "group": "Private Trip"}
-    )
+    res_b_bal = await session_b.call_tool("split_bill", {"action": "balances", "group": group_name})
     data_b_bal = json.loads(getattr(res_b_bal.content[0], "text", "{}"))
     assert data_b_bal.get("ok") is False
     assert data_b_bal.get("error_code") == "not_found"
@@ -700,5 +700,48 @@ register_isolation_spec(
         allows_anonymous=False,
         sample_args={"action": "list_groups"},
         custom_isolation_check=_split_bill_cross_user_isolation,
+    )
+)
+
+
+async def _finance_report_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    bill_name = f"Private Rent {uuid.uuid4().hex[:6]}"
+    # User A adds a bill
+    res_a = await session_a.call_tool(
+        "finance_report",
+        {"action": "add_bill", "bill_name": bill_name, "amount": 25000, "due_day": 5},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    bill_id = data_a.get("data", {}).get("bill", {}).get("id")
+    assert bill_id is not None
+
+    # User B queries bills_due - User A's bill must not appear
+    res_b_list = await session_b.call_tool(
+        "finance_report", {"action": "bills_due", "due_days_ahead": 35}
+    )
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_bills = data_b_list.get("data", {}).get("bills", [])
+    b_names = [b.get("name") for b in b_bills]
+    assert bill_name not in b_names
+
+    # User B attempts to mark User A's bill paid - must fail with not_found
+    res_b_pay = await session_b.call_tool(
+        "finance_report", {"action": "mark_bill_paid", "bill_id": bill_id}
+    )
+    data_b_pay = json.loads(getattr(res_b_pay.content[0], "text", "{}"))
+    assert data_b_pay.get("ok") is False
+    assert data_b_pay.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="finance_report",
+        allows_anonymous=False,
+        sample_args={"action": "summary"},
+        custom_isolation_check=_finance_report_cross_user_isolation,
     )
 )

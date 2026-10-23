@@ -190,6 +190,104 @@
     }
   },
   {
+    "description": "Generate spending summaries and track recurring bills or EMI due dates. Use when the user says 'Give me my monthly finance summary', 'What did I spend on food this month?', 'What bills are due this week?', 'Add electricity bill of 1500 due on day 25', or 'Mark my phone bill as paid'. Do not use for logging a single new expense; use expense_log instead.",
+    "name": "finance_report",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "summary",
+          "title": "Action",
+          "type": "string"
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "bill_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bill Id"
+        },
+        "bill_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bill Name"
+        },
+        "currency": {
+          "default": "INR",
+          "title": "Currency",
+          "type": "string"
+        },
+        "due_day": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Due Day"
+        },
+        "due_days_ahead": {
+          "default": 7,
+          "title": "Due Days Ahead",
+          "type": "integer"
+        },
+        "frequency": {
+          "default": "monthly",
+          "title": "Frequency",
+          "type": "string"
+        },
+        "period": {
+          "default": "monthly",
+          "title": "Period",
+          "type": "string"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "title": "finance_reportArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Manages flashcards and spaced repetition study reviews. Use when the user wants to create, review, grade, or list study flashcards, such as 'Alexa, add a flashcard: capital of Australia is Canberra' or 'Alexa, review my flashcards'. Do not use for taking multiple-choice quizzes; use quiz_start or quiz_answer instead.",
     "name": "flashcards",
     "parameters": {

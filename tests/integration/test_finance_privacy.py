@@ -79,6 +79,21 @@ async def test_finance_privacy_export_and_delete() -> None:
             ),
         )
 
+        from sahayak.modules.finance.service.reports import FinanceReportService
+
+        report_service = FinanceReportService(session_factory=session_factory)
+        from sahayak.modules.finance.schemas import FinanceReportAction, FinanceReportRequest
+
+        await report_service.execute(
+            user_id,
+            FinanceReportRequest(
+                action=FinanceReportAction.ADD_BILL,
+                bill_name="Internet Bill",
+                amount=999,
+                due_day=15,
+            ),
+        )
+
         # 1. Export user data
         exported = await fin_module.export_user_data(str(user_id))
         assert "expenses" in exported
@@ -89,6 +104,9 @@ async def test_finance_privacy_export_and_delete() -> None:
         assert "groups" in exported
         assert len(exported["groups"]) == 1
         assert exported["groups"][0]["name"] == "Goa Trip"
+        assert "bills" in exported
+        assert len(exported["bills"]) == 1
+        assert exported["bills"][0]["name"] == "Internet Bill"
 
         # 2. Delete user data (GDPR erasure)
         await fin_module.delete_user_data(str(user_id))
@@ -98,6 +116,7 @@ async def test_finance_privacy_export_and_delete() -> None:
         assert exported_after["expenses"] == []
         assert exported_after["budgets"] == []
         assert exported_after["groups"] == []
+        assert exported_after["bills"] == []
 
         _, list_after, _ = await service.list_expenses(user_id=user_id)
         assert list_after.count == 0

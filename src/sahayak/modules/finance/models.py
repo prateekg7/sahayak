@@ -7,10 +7,20 @@ Zero floating-point representations are permitted.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, func
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -301,4 +311,82 @@ class Settlement(Base):
             "to_name": self.to_name,
             "amount_minor": self.amount_minor,
             "settled_at": self.settled_at.isoformat() if self.settled_at else None,
+        }
+
+
+class Bill(Base):
+    """Recurring bill or EMI due date record (T6.4)."""
+
+    __tablename__ = "bills"
+    __table_args__ = (
+        Index("ix_finance_bills_user_due", "user_id", "next_due_date"),
+        {"schema": "finance"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    amount_minor: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Due amount in integer minor units",
+    )
+    currency: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False,
+        default="INR",
+        server_default="INR",
+    )
+    frequency: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="monthly",
+        server_default="monthly",
+    )
+    due_day: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Day of month or cycle date",
+    )
+    next_due_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+    )
+    is_paid: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default="false",
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default="true",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "name": self.name,
+            "amount_minor": self.amount_minor,
+            "currency": self.currency,
+            "frequency": self.frequency,
+            "due_day": self.due_day,
+            "next_due_date": self.next_due_date.isoformat() if self.next_due_date else None,
+            "is_paid": self.is_paid,
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

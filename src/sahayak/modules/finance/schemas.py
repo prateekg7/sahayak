@@ -263,3 +263,108 @@ class SplitBillResponseData(BaseModel):
     transfers: list[SettlementTransferData] = Field(default_factory=list)
     groups: list[GroupSummaryData] = Field(default_factory=list)
     count: int = 0
+
+
+class FinanceReportAction(str, Enum):
+    """Supported finance report and bill tracking actions (T6.4)."""
+
+    SUMMARY = "summary"
+    BY_CATEGORY = "by_category"
+    BILLS_DUE = "bills_due"
+    ADD_BILL = "add_bill"
+    MARK_BILL_PAID = "mark_bill_paid"
+
+
+class BillData(BaseModel):
+    """Public representation of a recurring bill or EMI record."""
+
+    id: str
+    name: str
+    amount_minor: int
+    formatted_amount: str
+    currency: str
+    frequency: str
+    due_day: int
+    next_due_date: str
+    is_paid: bool
+    is_active: bool
+
+
+class CategorySpendingData(BaseModel):
+    """Breakdown of spending in a single category."""
+
+    category: str
+    amount_minor: int
+    formatted_amount: str
+    percentage: float
+
+
+class FinanceReportRequest(BaseModel):
+    """Input payload for the 'finance_report' MCP tool."""
+
+    action: FinanceReportAction = Field(
+        default=FinanceReportAction.SUMMARY,
+        description=(
+            "Action: 'summary', 'by_category', 'bills_due', 'add_bill', or 'mark_bill_paid'."
+        ),
+    )
+    period: str = Field(
+        default="monthly",
+        description="Reporting period: 'monthly' or 'weekly'.",
+    )
+    currency: str = Field(
+        default="INR",
+        max_length=3,
+        description="3-letter ISO currency code.",
+    )
+    bill_id: str | None = Field(
+        default=None,
+        description="Bill UUID for 'mark_bill_paid'.",
+    )
+    bill_name: str | None = Field(
+        default=None,
+        max_length=128,
+        description="Bill/EMI name (e.g. 'Electricity', 'Car EMI').",
+    )
+    amount: str | int | None = Field(
+        default=None,
+        description="Bill due amount (e.g. 1500, '1500', '1500.00').",
+    )
+    due_day: int | None = Field(
+        default=None,
+        ge=1,
+        le=31,
+        description="Day of month when bill is due.",
+    )
+    frequency: str = Field(
+        default="monthly",
+        description="Frequency: 'monthly', 'weekly', or 'yearly'.",
+    )
+    due_days_ahead: int = Field(
+        default=7,
+        ge=1,
+        le=60,
+        description="Window in days to check for upcoming bills.",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional idempotency key for mutations.",
+    )
+
+
+class FinanceReportResponseData(BaseModel):
+    """Output payload for the 'finance_report' tool inside the standard envelope."""
+
+    action: str
+    period: str = "monthly"
+    currency: str = "INR"
+    total_spending_minor: int = 0
+    formatted_total_spending: str = ""
+    previous_period_spending_minor: int = 0
+    formatted_previous_spending: str = ""
+    diff_minor: int = 0
+    percentage_change: float | None = None
+    category_breakdown: list[CategorySpendingData] = Field(default_factory=list)
+    bills: list[BillData] = Field(default_factory=list)
+    bill: BillData | None = None
+    count: int = 0

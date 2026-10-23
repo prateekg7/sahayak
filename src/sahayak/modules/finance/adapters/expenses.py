@@ -159,3 +159,28 @@ class SQLAlchemyExpenseRepository:
         res = await self.session.execute(stmt)
         val = res.scalar()
         return int(val) if val is not None else 0
+
+    async def get_spending_by_category(
+        self,
+        user_id: uuid.UUID,
+        currency: str,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> dict[str, int]:
+        """Return a mapping of category -> total minor units spent in the given period."""
+        stmt = (
+            select(Expense.category, func.coalesce(func.sum(Expense.amount_minor), 0))
+            .where(
+                Expense.user_id == user_id,
+                Expense.currency == currency.upper().strip(),
+                Expense.is_deleted.is_(False),
+            )
+            .group_by(Expense.category)
+        )
+        if since:
+            stmt = stmt.where(Expense.occurred_at >= since)
+        if until:
+            stmt = stmt.where(Expense.occurred_at <= until)
+
+        res = await self.session.execute(stmt)
+        return {str(row[0]): int(row[1]) for row in res.all()}
