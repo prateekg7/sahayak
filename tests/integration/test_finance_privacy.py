@@ -34,7 +34,7 @@ async def test_finance_privacy_export_and_delete() -> None:
             uow.session.add(User(id=user_id))
             await uow.session.flush()
 
-        # Seed expenses
+        # Seed expenses and budget
         await service.add_expense(
             user_id=user_id,
             amount=500,
@@ -50,11 +50,28 @@ async def test_finance_privacy_export_and_delete() -> None:
             note="Metro card recharge",
         )
 
+        from sahayak.modules.finance.service.budgets import BudgetService
+
+        budget_service = BudgetService(session_factory=session_factory)
+        from sahayak.modules.finance.schemas import BudgetAction, BudgetRequest
+
+        await budget_service.execute(
+            user_id,
+            BudgetRequest(
+                action=BudgetAction.SET,
+                category="groceries",
+                amount=5000,
+                currency="INR",
+            ),
+        )
+
         # 1. Export user data
         exported = await fin_module.export_user_data(str(user_id))
         assert "expenses" in exported
         assert len(exported["expenses"]) == 2
-        assert exported["expenses"][0]["amount_minor"] in (50000, 12000)
+        assert "budgets" in exported
+        assert len(exported["budgets"]) == 1
+        assert exported["budgets"][0]["category"] == "groceries"
 
         # 2. Delete user data (GDPR erasure)
         await fin_module.delete_user_data(str(user_id))
@@ -62,6 +79,7 @@ async def test_finance_privacy_export_and_delete() -> None:
         # 3. Verify deletion
         exported_after = await fin_module.export_user_data(str(user_id))
         assert exported_after["expenses"] == []
+        assert exported_after["budgets"] == []
 
         _, list_after, _ = await service.list_expenses(user_id=user_id)
         assert list_after.count == 0

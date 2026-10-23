@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -84,4 +84,72 @@ class Expense(Base):
             "occurred_at": self.occurred_at.isoformat() if self.occurred_at else None,
             "is_deleted": self.is_deleted,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class Budget(Base):
+    """Category budget record in finance.budgets table (T6.2)."""
+
+    __tablename__ = "budgets"
+    __table_args__ = (
+        UniqueConstraint("user_id", "category", name="uq_finance_budgets_user_category"),
+        Index("ix_finance_budgets_user_active", "user_id", "is_active"),
+        {"schema": "finance"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    category: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        comment="Normalized spending category",
+    )
+    amount_minor: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Monthly budget cap in integer minor units",
+    )
+    currency: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False,
+        default="INR",
+        server_default="INR",
+        comment="ISO 4217 3-letter currency code",
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default="true",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert budget to dictionary representation."""
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "category": self.category,
+            "amount_minor": self.amount_minor,
+            "currency": self.currency,
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

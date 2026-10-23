@@ -633,3 +633,35 @@ register_isolation_spec(
         custom_isolation_check=_expense_log_cross_user_isolation,
     )
 )
+
+
+async def _budget_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A sets a budget
+    res_a = await session_a.call_tool(
+        "budget",
+        {"action": "set", "category": "groceries", "amount": 5000, "currency": "INR"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+
+    # User B lists budgets - User A's budget must not appear
+    res_b_list = await session_b.call_tool("budget", {"action": "list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    assert data_b_list.get("data", {}).get("count") == 0
+
+    # User B attempts to remove User A's budget - must fail with not_found
+    res_b_rem = await session_b.call_tool("budget", {"action": "remove", "category": "groceries"})
+    data_b_rem = json.loads(getattr(res_b_rem.content[0], "text", "{}"))
+    assert data_b_rem.get("ok") is False
+    assert data_b_rem.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="budget",
+        allows_anonymous=False,
+        sample_args={"action": "list"},
+        custom_isolation_check=_budget_cross_user_isolation,
+    )
+)

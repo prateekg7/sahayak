@@ -1,5 +1,78 @@
 [
   {
+    "description": "Manage monthly category budgets and track spending against targets. Use when the user says 'Set groceries budget to 5000 rupees', 'How much grocery budget do I have left?', 'List my budgets', or 'Remove my dining budget'. Do not use for logging individual transactions; use expense_log instead.",
+    "name": "budget",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "currency": {
+          "default": "INR",
+          "title": "Currency",
+          "type": "string"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "timezone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timezone"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "budgetArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Get a unified spoken summary of your day including tasks, habits, and study goals. Use when the user says 'Give me my daily briefing', 'What does my day look like?', or 'Good morning sahayak'. Do not use for creating individual tasks or habits; use tasks or habits instead.",
     "name": "daily_briefing",
     "parameters": {

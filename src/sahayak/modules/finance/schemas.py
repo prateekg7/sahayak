@@ -81,3 +81,83 @@ class ExpenseResponseData(BaseModel):
     formatted_total: str = ""
     currency: str = "INR"
     count: int = 0
+
+
+class BudgetAction(str, Enum):
+    """Supported category budget actions (T6.2)."""
+
+    SET = "set"
+    STATUS = "status"
+    LIST = "list"
+    REMOVE = "remove"
+
+
+class BudgetRequest(BaseModel):
+    """Input payload for the 'budget' MCP tool."""
+
+    action: BudgetAction = Field(
+        ...,
+        description="Budget action: 'set', 'status', 'list', or 'remove'.",
+    )
+    category: str | None = Field(
+        default=None,
+        max_length=64,
+        description="Budget category (e.g. 'groceries', 'dining', 'shopping').",
+    )
+    amount: str | int | None = Field(
+        default=None,
+        description="Monthly budget cap amount (e.g. 5000, '5000'). Required for 'set'.",
+    )
+    currency: str = Field(
+        default="INR",
+        max_length=3,
+        description="3-letter ISO currency code (default 'INR').",
+    )
+    timezone: str | None = Field(
+        default=None,
+        max_length=64,
+        description="User timezone (e.g. 'Asia/Kolkata', 'America/New_York').",
+    )
+    request_id: str | None = Field(
+        default=None,
+        description="Optional idempotency key for mutations.",
+    )
+
+
+class BudgetData(BaseModel):
+    """Representation of an individual category budget configuration."""
+
+    id: str
+    category: str
+    amount_minor: int
+    currency: str
+    formatted_amount: str
+    is_active: bool
+
+
+class BudgetStatusData(BaseModel):
+    """Calculated spending status and run-rate analysis for a budget."""
+
+    category: str
+    currency: str
+    budget_minor: int
+    spent_minor: int
+    remaining_minor: int
+    formatted_budget: str
+    formatted_spent: str
+    formatted_remaining: str
+    is_overspent: bool
+    percentage_used: float
+    projected_overspend_minor: int
+    threshold_crossed: str | None = None
+    days_remaining: int
+
+
+class BudgetResponseData(BaseModel):
+    """Output payload for the 'budget' tool inside the standard envelope."""
+
+    action: str
+    budget: BudgetData | None = None
+    status: BudgetStatusData | None = None
+    budgets: list[BudgetStatusData] = Field(default_factory=list)
+    count: int = 0

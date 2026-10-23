@@ -135,3 +135,27 @@ class SQLAlchemyExpenseRepository:
         res = await self.session.execute(stmt)
         val = res.scalar()
         return int(val) if val is not None else 0
+
+    async def get_category_spending(
+        self,
+        user_id: uuid.UUID,
+        category: str,
+        currency: str,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> int:
+        """Sum total spending in minor units for a user, category, and currency."""
+        stmt = select(func.coalesce(func.sum(Expense.amount_minor), 0)).where(
+            Expense.user_id == user_id,
+            Expense.category == category.lower().strip(),
+            Expense.currency == currency.upper().strip(),
+            Expense.is_deleted.is_(False),
+        )
+        if since:
+            stmt = stmt.where(Expense.occurred_at >= since)
+        if until:
+            stmt = stmt.where(Expense.occurred_at <= until)
+
+        res = await self.session.execute(stmt)
+        val = res.scalar()
+        return int(val) if val is not None else 0

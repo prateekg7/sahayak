@@ -10,7 +10,7 @@ from sqlalchemy import delete, select
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.finance.models import Expense
+from sahayak.modules.finance.models import Budget, Expense
 
 
 class FinanceModule:
@@ -47,7 +47,9 @@ class FinanceModule:
         """Register MCP tools provided by the finance module."""
         self._deps = deps
         if deps.session_factory is not None:
+            from sahayak.modules.finance.service.budgets import BudgetService
             from sahayak.modules.finance.service.expenses import ExpenseService
+            from sahayak.modules.finance.tools.budget import set_budget_service
             from sahayak.modules.finance.tools.expense_log import set_expense_service
 
             clock_fn = getattr(deps, "clock", None)
@@ -57,6 +59,16 @@ class FinanceModule:
             )
             set_expense_service(expense_service)
 
+            budget_service = BudgetService(
+                session_factory=deps.session_factory,
+                clock=clock_fn,
+            )
+            set_budget_service(budget_service)
+
+        from sahayak.modules.finance.tools.budget import (
+            BUDGET_DESCRIPTION,
+            budget,
+        )
         from sahayak.modules.finance.tools.expense_log import (
             EXPENSE_LOG_DESCRIPTION,
             expense_log,
@@ -65,8 +77,10 @@ class FinanceModule:
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="expense_log", description=EXPENSE_LOG_DESCRIPTION)(expense_log)
+            tool_decorator(name="budget", description=BUDGET_DESCRIPTION)(budget)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(expense_log, name="expense_log", description=EXPENSE_LOG_DESCRIPTION)
+            mcp.add_tool(budget, name="budget", description=BUDGET_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background jobs for finance module."""
@@ -85,24 +99,32 @@ class FinanceModule:
         pass
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
-        """GDPR Right to Access: export all personal expenses owned by user_id."""
+        """GDPR Right to Access: export all personal expenses and budgets owned by user_id."""
         if self._deps is None or self._deps.session_factory is None:
             return {}
 
         uid = uuid.UUID(user_id) if isinstance(user_id, str) else user_id
         async with UnitOfWork(self._deps.session_factory) as uow:
-            res = await uow.session.execute(select(Expense).where(Expense.user_id == uid))
-            expenses = res.scalars().all()
-            return {"expenses": [e.to_dict() for e in expenses]}
+            exp_res = await uow.session.execute(select(Expense).where(Expense.user_id == uid))
+            expenses = exp_res.scalars().all()
+
+            b_res = await uow.session.execute(select(Budget).where(Budget.user_id == uid))
+            budgets = b_res.scalars().all()
+
+            return {
+                "expenses": [e.to_dict() for e in expenses],
+                "budgets": [b.to_dict() for b in budgets],
+            }
 
     async def delete_user_data(self, user_id: str) -> None:
-        """GDPR Right to Erasure: permanently delete all expenses owned by user_id."""
+        """GDPR Right to Erasure: permanently delete all expenses and budgets owned by user_id."""
         if self._deps is None or self._deps.session_factory is None:
             return
 
         uid = uuid.UUID(user_id) if isinstance(user_id, str) else user_id
         async with UnitOfWork(self._deps.session_factory) as uow:
             await uow.session.execute(delete(Expense).where(Expense.user_id == uid))
+            await uow.session.execute(delete(Budget).where(Budget.user_id == uid))
 
 
 module = FinanceModule()

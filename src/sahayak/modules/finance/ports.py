@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Protocol
 
-from sahayak.modules.finance.models import Expense
+from sahayak.modules.finance.models import Budget, Expense
 
 
 class ExpenseRepositoryPort(Protocol):
@@ -59,4 +59,45 @@ class ExpenseRepositoryPort(Protocol):
         until: datetime | None = None,
     ) -> int:
         """Sum total active spending in integer minor units for a given period."""
+        ...
+
+    async def get_category_spending(
+        self,
+        user_id: uuid.UUID,
+        category: str,
+        currency: str,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> int:
+        """Sum active spending for a category in integer minor units for a given period."""
+        ...
+
+
+class BudgetRepositoryPort(Protocol):
+    """Repository port interface for monthly category budgets (T6.2)."""
+
+    async def upsert_budget(
+        self,
+        user_id: uuid.UUID,
+        category: str,
+        amount_minor: int,
+        currency: str = "INR",
+    ) -> Budget:
+        """Create or update an active budget for a user and category."""
+        ...
+
+    async def get_budget(self, user_id: uuid.UUID, category: str) -> Budget | None:
+        """Retrieve an active budget for a user and category."""
+        ...
+
+    async def list_budgets(
+        self,
+        user_id: uuid.UUID,
+        is_active: bool = True,
+    ) -> list[Budget]:
+        """List category budgets for a user."""
+        ...
+
+    async def remove_budget(self, user_id: uuid.UUID, category: str) -> bool:
+        """Deactivate or remove a category budget."""
         ...
