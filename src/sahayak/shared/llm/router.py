@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import random
+import secrets
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -140,15 +140,15 @@ class LLMRouter(LLMClient):
                     provider=provider, model=used_model, outcome="success"
                 ).inc()
                 LLM_DURATION_SECONDS.labels(provider=provider, model=used_model).observe(elapsed)
-                LLM_TOKENS_TOTAL.labels(
-                    provider=provider, model=used_model, token_type="prompt"
-                ).inc(response.usage.prompt_tokens)
-                LLM_TOKENS_TOTAL.labels(
-                    provider=provider, model=used_model, token_type="completion"
-                ).inc(response.usage.completion_tokens)
-                LLM_TOKENS_TOTAL.labels(
-                    provider=provider, model=used_model, token_type="total"
-                ).inc(response.usage.total_tokens)
+                LLM_TOKENS_TOTAL.labels(provider, used_model, "prompt").inc(
+                    response.usage.prompt_tokens
+                )
+                LLM_TOKENS_TOTAL.labels(provider, used_model, "completion").inc(
+                    response.usage.completion_tokens
+                )
+                LLM_TOKENS_TOTAL.labels(provider, used_model, "total").inc(
+                    response.usage.total_tokens
+                )
 
                 await self.budget_manager.record_tokens(response.usage.total_tokens)
                 return response
@@ -175,7 +175,7 @@ class LLMRouter(LLMClient):
 
             # Check if we should retry
             if attempt < self.max_retries:
-                jitter = random.uniform(0.01, 0.05)  # noqa: S311
+                jitter = 0.01 + (secrets.randbelow(400) / 10000.0)
                 delay = (self.base_retry_delay_seconds * (2**attempt)) + jitter
                 await asyncio.sleep(delay)
 

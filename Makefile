@@ -1,4 +1,8 @@
-.PHONY: setup dev test lint typecheck migrate migrate-check snapshot snapshot-check tunnel inspector
+.PHONY: setup dev test lint typecheck security migrate migrate-check snapshot snapshot-check tunnel inspector
+
+security:
+	uv run bandit --quiet --recursive src
+	uv run pip-audit
 
 setup:
 	uv sync --all-groups
