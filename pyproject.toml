@@ -109,4 +109,5 @@ modules = [
   "sahayak.modules.productivity",
   "sahayak.modules.finance",
   "sahayak.modules.health",
+  "sahayak.modules.career",
 ]

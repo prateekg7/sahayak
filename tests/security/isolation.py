@@ -822,3 +822,53 @@ register_isolation_spec(
         custom_isolation_check=_health_summary_cross_user_isolation,
     )
 )
+
+
+async def _interview_practice_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A starts an interview
+    res_a = await session_a.call_tool(
+        "interview_practice",
+        {"action": "start", "role": "Software Engineer", "total_questions": 3},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    session_id = data_a.get("data", {}).get("session_id")
+    assert session_id is not None
+
+    # User B attempts to answer User A's session - must fail with not_found
+    res_b_ans = await session_b.call_tool(
+        "interview_practice",
+        {"action": "answer", "session_id": session_id, "answer": "I write comprehensive tests."},
+    )
+    data_b_ans = json.loads(getattr(res_b_ans.content[0], "text", "{}"))
+    assert data_b_ans.get("ok") is False
+    assert data_b_ans.get("error_code") == "not_found"
+
+    # User B attempts to finish User A's session - must fail with not_found
+    res_b_fin = await session_b.call_tool(
+        "interview_practice",
+        {"action": "finish", "session_id": session_id},
+    )
+    data_b_fin = json.loads(getattr(res_b_fin.content[0], "text", "{}"))
+    assert data_b_fin.get("ok") is False
+    assert data_b_fin.get("error_code") == "not_found"
+
+    # User B requests history - User A's session must not be present
+    res_b_hist = await session_b.call_tool("interview_practice", {"action": "history"})
+    data_b_hist = json.loads(getattr(res_b_hist.content[0], "text", "{}"))
+    assert data_b_hist.get("ok") is True
+    b_sessions = data_b_hist.get("data", {}).get("sessions", [])
+    b_sids = [s.get("session_id") for s in b_sessions]
+    assert session_id not in b_sids
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="interview_practice",
+        allows_anonymous=False,
+        sample_args={"action": "history"},
+        custom_isolation_check=_interview_practice_cross_user_isolation,
+    )
+)

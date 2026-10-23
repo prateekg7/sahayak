@@ -778,6 +778,91 @@
     }
   },
   {
+    "description": "Conduct mock interview practice sessions with voice feedback and rubric scoring. Use when the user says 'Start a mock interview for Software Engineer', 'Here is my answer to the interview question', 'Finish my interview session', or 'Show my interview practice history'. Do not use for logging daily tasks, expenses, or health metrics.",
+    "name": "interview_practice",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "start",
+          "title": "Action",
+          "type": "string"
+        },
+        "answer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "mid",
+          "title": "Level"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "Software Engineer",
+          "title": "Role"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Id"
+        },
+        "total_questions": {
+          "default": 5,
+          "title": "Total Questions",
+          "type": "integer"
+        }
+      },
+      "title": "interview_practiceArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Capture quick voice notes, search past notes by keyword, and read back your thoughts. Use when the user says 'Take a note: meeting ideas', 'Search my notes for recipe', or 'Read my latest note'. Do not use for to-do items or deadlines; use the tasks tool instead.",
     "name": "notes",
     "parameters": {
