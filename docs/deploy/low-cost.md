@@ -137,7 +137,7 @@ Regardless of host, verify the following before connecting Alexa+:
    ```
 2. **MCP SSE / Streamable HTTP Protocol Negotiation:**
    ```bash
-   npx @modelcontextprotocol/inspector https://<YOUR_DOMAIN>/mcp
+   npx -y @modelcontextprotocol/inspector@latest --transport http --server-url https://<YOUR_DOMAIN>/mcp
    ```
 3. **Database Roles Check:**
    Confirm your database user has DML privileges on `core` and `academics` schemas, but **cannot** run DDL statements, using `python scripts/verify_app_db_role.py --db-url ...`.

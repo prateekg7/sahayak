@@ -45,4 +45,4 @@ tunnel:
 	cloudflared tunnel --url http://localhost:8000
 
 inspector:
-	npx @modelcontextprotocol/inspector http://localhost:8000/mcp
+	npx -y @modelcontextprotocol/inspector@latest --transport http --server-url http://localhost:8000/mcp
