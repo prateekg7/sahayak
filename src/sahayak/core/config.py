@@ -69,6 +69,14 @@ class Settings(BaseSettings):
 
     quiz_ttl_minutes: PositiveInt = 120
     academics_flag_quarantine_threshold: PositiveInt = 3
+    academics_bank_min_threshold: PositiveInt = 10
+    academics_popular_topics: tuple[str, ...] = (
+        "Solar System",
+        "World War II",
+        "Indian History",
+        "Human Anatomy",
+        "Basic Python",
+    )
     otel_exporter_otlp_endpoint: AnyUrl | None = None
     sentry_dsn: SecretStr | None = None
     metrics_token: SecretStr | None = None
@@ -92,6 +100,14 @@ class Settings(BaseSettings):
         if not isinstance(value, str):
             return value
         return tuple(origin.strip() for origin in value.split(",") if origin.strip())
+
+    @field_validator("academics_popular_topics", mode="before")
+    @classmethod
+    def parse_popular_topics(cls, value: object) -> tuple[str, ...] | object:
+        """Convert optional comma-separated popular topics into a tuple."""
+        if not isinstance(value, str):
+            return value
+        return tuple(topic.strip() for topic in value.split(",") if topic.strip())
 
     @field_validator("database_url")
     @classmethod

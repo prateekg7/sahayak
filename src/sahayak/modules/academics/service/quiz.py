@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import logging
 import uuid
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -78,6 +79,9 @@ class AnsweredQuizInfo:
     final_summary: str | None = None
 
 
+JobEnqueuer = Callable[..., Awaitable[Any]]
+
+
 class QuizService:
     """Service orchestrating quiz creation, question fetching/generation, and scoring."""
 
@@ -87,11 +91,15 @@ class QuizService:
         generator: QuestionGenerationPipeline | None = None,
         clock: Callable[[], datetime] | None = None,
         quiz_ttl_minutes: int = DEFAULT_QUIZ_TTL_MINUTES,
+        enqueuer: JobEnqueuer | None = None,
+        bank_min_threshold: int = 10,
     ) -> None:
         self._session_factory = session_factory
         self._generator = generator
         self._clock = clock or (lambda: datetime.now(UTC))
         self._quiz_ttl_minutes = quiz_ttl_minutes
+        self._enqueuer = enqueuer
+        self._bank_min_threshold = bank_min_threshold
 
     async def start_quiz(
         self,
@@ -149,9 +157,10 @@ class QuizService:
                     limit=clamped_count,
                 )
             )
+            is_miss = len(available_questions) < clamped_count
 
             # 5. Fallback synchronous generation on cache miss
-            if len(available_questions) < clamped_count and self._generator is not None:
+            if is_miss and self._generator is not None:
                 needed = clamped_count - len(available_questions)
                 try:
                     gen_res = await self._generator.generate_questions(
@@ -171,6 +180,15 @@ class QuizService:
                         )
                 except Exception as exc:
                     logger.warning("Synchronous generation failed for '%s': %s", display_name, exc)
+
+            # 5b. Trigger background bank expansion and prefetch on miss or low bank reserves
+            low_reserve = len(available_questions) < self._bank_min_threshold
+            if (is_miss or low_reserve) and self._enqueuer is not None:
+                try:
+                    await self._enqueuer("academics_expand_bank", topic_key, diff_enum.value)
+                    await self._enqueuer("academics_prefetch_adjacent", topic_key, diff_enum.value)
+                except Exception as exc:
+                    logger.debug("Background bank expansion enqueue ignored: %s", exc)
 
             if not available_questions:
                 raise UpstreamUnavailableError(

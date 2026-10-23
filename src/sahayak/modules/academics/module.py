@@ -45,10 +45,21 @@ class AcademicsModule:
                     llm_client=deps.llm_client,
                     verifier=verifier,
                 )
+            from sahayak.worker import enqueue_job
+
+            async def safe_enqueue(job_name: str, *args: Any, **kwargs: Any) -> Any:
+                try:
+                    return await enqueue_job(job_name, *args, **kwargs)
+                except Exception:
+                    # In test environments without Redis or when worker is offline
+                    return None
+
             service = QuizService(
                 session_factory=deps.session_factory,
                 generator=generator,
                 quiz_ttl_minutes=settings.quiz_ttl_minutes,
+                enqueuer=safe_enqueue,
+                bank_min_threshold=settings.academics_bank_min_threshold,
             )
             set_quiz_service(service)
 
@@ -69,7 +80,22 @@ class AcademicsModule:
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs owned by the academics module."""
-        # Jobs will be registered in T3.8 (expand_bank, prefetch, expiry)
+        from sahayak.modules.academics.jobs import (
+            expand_bank,
+            expire_quizzes,
+            popular_topics_pregen,
+            prefetch_adjacent_difficulty,
+        )
+
+        worker.register_job(expand_bank, name="academics_expand_bank")
+        worker.register_job(prefetch_adjacent_difficulty, name="academics_prefetch_adjacent")
+        worker.register_cron(expire_quizzes, minute="*/5", name="academics_expire_quizzes")
+        worker.register_cron(
+            popular_topics_pregen,
+            hour="*/6",
+            minute=0,
+            name="academics_popular_topics_pregen",
+        )
 
     def migrations_path(self) -> str | None:
         """Return path to Alembic migrations for the academics branch."""
