@@ -503,7 +503,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 
 # PHASE 10 — Small business module
 
-### [ ] T10.1 — Business tenancy and `orders` tool
+### [x] T10.1 — Business tenancy and `orders` tool
 - **Depends on:** T9.1 (membership pattern) · **Est. LOC:** ~900
 - **What it does:** A shopkeeper says "what orders are pending?" and "mark order 12 shipped".
 - **Implement:** schema `business` (`businesses`, `business_members`, `orders`, `order_items`, `customers`), human-friendly sequential order numbers per business (race-safe), status machine (`pending → packed → shipped → delivered/cancelled`), `tools/orders.py` (`create, list_pending, update_status, get`), money as minor units, import path for CSV later (hook only).

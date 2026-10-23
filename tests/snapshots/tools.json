@@ -1205,6 +1205,109 @@
     }
   },
   {
+    "description": "Create, track status, update, and inspect customer orders with sequential numbering. Use when the user says 'What orders are pending?', 'Mark order 12 shipped', 'Create an order for Ramesh for 2 notebooks', or 'Check status of order 5'. Do not use for customer dues or unpaid balances; use ledger instead.",
+    "name": "orders",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "list_pending",
+          "title": "Action",
+          "type": "string"
+        },
+        "business_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Business Id"
+        },
+        "customer_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Customer Name"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Items"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "order_number": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Order Number"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        }
+      },
+      "title": "ordersArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Manage household pantry ingredients, view expiring items, get recipe suggestions, and generate meal plans. Use when the user says 'What can I cook with what is in the pantry?', 'Add olive oil to the pantry', 'What ingredients are expiring soon?', or 'Suggest a dinner recipe using our vegetables'. Do not use for shopping lists; use shared_list instead.",
     "name": "pantry_recipes",
     "parameters": {

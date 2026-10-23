@@ -1,5 +1,30 @@
 # Progress
 
+## 2026-10-24 — T10.1 Business tenancy and `orders` tool — DONE
+
+- Summary: implemented Phase 10 Small Business module tenancy, customers, sequential order numbers per business, lifecycle order status machine, integer minor units currency calculation, and the `orders` MCP tool (24th platform tool):
+  - Database & Migrations:
+    - `src/sahayak/modules/business/models.py`: Added `Business`, `BusinessMember`, `Customer`, `Order`, and `OrderItem` models with constraints, indexes, and sequential `order_seq` generator on `Business`.
+    - `src/sahayak/modules/business/migrations/0001_business_schema.py`: Alembic migration creating `business.businesses`, `business.business_members`, `business.customers`, `business.orders`, and `business.order_items`. Fully reversible.
+  - Domain Logic (`src/sahayak/modules/business/domain/orders.py`):
+    - Sequential status transitions: `pending -> packed -> shipped -> delivered` or `cancelled`. Illegal transitions rejected with actionable spoken voice guidance.
+    - Money in integer minor units (e.g. paisa/cents) with natural spoken formatting.
+    - Voice formatters strictly $\le 300$ characters without markdown, asterisks, or quotes.
+  - Adapters & Services:
+    - `src/sahayak/modules/business/adapters/orders.py`: `SQLAlchemyBusinessRepository` with atomic row-level increment `UPDATE business.businesses SET order_seq = order_seq + 1 RETURNING order_seq` to guarantee race-safe gap-free order numbers under concurrency.
+    - `src/sahayak/modules/business/service/orders.py`: `OrderService` implementing `create_order`, `list_pending`, `update_status`, and `get_order`. Auto-provisions default business on first use.
+  - Public MCP Tool & Module Registration:
+    - `src/sahayak/modules/business/tools/orders.py`: `orders` MCP tool with `@requires()` scope check, `@idempotent(tool_name="orders")`, and structured envelope responses.
+    - `src/sahayak/modules/business/module.py`: Registered `orders` (24th tool); implemented GDPR Right to Access and Right to Erasure hooks.
+    - `tests/snapshots/tools.json`: Snapshot updated to 24 tools.
+  - Tests & Verification:
+    - `tests/unit/test_business_orders_domain.py`: Status machine transition validity and spoken currency/summary formatters.
+    - `tests/unit/test_business_orders_service.py`: Order lifecycle, illegal transition errors, and concurrent order creation test verifying 20 concurrent orders receive distinct sequential numbers.
+    - `tests/contract/test_orders_contract.py`: Full MCP Streamable HTTP contract testing.
+    - `tests/security/isolation.py`: Cross-user tenancy isolation verified.
+  - Quality Gates: `make lint`, `make test` (604 passed, 86.14% coverage), `make snapshot-check` (24 tools), `make migrate-check`, `make security` all green.
+- Next: T10.2 `ledger` tool (customer dues).
+
 ## 2026-10-24 — T9.3 `chores` and `pantry_recipes` tools — DONE
 
 - Summary: implemented shared household chores fair round-robin rotation, pantry tracking, dietary preferences, recipe matching with automatic missing ingredient handoff to shopping lists, and the `chores` (22nd) and `pantry_recipes` (23rd) MCP tools:

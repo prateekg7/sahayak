@@ -111,4 +111,5 @@ modules = [
   "sahayak.modules.health",
   "sahayak.modules.career",
   "sahayak.modules.home",
+  "sahayak.modules.business",
 ]

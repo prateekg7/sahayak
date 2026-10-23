@@ -1150,3 +1150,69 @@ register_isolation_spec(
         custom_isolation_check=_pantry_recipes_cross_user_isolation,
     )
 )
+
+
+async def _orders_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A creates an order
+    res_a = await session_a.call_tool(
+        "orders",
+        {
+            "action": "create",
+            "customer_name": "Ramesh",
+            "items": [{"item_name": "Notebook", "quantity": 2, "unit_price": 50.0}],
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to create order: {data_a}"
+    b_id_a = data_a.get("data", {}).get("business_id")
+    order_num_a = data_a.get("data", {}).get("order", {}).get("order_number")
+    assert b_id_a is not None and order_num_a is not None
+
+    # User B creates an order
+    res_b = await session_b.call_tool(
+        "orders",
+        {
+            "action": "create",
+            "customer_name": "Suresh",
+            "items": [{"item_name": "Ballpoint Pen", "quantity": 5, "unit_price": 10.0}],
+        },
+    )
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is True, f"User B failed to create order: {data_b}"
+    b_id_b = data_b.get("data", {}).get("business_id")
+    assert b_id_a != b_id_b
+
+    # User A lists pending orders: sees Ramesh's order, not Suresh's
+    res_a_list = await session_a.call_tool("orders", {"action": "list_pending"})
+    data_a_list = json.loads(getattr(res_a_list.content[0], "text", "{}"))
+    assert data_a_list.get("ok") is True
+    customers_a = [o.get("customer_name") for o in data_a_list.get("data", {}).get("orders", [])]
+    assert "Ramesh" in customers_a
+    assert "Suresh" not in customers_a
+
+    # User B lists pending orders: sees Suresh's order, not Ramesh's
+    res_b_list = await session_b.call_tool("orders", {"action": "list_pending"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    customers_b = [o.get("customer_name") for o in data_b_list.get("data", {}).get("orders", [])]
+    assert "Suresh" in customers_b
+    assert "Ramesh" not in customers_b
+
+    # User B attempts to access User A's order by business_id
+    res_b_breach = await session_b.call_tool(
+        "orders",
+        {"action": "get", "business_id": b_id_a, "order_number": order_num_a},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="orders",
+        allows_anonymous=False,
+        sample_args={"action": "list_pending"},
+        custom_isolation_check=_orders_cross_user_isolation,
+    )
+)
