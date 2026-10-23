@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Protocol
 
 from sahayak.modules.academics.models import (
+    Card,
+    Deck,
     DifficultyLevel,
     Question,
     QuestionStatus,
@@ -69,4 +72,63 @@ class QuestionBankPort(Protocol):
 
     async def quarantine_question(self, question_id: uuid.UUID) -> Question | None:
         """Directly transition a question to quarantined status."""
+        ...
+
+
+class FlashcardPort(Protocol):
+    """Repository port for flashcard decks and spaced repetition cards."""
+
+    async def get_or_create_deck(self, user_id: uuid.UUID, name: str) -> Deck:
+        """Find an existing deck by user and name, or create a new one."""
+        ...
+
+    async def find_deck(self, user_id: uuid.UUID, name: str) -> Deck | None:
+        """Find a deck by user and name if it exists."""
+        ...
+
+    async def create_card(
+        self,
+        user_id: uuid.UUID,
+        deck_id: uuid.UUID,
+        front: str,
+        back: str,
+        due_at: datetime | None = None,
+    ) -> Card:
+        """Create and persist a new card in the given deck."""
+        ...
+
+    async def get_card(self, card_id: uuid.UUID, user_id: uuid.UUID) -> Card | None:
+        """Retrieve a card ensuring user ownership."""
+        ...
+
+    async def get_next_due_card(
+        self,
+        user_id: uuid.UUID,
+        deck_id: uuid.UUID | None = None,
+        before: datetime | None = None,
+    ) -> Card | None:
+        """Fetch the single next due card for review ordered by due_at ASC."""
+        ...
+
+    async def list_due_cards(
+        self,
+        user_id: uuid.UUID,
+        deck_id: uuid.UUID | None = None,
+        before: datetime | None = None,
+        limit: int = 5,
+    ) -> Sequence[Card]:
+        """Fetch due cards for review ordered by due_at ASC up to limit."""
+        ...
+
+    async def count_due_cards(
+        self,
+        user_id: uuid.UUID,
+        deck_id: uuid.UUID | None = None,
+        before: datetime | None = None,
+    ) -> int:
+        """Count total due cards for a user on or before the given timestamp."""
+        ...
+
+    async def save_card(self, card: Card) -> Card:
+        """Persist updates to an existing card."""
         ...
