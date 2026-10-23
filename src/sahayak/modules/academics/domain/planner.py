@@ -6,6 +6,7 @@ dependency, adhering to clean architecture domain boundaries.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta, tzinfo
@@ -322,3 +323,189 @@ def generate_study_plan(
         warning=warning,
         uncovered_topics=uncovered,
     )
+
+
+MONTH_NAMES: dict[str, int] = {
+    "jan": 1,
+    "january": 1,
+    "feb": 2,
+    "february": 2,
+    "mar": 3,
+    "march": 3,
+    "apr": 4,
+    "april": 4,
+    "may": 5,
+    "jun": 6,
+    "june": 6,
+    "jul": 7,
+    "july": 7,
+    "aug": 8,
+    "august": 8,
+    "sep": 9,
+    "sept": 9,
+    "september": 9,
+    "oct": 10,
+    "october": 10,
+    "nov": 11,
+    "november": 11,
+    "dec": 12,
+    "december": 12,
+}
+
+
+def parse_exam_date(date_str: str, current_date: date) -> date:
+    """Parse an ISO date or natural spoken relative date phrase into a validated future date.
+
+    Raises:
+        ValueError: If the date cannot be parsed or is in the past or today.
+    """
+    raw = date_str.strip().lower()
+    if not raw:
+        msg = "Exam date cannot be empty."
+        raise ValueError(msg)
+
+    # 1. Direct ISO format YYYY-MM-DD (or with timestamp suffix)
+    iso_match = re.match(r"^(\d{4})-(\d{1,2})-(\d{1,2})(?:t.*)?$", raw)
+    if iso_match:
+        try:
+            parsed = date(int(iso_match.group(1)), int(iso_match.group(2)), int(iso_match.group(3)))
+            if parsed <= current_date:
+                msg = (
+                    "Exam date must be in the future. "
+                    "Please provide an upcoming date (e.g., '2026-11-15' or 'in 2 weeks')."
+                )
+                raise ValueError(msg)
+            return parsed
+        except ValueError as err:
+            if "Exam date must be in the future" in str(err):
+                raise
+            msg = f"Invalid calendar date in '{date_str}': {err}"
+            raise ValueError(msg) from err
+
+    # 2. Relative keywords: "tomorrow", "next week", "next month"
+    if raw == "tomorrow":
+        return current_date + timedelta(days=1)
+    if raw in ("next week", "in 1 week", "in a week"):
+        return current_date + timedelta(days=7)
+    if raw in ("next month", "in 1 month", "in a month"):
+        return current_date + timedelta(days=30)
+
+    # 3. Relative patterns: "in X days", "in X weeks", "in X months"
+    days_match = re.match(r"^in\s+(\d+)\s*days?$", raw)
+    if days_match:
+        n_days = int(days_match.group(1))
+        if n_days <= 0:
+            msg = "Exam date must be in the future."
+            raise ValueError(msg)
+        return current_date + timedelta(days=n_days)
+
+    weeks_match = re.match(r"^in\s+(\d+)\s*weeks?$", raw)
+    if weeks_match:
+        n_weeks = int(weeks_match.group(1))
+        if n_weeks <= 0:
+            msg = "Exam date must be in the future."
+            raise ValueError(msg)
+        return current_date + timedelta(weeks=n_weeks)
+
+    months_match = re.match(r"^in\s+(\d+)\s*months?$", raw)
+    if months_match:
+        n_months = int(months_match.group(1))
+        if n_months <= 0:
+            msg = "Exam date must be in the future."
+            raise ValueError(msg)
+        return current_date + timedelta(days=n_months * 30)
+
+    # 4. Spoken ordinal day of month: "on the 15th", "the 15th", "15th", "on the 15", "15"
+    day_ordinal_match = re.match(r"^(?:on\s+)?(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?$", raw)
+    if day_ordinal_match:
+        day = int(day_ordinal_match.group(1))
+        if 1 <= day <= 31:
+            # Try current month first
+            try:
+                candidate = date(current_date.year, current_date.month, day)
+                if candidate > current_date:
+                    return candidate
+            except ValueError:
+                pass
+            # Roll over to next month
+            next_month = current_date.month + 1
+            next_year = current_date.year
+            if next_month > 12:
+                next_month = 1
+                next_year += 1
+            try:
+                return date(next_year, next_month, day)
+            except ValueError as err:
+                msg = f"Invalid day {day} for upcoming month: {err}"
+                raise ValueError(msg) from err
+
+    # 5. Month name with day: "Nov 15", "November 15", "15 Nov", "15th of November", etc.
+    # Pattern A: Month Day [Year] e.g. "November 15", "Nov 15th 2026"
+    m_d_match = re.match(
+        r"^(?:on\s+)?([a-z]+)\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(\d{4}))?$",
+        raw,
+    )
+    if m_d_match and m_d_match.group(1) in MONTH_NAMES:
+        month = MONTH_NAMES[m_d_match.group(1)]
+        day = int(m_d_match.group(2))
+        year_str = m_d_match.group(3)
+        if year_str:
+            year = int(year_str)
+        else:
+            try:
+                candidate = date(current_date.year, month, day)
+                year = current_date.year if candidate > current_date else current_date.year + 1
+            except ValueError:
+                year = current_date.year
+        try:
+            parsed = date(year, month, day)
+            if parsed <= current_date:
+                msg = (
+                    "Exam date must be in the future. "
+                    "Please provide an upcoming date (e.g., '2026-11-15' or 'in 2 weeks')."
+                )
+                raise ValueError(msg)
+            return parsed
+        except ValueError as err:
+            if "Exam date must be in the future" in str(err):
+                raise
+            msg = f"Invalid date: {err}"
+            raise ValueError(msg) from err
+
+    # Pattern B: Day Month [Year] e.g. "15 Nov", "15th November 2026", "15th of November"
+    d_m_match = re.match(
+        r"^(?:on\s+)?(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]+)(?:\s*,?\s*(\d{4}))?$",
+        raw,
+    )
+    if d_m_match and d_m_match.group(2) in MONTH_NAMES:
+        day = int(d_m_match.group(1))
+        month = MONTH_NAMES[d_m_match.group(2)]
+        year_str = d_m_match.group(3)
+        if year_str:
+            year = int(year_str)
+        else:
+            try:
+                candidate = date(current_date.year, month, day)
+                year = current_date.year if candidate > current_date else current_date.year + 1
+            except ValueError:
+                year = current_date.year
+        try:
+            parsed = date(year, month, day)
+            if parsed <= current_date:
+                msg = (
+                    "Exam date must be in the future. "
+                    "Please provide an upcoming date (e.g., '2026-11-15' or 'in 2 weeks')."
+                )
+                raise ValueError(msg)
+            return parsed
+        except ValueError as err:
+            if "Exam date must be in the future" in str(err):
+                raise
+            msg = f"Invalid date: {err}"
+            raise ValueError(msg) from err
+
+    msg = (
+        f"Could not parse exam date '{date_str}'. "
+        "Please provide a date like '2026-11-15' or 'in 2 weeks'."
+    )
+    raise ValueError(msg)

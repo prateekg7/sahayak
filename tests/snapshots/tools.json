@@ -154,5 +154,122 @@
       "title": "quiz_startArguments",
       "type": "object"
     }
+  },
+  {
+    "description": "Creates and manages day-by-day exam preparation schedules and daily study tasks. Use when the user wants to prepare for an upcoming exam or ask what to study today, such as 'Alexa, make a study plan for chemistry exam on the 15th' or 'Alexa, what should I study today?'. Do not use for practicing flashcards or quizzes; use flashcards or quiz_start instead.",
+    "name": "study_plan",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "exam_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exam Date"
+        },
+        "goal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Goal"
+        },
+        "hours_per_day": {
+          "default": 1.0,
+          "title": "Hours Per Day",
+          "type": "number"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "mark_done": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mark Done"
+        },
+        "plan_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Id"
+        },
+        "replan": {
+          "default": false,
+          "title": "Replan",
+          "type": "boolean"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "topics": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topics"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "study_planArguments",
+      "type": "object"
+    }
   }
 ]

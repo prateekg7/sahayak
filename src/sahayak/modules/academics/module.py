@@ -64,10 +64,20 @@ class AcademicsModule:
             set_quiz_service(service)
 
             from sahayak.modules.academics.service.flashcards import FlashcardService
+            from sahayak.modules.academics.service.plan import StudyPlanService
             from sahayak.modules.academics.tools.flashcards import set_flashcard_service
+            from sahayak.modules.academics.tools.study_plan import set_study_plan_service
 
             flashcard_service = FlashcardService(session_factory=deps.session_factory)
             set_flashcard_service(flashcard_service)
+
+            clock_fn = getattr(deps, "clock", None)
+            study_plan_service = StudyPlanService(
+                session_factory=deps.session_factory,
+                llm_client=deps.llm_client,
+                clock=clock_fn,
+            )
+            set_study_plan_service(study_plan_service)
 
         from sahayak.modules.academics.tools.flashcards import (
             FLASHCARDS_DESCRIPTION,
@@ -79,16 +89,22 @@ class AcademicsModule:
             quiz_answer,
             quiz_start,
         )
+        from sahayak.modules.academics.tools.study_plan import (
+            STUDY_PLAN_DESCRIPTION,
+            study_plan,
+        )
 
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="quiz_start", description=QUIZ_START_DESCRIPTION)(quiz_start)
             tool_decorator(name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)(quiz_answer)
             tool_decorator(name="flashcards", description=FLASHCARDS_DESCRIPTION)(flashcards)
+            tool_decorator(name="study_plan", description=STUDY_PLAN_DESCRIPTION)(study_plan)
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(quiz_start, name="quiz_start", description=QUIZ_START_DESCRIPTION)
             mcp.add_tool(quiz_answer, name="quiz_answer", description=QUIZ_ANSWER_DESCRIPTION)
             mcp.add_tool(flashcards, name="flashcards", description=FLASHCARDS_DESCRIPTION)
+            mcp.add_tool(study_plan, name="study_plan", description=STUDY_PLAN_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs owned by the academics module."""

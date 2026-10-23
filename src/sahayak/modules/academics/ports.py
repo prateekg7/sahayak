@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime
 from typing import Protocol
 
 from sahayak.modules.academics.models import (
     Card,
     Deck,
     DifficultyLevel,
+    PlanTask,
     Question,
     QuestionStatus,
+    StudyPlan,
     Topic,
 )
 
@@ -131,4 +133,53 @@ class FlashcardPort(Protocol):
 
     async def save_card(self, card: Card) -> Card:
         """Persist updates to an existing card."""
+        ...
+
+
+class StudyPlanPort(Protocol):
+    """Repository port for study plans and daily plan tasks."""
+
+    async def create_plan(
+        self,
+        user_id: uuid.UUID,
+        goal: str,
+        exam_date: date,
+        tasks: Sequence[PlanTask],
+    ) -> StudyPlan:
+        """Persist a new study plan and its associated initial tasks."""
+        ...
+
+    async def get_plan(self, plan_id: uuid.UUID, user_id: uuid.UUID) -> StudyPlan | None:
+        """Retrieve a study plan ensuring user ownership."""
+        ...
+
+    async def get_active_plan(self, user_id: uuid.UUID, as_of: date) -> StudyPlan | None:
+        """Fetch the latest active plan for a user whose exam_date >= as_of."""
+        ...
+
+    async def list_plans(self, user_id: uuid.UUID, limit: int = 5) -> Sequence[StudyPlan]:
+        """List study plans for a user ordered by created_at DESC."""
+        ...
+
+    async def get_tasks_for_date(self, plan_id: uuid.UUID, target_date: date) -> Sequence[PlanTask]:
+        """Fetch tasks for a plan on a specific calendar date."""
+        ...
+
+    async def get_task(
+        self, task_id: uuid.UUID, plan_id: uuid.UUID | None = None
+    ) -> PlanTask | None:
+        """Fetch a specific plan task."""
+        ...
+
+    async def mark_task_done(self, task_id: uuid.UUID, done_at: datetime) -> PlanTask | None:
+        """Mark a plan task as completed."""
+        ...
+
+    async def replace_future_tasks(
+        self,
+        plan_id: uuid.UUID,
+        new_tasks: Sequence[PlanTask],
+        from_date: date,
+    ) -> Sequence[PlanTask]:
+        """Delete incomplete tasks on or after from_date and insert new replanned tasks."""
         ...

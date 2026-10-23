@@ -274,3 +274,48 @@ register_isolation_spec(
         custom_isolation_check=_flashcards_cross_user_isolation,
     )
 )
+
+
+async def _study_plan_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A creates a study plan
+    res_a = await session_a.call_tool(
+        "study_plan",
+        {
+            "action": "create",
+            "goal": "Organic Chemistry",
+            "exam_date": "2026-11-20",
+            "topics": ["Alkanes", "Alkenes"],
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to create study plan: {data_a}"
+    plan_id = data_a.get("data", {}).get("plan_id", "")
+    assert plan_id, "Failed to get plan_id from User A's response"
+
+    # User B lists study plans - User A's plan must not appear
+    res_b_list = await session_b.call_tool("study_plan", {"action": "list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_plan_ids = [p.get("plan_id") for p in data_b_list.get("data", {}).get("plans", [])]
+    assert plan_id not in b_plan_ids, "User A's plan leaked into User B's list"
+
+    # User B attempts to access User A's plan today tasks with plan_id - must fail with not_found
+    res_b_today = await session_b.call_tool(
+        "study_plan",
+        {"action": "today", "plan_id": plan_id},
+    )
+    data_b_today = json.loads(getattr(res_b_today.content[0], "text", "{}"))
+    assert data_b_today.get("ok") is False
+    assert data_b_today.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="study_plan",
+        allows_anonymous=False,
+        sample_args={"action": "list"},
+        custom_isolation_check=_study_plan_cross_user_isolation,
+    )
+)
