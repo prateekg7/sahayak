@@ -525,7 +525,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 
 # PHASE 11 — Language learning module
 
-### [ ] T11.1 — `vocab` tool (daily vocabulary with spaced repetition)
+### [x] T11.1 — `vocab` tool (daily vocabulary with spaced repetition)
 - **Depends on:** T3.9, T2.1 · **Est. LOC:** ~700
 - **What it does:** A word a day, quizzes on learned words, scheduled reviews.
 - **Implement:** schema `language` (`words` cache by language/level, `user_words` with SM-2 state using `shared/srs`), word-of-the-day generation validated (word, meaning, example sentence, pronunciation hint in text), `tools/vocab.py` (`word_of_day, review, grade, stats`), supported language list in config (verify locale/speech behavior per V4).

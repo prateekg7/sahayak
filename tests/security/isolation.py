@@ -1354,3 +1354,42 @@ register_isolation_spec(
         custom_isolation_check=_sales_summary_cross_user_isolation,
     )
 )
+
+
+async def _vocab_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A gets word of the day
+    res_a = await session_a.call_tool(
+        "vocab",
+        {"action": "word_of_day", "language": "spanish"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to get word of the day: {data_a}"
+    uw_id_a = data_a.get("data", {}).get("user_word", {}).get("id")
+    assert uw_id_a, "Failed to get user_word_id from User A's response"
+
+    # User B attempts to grade User A's word_id: must return not_found
+    res_b_breach = await session_b.call_tool(
+        "vocab",
+        {"action": "grade", "user_word_id": uw_id_a, "rating": "good"},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+    # User A grades their own word: must succeed
+    res_a_grade = await session_a.call_tool(
+        "vocab",
+        {"action": "grade", "user_word_id": uw_id_a, "rating": "good"},
+    )
+    data_a_grade = json.loads(getattr(res_a_grade.content[0], "text", "{}"))
+    assert data_a_grade.get("ok") is True
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="vocab",
+        allows_anonymous=False,
+        sample_args={"action": "stats"},
+        custom_isolation_check=_vocab_cross_user_isolation,
+    )
+)

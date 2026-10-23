@@ -2228,5 +2228,140 @@
       "title": "topic_briefArguments",
       "type": "object"
     }
+  },
+  {
+    "description": "Manages daily vocabulary learning and spaced repetition review quizzes. Use when the user says 'Give me my word of the day in Spanish', 'Review my vocabulary', 'Grade my word good', or 'What are my language stats?'. Do not use for conversational practice or translations; use language_practice instead.",
+    "name": "vocab",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "word_of_day",
+          "title": "Action",
+          "type": "string"
+        },
+        "example_sentence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Example Sentence"
+        },
+        "example_translation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Example Translation"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Level"
+        },
+        "pronunciation_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pronunciation Hint"
+        },
+        "rating": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rating"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "translation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Translation"
+        },
+        "user_word_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Word Id"
+        },
+        "word": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Word"
+        }
+      },
+      "title": "vocabArguments",
+      "type": "object"
+    }
   }
 ]

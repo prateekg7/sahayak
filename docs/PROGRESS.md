@@ -1,5 +1,34 @@
 # Progress
 
+## 2026-10-24 — T11.1 `vocab` tool (daily vocabulary with spaced repetition) — DONE
+
+- Summary: implemented Phase 11 Language Learning module foundation with language normalization (Spanish, French, German, Hindi, Japanese, Italian, Mandarin), curated seed vocabulary, word-of-the-day acquisition, SuperMemo-2 (SM-2) spaced repetition review quizzes via `shared/srs`, custom word additions, GDPR privacy hooks, and the `vocab` MCP tool (27th platform tool):
+  - Database & Migrations:
+    - Registered `language/migrations` branch in `alembic.ini` and `pyproject.toml` importlinter contracts.
+    - `src/sahayak/modules/language/models.py`: Added `Word` (vocabulary cache with unique constraint `(language, word)`) and `UserWord` (spaced repetition review state with `ease`, `interval_days`, `repetitions`, `due_at`, unique constraint `(user_id, word_id)`).
+    - `src/sahayak/modules/language/migrations/0001_language_schema.py`: Alembic migration creating `language.words` and `language.user_words` tables with indexes. Fully reversible up->down->up.
+  - Domain Logic (`src/sahayak/modules/language/domain/`):
+    - `languages.py`: Supported languages and proficiency levels (`beginner`, `intermediate`, `advanced`) normalization with alias handling.
+    - `seeds.py`: Curated high-frequency seed vocabulary across languages and levels.
+    - `vocab.py`: Validation and spoken summary formatters for word of the day, review card prompts, graded feedback, and statistics strictly $\le 300$ characters without markdown, asterisks, or quotes.
+  - Adapters & Services:
+    - `src/sahayak/modules/language/adapters/vocab.py`: `SQLAlchemyWordRepository` and `SQLAlchemyUserWordRepository` supporting unlearned word queries, due review queries, and learning statistics.
+    - `src/sahayak/modules/language/service/vocab.py`: `VocabService` managing word-of-the-day (preventing duplicate assignments on the same day), due reviews, SM-2 grading with outbox event dispatch (`language.vocab.graded`), statistics, and custom word additions.
+  - Public MCP Tool, Cross-Module API & GDPR:
+    - `src/sahayak/modules/language/tools/vocab.py`: `vocab` MCP tool (27th platform tool) with `@requires()` authorization, `@idempotent(tool_name="vocab")`, and envelope responses.
+    - `src/sahayak/modules/language/api.py`: `LanguageAPI` exposing `get_due_vocab_count` for cross-module integration.
+    - `src/sahayak/modules/language/module.py`: Registered `vocab` tool; implemented GDPR Right to Access export and Right to Erasure deletion hooks.
+    - `tests/snapshots/tools.json`: Snapshot updated to 27 tools.
+  - Tests & Verification:
+    - `tests/unit/test_language_vocab_domain.py`: Unit and Hypothesis property tests verifying language normalization, word validation, and voice formatting invariants.
+    - `tests/unit/test_language_vocab_service.py`: Spaced repetition lifecycle test covering initial assignment, same-day duplicate prevention, multi-day progression with distinct words, SM-2 interval expansion, cross-user isolation, and stats.
+    - `tests/unit/test_language_api.py`: Unit test verifying cross-module due vocab queries.
+    - `tests/contract/test_vocab_contract.py`: Full MCP contract test over Streamable HTTP.
+    - `tests/integration/test_language_privacy.py`: Verified GDPR export and deletion.
+    - `tests/security/isolation.py`: Cross-user vocab isolation test registered and passing in auto-isolation suite.
+  - Quality Gates: `make lint`, `make test` (629 passed, 85.70% coverage), `make snapshot-check` (27 tools), `make migrate-check`, `make security` all green.
+- Next: T11.2 `language_practice` tool (conversation and translate-and-explain).
+
 ## 2026-10-24 — T10.3 `sales_summary` tool and low-stock alerts — DONE
 
 - Summary: completed Phase 10 (Small Business module) with sales summaries (today/week/month), top-selling products by revenue, inventory catalog with atomic stock decrements, low-stock threshold queries, cross-module briefing integration, and the `sales_summary` MCP tool (26th platform tool):
