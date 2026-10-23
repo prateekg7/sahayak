@@ -745,3 +745,41 @@ register_isolation_spec(
         custom_isolation_check=_finance_report_cross_user_isolation,
     )
 )
+
+
+async def _health_log_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A logs water
+    res_a = await session_a.call_tool(
+        "health_log",
+        {"action": "log", "kind": "water", "value": 500, "unit": "ml"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    entry_id = data_a.get("data", {}).get("entry", {}).get("id")
+    assert entry_id is not None
+
+    # User B queries list - User A's entry must not appear
+    res_b_list = await session_b.call_tool("health_log", {"action": "list", "kind": "water"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_entries = data_b_list.get("data", {}).get("entries", [])
+    b_entry_ids = [e.get("id") for e in b_entries]
+    assert entry_id not in b_entry_ids
+
+    # User B attempts to delete User A's entry - must fail with not_found
+    res_b_del = await session_b.call_tool("health_log", {"action": "delete", "entry_id": entry_id})
+    data_b_del = json.loads(getattr(res_b_del.content[0], "text", "{}"))
+    assert data_b_del.get("ok") is False
+    assert data_b_del.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="health_log",
+        allows_anonymous=False,
+        sample_args={"action": "list", "kind": "water"},
+        custom_isolation_check=_health_log_cross_user_isolation,
+    )
+)

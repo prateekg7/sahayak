@@ -95,8 +95,9 @@ async def test_auto_isolation_suite_passes_all_registered_tools(
             )
 
             registry = ModuleRegistry()
-            registry.load(("_template", "academics", "productivity", "finance"))
+            registry.load(("_template", "academics", "productivity", "finance", "health"))
             deps = Deps(session_factory=session_factory)
+
             app = create_app(registry=registry, jwt_validator=validator, deps=deps)
 
             async with app.router.lifespan_context(app):
