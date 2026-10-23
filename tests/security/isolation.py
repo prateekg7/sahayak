@@ -366,3 +366,45 @@ register_isolation_spec(
         sample_args={"topic": "General Science", "length": "short"},
     )
 )
+
+
+async def _tasks_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A creates a task
+    res_a = await session_a.call_tool(
+        "tasks",
+        {
+            "action": "create",
+            "title": "Private task for User A",
+            "due_date": "tomorrow",
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    task_id = data_a.get("data", {}).get("task", {}).get("id")
+    assert task_id
+
+    # User B lists tasks - User A's task must not appear
+    res_b_list = await session_b.call_tool("tasks", {"action": "list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_task_ids = [t.get("id") for t in data_b_list.get("data", {}).get("tasks", [])]
+    assert task_id not in b_task_ids
+
+    # User B attempts to complete User A's task - must fail with not_found
+    res_b_comp = await session_b.call_tool(
+        "tasks",
+        {"action": "complete", "task_id": task_id},
+    )
+    data_b_comp = json.loads(getattr(res_b_comp.content[0], "text", "{}"))
+    assert data_b_comp.get("ok") is False
+    assert data_b_comp.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="tasks",
+        allows_anonymous=False,
+        sample_args={"action": "list"},
+        custom_isolation_check=_tasks_cross_user_isolation,
+    )
+)

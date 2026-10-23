@@ -8,7 +8,9 @@ an Alexa+ add-on redeploy (PRD §9.2).
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -23,7 +25,30 @@ SNAPSHOT_PATH = Path("tests/snapshots/tools.json")
 def generate_snapshot(modules: tuple[str, ...] | None = None) -> list[dict[str, Any]]:
     """Generate a sorted, serializable list of tool definitions."""
     settings = get_settings()
-    enabled = modules or settings.enabled_modules
+    if modules is not None:
+        enabled = modules
+    elif "ENABLED_MODULES" in os.environ:
+        enabled = settings.enabled_modules
+    else:
+        candidates = [
+            "academics",
+            "productivity",
+            "finance",
+            "health",
+            "career",
+            "home",
+            "business",
+            "language",
+            "civic",
+        ]
+        available: list[str] = []
+        for name in candidates:
+            try:
+                importlib.import_module(f"sahayak.modules.{name}")
+                available.append(name)
+            except ImportError:
+                pass
+        enabled = tuple(available) if available else settings.enabled_modules
     registry = ModuleRegistry()
     try:
         registry.load(enabled)

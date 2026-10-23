@@ -32,7 +32,7 @@ def test_every_registered_tool_has_isolation_specification() -> None:
     """Auto-discovery gate: fails CI if any registered tool lacks isolation coverage."""
     settings = get_settings()
     registry = ModuleRegistry()
-    registry.load(("_template", "academics"))
+    registry.load(("_template", "academics", "productivity"))
     server = create_mcp_server(settings=settings, registry=registry)
 
     untested = get_untested_tools(server)
@@ -95,7 +95,7 @@ async def test_auto_isolation_suite_passes_all_registered_tools(
             )
 
             registry = ModuleRegistry()
-            registry.load(("_template", "academics"))
+            registry.load(("_template", "academics", "productivity"))
             deps = Deps(session_factory=session_factory)
             app = create_app(registry=registry, jwt_validator=validator, deps=deps)
 

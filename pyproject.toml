@@ -103,4 +103,8 @@ forbidden_modules = ["sahayak.modules._template.adapters"]
 [[tool.importlinter.contracts]]
 name = "Modules are independent"
 type = "independence"
-modules = ["sahayak.modules._template"]
+modules = [
+  "sahayak.modules._template",
+  "sahayak.modules.academics",
+  "sahayak.modules.productivity",
+]

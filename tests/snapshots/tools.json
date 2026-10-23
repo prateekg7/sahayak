@@ -293,6 +293,118 @@
     }
   },
   {
+    "description": "Manage your personal to-do list, create tasks with natural due dates, and mark items complete. Use when the user says 'Add a task: submit report by Friday', 'What's on my list?', 'Mark task done', or 'Reschedule task'. Do not use for habits or daily streaks; use the habits tool instead.",
+    "name": "tasks",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "due_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Due Date"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "list_name": {
+          "default": "inbox",
+          "title": "List Name",
+          "type": "string"
+        },
+        "priority": {
+          "default": "medium",
+          "title": "Priority",
+          "type": "string"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tags"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "tasksArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Provides a concise, sourced spoken summary of an academic topic grounded in verified references. Use when the user asks 'Give me a brief on photosynthesis', 'Tell me about the French Revolution', or 'What is plate tectonics?'. Do not use for testing knowledge or scheduling study; use 'quiz_start' or 'study_plan' instead.",
     "name": "topic_brief",
     "parameters": {
