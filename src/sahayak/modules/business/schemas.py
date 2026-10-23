@@ -89,3 +89,41 @@ class LedgerRequest(BaseModel):
             val = float(values["amount"])
             values["amount_minor"] = int(round(val * 100))
         return values
+
+
+class SalesSummaryAction(str, Enum):
+    """Supported actions for the sales_summary MCP tool."""
+
+    TODAY = "today"
+    WEEK = "week"
+    TOP_PRODUCTS = "top_products"
+    LOW_STOCK = "low_stock"
+    ADD_PRODUCT = "add_product"
+    LIST_PRODUCTS = "list_products"
+
+
+class SalesSummaryRequest(BaseModel):
+    """Request model for the sales_summary MCP tool."""
+
+    action: SalesSummaryAction = Field(default=SalesSummaryAction.TODAY)
+    business_id: str | None = Field(default=None, max_length=64)
+    name: str | None = Field(default=None, max_length=128)
+    stock_level: int | None = Field(default=None, ge=0)
+    low_stock_threshold: int | None = Field(default=5, ge=0)
+    unit_price: float | None = Field(default=None, ge=0)
+    unit_price_minor: int | None = Field(default=None, ge=0)
+    sku: str | None = Field(default=None, max_length=64)
+    limit: int = Field(default=5, ge=1, le=20)
+    request_id: str | None = Field(default=None, max_length=64)
+
+    @model_validator(mode="before")
+    @classmethod
+    def resolve_price_minor(cls, values: Any) -> Any:
+        if (
+            isinstance(values, dict)
+            and values.get("unit_price_minor") is None
+            and values.get("unit_price") is not None
+        ):
+            val = float(values["unit_price"])
+            values["unit_price_minor"] = int(round(val * 100))
+        return values

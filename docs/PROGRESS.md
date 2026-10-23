@@ -1,5 +1,35 @@
 # Progress
 
+## 2026-10-24 — T10.3 `sales_summary` tool and low-stock alerts — DONE
+
+- Summary: completed Phase 10 (Small Business module) with sales summaries (today/week/month), top-selling products by revenue, inventory catalog with atomic stock decrements, low-stock threshold queries, cross-module briefing integration, and the `sales_summary` MCP tool (26th platform tool):
+  - Database & Migrations:
+    - `src/sahayak/modules/business/models.py`: Added `Product` entity with `stock_level`, `low_stock_threshold`, `unit_price_minor`, constraints `ck_business_product_stock_non_negative` and `ck_business_product_price_non_negative`, and added `product_id` foreign key on `OrderItem`.
+    - `src/sahayak/modules/business/migrations/0003_products_schema.py`: Alembic migration creating `business.products` table and adding `product_id` column to `business.order_items`. Fully reversible.
+  - Domain Logic (`src/sahayak/modules/business/domain/sales.py`):
+    - Sales aggregations and top-products sorting by revenue.
+    - Low-stock threshold detection (`stock_level <= low_stock_threshold`).
+    - Spoken summary formatters for today, week, top products, low stock, and product addition strictly $\le 300$ characters without markdown, asterisks, or quotes.
+  - Adapters & Services:
+    - `src/sahayak/modules/business/adapters/sales.py`: `SQLAlchemyProductRepository` with atomic row-level stock decrement `UPDATE business.products SET stock_level = stock_level - :qty WHERE id = :id AND stock_level >= :qty RETURNING stock_level` to guarantee race-safe non-negative inventory under concurrency.
+    - `src/sahayak/modules/business/service/orders.py`: Updated order shipping transition to atomically decrement product stock for shipped order items.
+    - `src/sahayak/modules/business/service/sales.py`: `SalesService` orchestrating today sales, weekly sales, top products, low stock alerts, and product additions.
+  - Public MCP Tool, Cross-Module API & GDPR:
+    - `src/sahayak/modules/business/tools/sales_summary.py`: `sales_summary` MCP tool (26th platform tool) with `@requires()` authorization, `@idempotent(tool_name="sales_summary")`, and standard envelope.
+    - `src/sahayak/modules/business/api.py`: Added `get_low_stock_summary` to `BusinessAPI` protocol and implementation.
+    - `src/sahayak/modules/productivity/service/briefing.py` & `productivity/module.py`: Updated `daily_briefing` tool to query low-stock alerts dynamically without static cross-module imports.
+    - `src/sahayak/modules/business/module.py`: Registered `sales_summary` tool; added `products` to GDPR Right to Access export and deletion hooks.
+    - `tests/snapshots/tools.json`: Snapshot updated to 26 tools.
+  - Tests & Verification:
+    - `tests/unit/test_business_sales_domain.py`: Unit tests for sales aggregations, top products formatting, and low-stock speech formatting under length bounds.
+    - `tests/unit/test_business_sales_service.py`: Full lifecycle tests for products, today/week sales, low stock alerts, and concurrent race-condition shipment test proving stock never goes negative.
+    - `tests/unit/test_briefing_service.py`: Unit test verifying low-stock alerts surfaced seamlessly in daily briefing.
+    - `tests/contract/test_sales_summary_contract.py`: Full MCP contract test over Streamable HTTP.
+    - `tests/security/isolation.py`: Cross-user sales summary and product isolation verified.
+  - Quality Gates: `make lint`, `make test` (618 passed, 85.96% coverage), `make snapshot-check` (26 tools), `make migrate-check`, `make security` all green.
+- Phase 10 (Small Business Module) Complete!
+- Next: Phase 11 — Language learning module (T11.1 `vocab` tool).
+
 ## 2026-10-24 — T10.2 `ledger` tool (customer dues) — DONE
 
 - Summary: implemented append-only double-entry style customer credit and debit ledger, balance computation purely from entries, reversal entries with full audit trail, top dues ordering, daily balance reconciliation, and the `ledger` MCP tool (25th platform tool):

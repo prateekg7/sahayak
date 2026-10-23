@@ -17,6 +17,7 @@ from sahayak.modules.business.models import (
     LedgerEntry,
     Order,
     OrderItem,
+    Product,
 )
 
 
@@ -51,14 +52,19 @@ class BusinessModule:
         if deps.session_factory is not None:
             from sahayak.modules.business.service.ledger import LedgerService
             from sahayak.modules.business.service.orders import OrderService
+            from sahayak.modules.business.service.sales import SalesService
             from sahayak.modules.business.tools.ledger import set_ledger_service
             from sahayak.modules.business.tools.orders import set_order_service
+            from sahayak.modules.business.tools.sales_summary import set_sales_service
 
             order_service = OrderService(session_factory=deps.session_factory)
             set_order_service(order_service)
 
             ledger_service = LedgerService(session_factory=deps.session_factory)
             set_ledger_service(ledger_service)
+
+            sales_service = SalesService(session_factory=deps.session_factory)
+            set_sales_service(sales_service)
 
         from sahayak.modules.business.tools.ledger import (
             LEDGER_DESCRIPTION,
@@ -68,14 +74,22 @@ class BusinessModule:
             ORDERS_DESCRIPTION,
             orders,
         )
+        from sahayak.modules.business.tools.sales_summary import (
+            SALES_SUMMARY_DESCRIPTION,
+            sales_summary,
+        )
 
         tool_decorator = getattr(mcp, "tool", None)
         if callable(tool_decorator):
             tool_decorator(name="orders", description=ORDERS_DESCRIPTION)(orders)
             tool_decorator(name="ledger", description=LEDGER_DESCRIPTION)(ledger)
+            tool_decorator(name="sales_summary", description=SALES_SUMMARY_DESCRIPTION)(
+                sales_summary
+            )
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(orders, name="orders", description=ORDERS_DESCRIPTION)
             mcp.add_tool(ledger, name="ledger", description=LEDGER_DESCRIPTION)
+            mcp.add_tool(sales_summary, name="sales_summary", description=SALES_SUMMARY_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs for business module."""
@@ -137,6 +151,11 @@ class BusinessModule:
                 )
                 exported_ledger = [entry.to_dict() for entry in res_l.scalars().all()]
 
+                res_p = await uow.session.execute(
+                    select(Product).where(Product.business_id.in_(b_ids))
+                )
+                exported_products = [p.to_dict() for p in res_p.scalars().all()]
+
             return {
                 "businesses": exported_businesses,
                 "memberships": [m.to_dict() for m in memberships],
@@ -144,6 +163,7 @@ class BusinessModule:
                 "order_items": exported_items,
                 "customers": exported_customers,
                 "ledger_entries": exported_ledger,
+                "products": exported_products,
             }
 
     async def delete_user_data(self, user_id: str) -> None:

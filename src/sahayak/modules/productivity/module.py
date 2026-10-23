@@ -77,9 +77,16 @@ class ProductivityModule:
                 mod = get_registry().get("academics")
                 return getattr(mod, "api", None) if mod is not None else None
 
+            def _get_business_api() -> Any:
+                from sahayak.core.module import get_registry
+
+                mod = get_registry().get("business")
+                return getattr(mod, "api", None) if mod is not None else None
+
             briefing_service = BriefingService(
                 session_factory=deps.session_factory,
                 academics_api_getter=_get_academics_api,
+                business_api_getter=_get_business_api,
                 clock=clock_fn,
             )
             set_briefing_service(briefing_service)

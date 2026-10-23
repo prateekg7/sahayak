@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import Any, Protocol
 
 from sahayak.modules.business.models import (
@@ -12,6 +13,7 @@ from sahayak.modules.business.models import (
     LedgerEntry,
     Order,
     OrderItem,
+    Product,
 )
 
 
@@ -167,4 +169,83 @@ class LedgerRepositoryPort(Protocol):
         business_id: uuid.UUID,
     ) -> dict[uuid.UUID, int]:
         """Reconcile and compute current balances for all customers from ledger entries."""
+        ...
+
+
+class ProductRepositoryPort(Protocol):
+    """Port for product inventory and sales summaries."""
+
+    async def create_or_update_product(
+        self,
+        *,
+        business_id: uuid.UUID,
+        name: str,
+        stock_level: int,
+        low_stock_threshold: int = 5,
+        unit_price_minor: int = 0,
+        sku: str | None = None,
+    ) -> Product:
+        """Create or update a product and its stock level."""
+        ...
+
+    async def get_product(
+        self,
+        *,
+        business_id: uuid.UUID,
+        product_id: uuid.UUID,
+    ) -> Product | None:
+        """Find product by ID."""
+        ...
+
+    async def find_product_by_name(
+        self,
+        *,
+        business_id: uuid.UUID,
+        name: str,
+    ) -> Product | None:
+        """Find product by exact or case-insensitive name."""
+        ...
+
+    async def list_products(
+        self,
+        *,
+        business_id: uuid.UUID,
+    ) -> list[Product]:
+        """List all inventory products for a business."""
+        ...
+
+    async def get_low_stock_products(
+        self,
+        *,
+        business_id: uuid.UUID,
+    ) -> list[Product]:
+        """List products whose stock_level is <= low_stock_threshold."""
+        ...
+
+    async def decrement_stock_atomic(
+        self,
+        *,
+        product_id: uuid.UUID,
+        quantity: int,
+    ) -> bool:
+        """Atomically decrement stock if stock_level >= quantity. Return True if success."""
+        ...
+
+    async def get_sales_summary(
+        self,
+        *,
+        business_id: uuid.UUID,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> dict[str, Any]:
+        """Aggregate total revenue and order counts in time window."""
+        ...
+
+    async def get_top_selling_products(
+        self,
+        *,
+        business_id: uuid.UUID,
+        limit: int = 5,
+    ) -> list[dict[str, Any]]:
+        """Compute top products by units sold across orders."""
         ...

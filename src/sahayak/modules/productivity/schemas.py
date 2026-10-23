@@ -326,3 +326,4 @@ class DailyBriefingData(BaseModel):
     study_tasks: list[str] = Field(default_factory=list)
     study_streak: int | None = None
     focus_today_completed: int = 0
+    low_stock_items: list[str] = Field(default_factory=list)

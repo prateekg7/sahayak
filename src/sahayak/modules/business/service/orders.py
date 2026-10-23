@@ -178,13 +178,46 @@ class OrderService:
                     detail=f"Order {order_number} not found in business {b_id}",
                 )
 
-            order, _ = found
+            order, items = found
             # Enforce state machine transition
             validate_status_transition(
                 current_status=order.status,
                 new_status=clean_new_status,
                 order_number=order_number,
             )
+
+            # Transactional stock decrement on shipped orders (T10.3)
+            if clean_new_status == "shipped" and order.status != "shipped":
+                from sahayak.modules.business.adapters.sales import (
+                    SQLAlchemyProductRepository,
+                )
+
+                prod_repo = SQLAlchemyProductRepository(uow.session)
+                for item in items:
+                    prod = None
+                    if item.product_id:
+                        prod = await prod_repo.get_product(
+                            business_id=b_id, product_id=item.product_id
+                        )
+                    if not prod:
+                        prod = await prod_repo.find_product_by_name(
+                            business_id=b_id, name=item.item_name
+                        )
+                    if prod:
+                        decremented = await prod_repo.decrement_stock_atomic(
+                            product_id=prod.id, quantity=item.quantity
+                        )
+                        if not decremented:
+                            raise InvalidInputError(
+                                spoken=(
+                                    f"Cannot ship order: not enough stock for {item.item_name}."
+                                ),
+                                detail=(
+                                    f"Insufficient stock for product {prod.name} "
+                                    f"(has {prod.stock_level}, needs {item.quantity})"
+                                ),
+                            )
+                        item.product_id = prod.id
 
             updated = await order_repo.update_order_status(
                 order_id=order.id,

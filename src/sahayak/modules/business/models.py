@@ -230,14 +230,75 @@ class OrderItem(Base):
         Integer, nullable=False, default=0, server_default="0"
     )
 
+    product_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("business.products.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": str(self.id),
             "order_id": str(self.order_id),
+            "product_id": str(self.product_id) if self.product_id else None,
             "item_name": self.item_name,
             "quantity": self.quantity,
             "unit_price_minor": self.unit_price_minor,
             "total_price_minor": self.total_price_minor,
+        }
+
+
+class Product(Base):
+    """Store product inventory item with stock levels and low-stock threshold (T10.3)."""
+
+    __tablename__ = "products"
+    __table_args__ = (
+        UniqueConstraint("business_id", "name", name="uq_business_products_business_name"),
+        Index("ix_business_products_business_stock", "business_id", "stock_level"),
+        {"schema": "business"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    business_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("business.businesses.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    sku: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    stock_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    low_stock_threshold: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=5, server_default="5"
+    )
+    unit_price_minor: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "business_id": str(self.business_id),
+            "name": self.name,
+            "sku": self.sku,
+            "stock_level": self.stock_level,
+            "low_stock_threshold": self.low_stock_threshold,
+            "unit_price_minor": self.unit_price_minor,
+            "is_low_stock": self.stock_level <= self.low_stock_threshold,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
 

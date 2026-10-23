@@ -1661,6 +1661,122 @@
     }
   },
   {
+    "description": "Inspect business sales summaries and low stock alerts. Use when the user says 'How were sales today?', 'What were this week's sales?', 'What are my top products?', 'Any items low in stock?', or 'Add product Milk with 50 units'. Do not use for individual order details; use orders instead.",
+    "name": "sales_summary",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "today",
+          "title": "Action",
+          "type": "string"
+        },
+        "business_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Business Id"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "low_stock_threshold": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 5,
+          "title": "Low Stock Threshold"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "sku": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sku"
+        },
+        "stock_level": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stock Level"
+        },
+        "unit_price": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit Price"
+        },
+        "unit_price_minor": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit Price Minor"
+        }
+      },
+      "title": "sales_summaryArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Add, remove, read, check off, and clear items on shared household lists like groceries. Use when the user says 'Add milk to the shopping list', 'What is on our grocery list?', 'Check off eggs', or 'Clear finished items from the list'. Do not use for personal private tasks or habit tracking.",
     "name": "shared_list",
     "parameters": {

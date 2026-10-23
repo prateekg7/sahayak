@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime, time
@@ -19,6 +20,8 @@ from sahayak.modules.productivity.domain.briefing import (
 from sahayak.modules.productivity.ports import AcademicsAPIPort
 from sahayak.modules.productivity.schemas import DailyBriefingData
 
+logger = logging.getLogger(__name__)
+
 
 class BriefingService:
     """Service orchestrating cross-module daily briefings with graceful degradation."""
@@ -27,10 +30,12 @@ class BriefingService:
         self,
         session_factory: Any,
         academics_api_getter: Callable[[], AcademicsAPIPort | None] | None = None,
+        business_api_getter: Callable[[], Any] | None = None,
         clock: Callable[[], datetime] | None = None,
     ) -> None:
         self.session_factory = session_factory
         self.academics_api_getter = academics_api_getter
+        self.business_api_getter = business_api_getter
         self.clock = clock or (lambda: datetime.now(UTC))
 
     def _now(self) -> datetime:
@@ -92,6 +97,16 @@ class BriefingService:
                 # Graceful degradation if academics API query fails
                 academics_enabled = False
 
+        # 5. Optional Business API for low stock alerts (T10.3)
+        low_stock_items: list[str] = []
+        biz_api = self.business_api_getter() if self.business_api_getter else None
+        if biz_api is not None:
+            try:
+                low_prods = await biz_api.get_low_stock_summary(user_id=user_id)
+                low_stock_items = [p["name"] for p in low_prods]
+            except Exception as exc:
+                logger.debug("Failed to retrieve low stock summary for user %s: %s", user_id, exc)
+
         items = BriefingItems(
             tasks_due=due_task_titles,
             habits_pending=pending_habits,
@@ -103,6 +118,11 @@ class BriefingService:
         )
 
         spoken = format_daily_briefing_spoken(items)
+        if low_stock_items:
+            stock_phrase = f" Low stock alert: {', '.join(low_stock_items[:2])}."
+            if len(spoken) + len(stock_phrase) <= 300:
+                spoken = spoken + stock_phrase
+
         data = DailyBriefingData(
             tasks_due_count=len(due_task_titles),
             tasks_due=due_task_titles,
@@ -113,9 +133,12 @@ class BriefingService:
             study_tasks=study_tasks if academics_enabled else [],
             study_streak=study_streak if academics_enabled else None,
             focus_today_completed=today_focus,
+            low_stock_items=low_stock_items,
         )
 
         next_actions = ["what are my tasks", "start a focus session"]
         if academics_enabled and flashcards_due > 0:
             next_actions.append("review flashcards")
+        if low_stock_items:
+            next_actions.append("sales_summary(action='low_stock')")
         return spoken, data, next_actions

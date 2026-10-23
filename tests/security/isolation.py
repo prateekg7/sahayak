@@ -1285,3 +1285,72 @@ register_isolation_spec(
         custom_isolation_check=_ledger_cross_user_isolation,
     )
 )
+
+
+async def _sales_summary_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A adds a product
+    res_a = await session_a.call_tool(
+        "sales_summary",
+        {
+            "action": "add_product",
+            "name": "Notebook",
+            "stock_level": 25,
+            "low_stock_threshold": 5,
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to add product: {data_a}"
+    b_id_a = data_a.get("data", {}).get("business_id")
+    assert b_id_a is not None
+
+    # User B adds a product
+    res_b = await session_b.call_tool(
+        "sales_summary",
+        {
+            "action": "add_product",
+            "name": "Gel Pen",
+            "stock_level": 100,
+            "low_stock_threshold": 10,
+        },
+    )
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is True, f"User B failed to add product: {data_b}"
+    b_id_b = data_b.get("data", {}).get("business_id")
+    assert b_id_a != b_id_b
+
+    # User A lists products: sees Notebook, not Gel Pen
+    res_a_list = await session_a.call_tool("sales_summary", {"action": "list_products"})
+    data_a_list = json.loads(getattr(res_a_list.content[0], "text", "{}"))
+    assert data_a_list.get("ok") is True
+    prods_a = [p.get("name") for p in data_a_list.get("data", {}).get("products", [])]
+    assert "Notebook" in prods_a
+    assert "Gel Pen" not in prods_a
+
+    # User B lists products: sees Gel Pen, not Notebook
+    res_b_list = await session_b.call_tool("sales_summary", {"action": "list_products"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    prods_b = [p.get("name") for p in data_b_list.get("data", {}).get("products", [])]
+    assert "Gel Pen" in prods_b
+    assert "Notebook" not in prods_b
+
+    # User B attempts to access User A's sales summary using User A's business_id
+    res_b_breach = await session_b.call_tool(
+        "sales_summary",
+        {"action": "today", "business_id": b_id_a},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="sales_summary",
+        allows_anonymous=False,
+        sample_args={"action": "today"},
+        custom_isolation_check=_sales_summary_cross_user_isolation,
+    )
+)

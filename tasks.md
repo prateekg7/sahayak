@@ -515,7 +515,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** `ledger_entries` (append-only, credits/debits), balance computed from entries (never edited in place), `tools/ledger.py` (`add_due, record_payment, balance, top_dues`), reversal entries instead of deletes, daily reconciliation test.
 - **Done when:** balances always equal the sum of entries; reversals leave an audit trail.
 
-### [ ] T10.3 — `sales_summary` tool and low-stock alerts
+### [x] T10.3 — `sales_summary` tool and low-stock alerts
 - **Depends on:** T10.1 · **Est. LOC:** ~650
 - **What it does:** "How were sales today?" and stock warnings.
 - **Implement:** `products` with stock levels and thresholds, stock decrement on shipped orders (transactional), `tools/sales_summary.py` (`today, week, top_products, low_stock`), reporting queries with indexes, surfacing low-stock in `daily_briefing`.

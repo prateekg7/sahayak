@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -144,5 +145,44 @@ async def test_briefing_adapts_when_academics_disabled() -> None:
         assert "flashcards" not in spoken
         assert "review flashcards" not in next_actions
 
+    finally:
+        await engine.dispose()
+
+
+class FakeBusinessAPI:
+    """Mock implementation of BusinessAPI for testing low stock alerts in briefing."""
+
+    def __init__(self, low_prods: list[dict[str, Any]] | None = None) -> None:
+        self.low_prods = low_prods or [{"name": "Milk"}, {"name": "Eggs"}]
+
+    async def get_low_stock_summary(self, *, user_id: uuid.UUID) -> list[dict[str, Any]]:
+        return self.low_prods
+
+
+@pytest.mark.asyncio
+async def test_briefing_with_business_low_stock_alerts() -> None:
+    settings = get_settings()
+    engine = create_async_engine(str(settings.database_url))
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    user_id = uuid.uuid4()
+    fixed_now = datetime(2026, 10, 23, 10, 0, 0, tzinfo=UTC)
+
+    fake_biz = FakeBusinessAPI()
+    service = BriefingService(
+        session_factory=session_factory,
+        business_api_getter=lambda: fake_biz,
+        clock=lambda: fixed_now,
+    )
+
+    try:
+        async with UnitOfWork(session_factory) as uow:
+            uow.session.add(User(id=user_id))
+            await uow.session.commit()
+
+        spoken, data, next_actions = await service.get_daily_briefing(user_id=user_id)
+        assert "Low stock alert: Milk, Eggs." in spoken
+        assert data.low_stock_items == ["Milk", "Eggs"]
+        assert "sales_summary(action='low_stock')" in next_actions
     finally:
         await engine.dispose()

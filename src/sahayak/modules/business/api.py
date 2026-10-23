@@ -42,3 +42,19 @@ class BusinessAPI:
             if not businesses:
                 return None
             return businesses[0][0]
+
+    async def get_low_stock_summary(self, *, user_id: uuid.UUID) -> list[dict[str, Any]]:
+        """Fetch low stock products for user's primary business (for daily_briefing)."""
+        async with UnitOfWork(self.session_factory) as uow:
+            repo = SQLAlchemyBusinessRepository(uow.session)
+            businesses = await repo.list_user_businesses(user_id=user_id)
+            if not businesses:
+                return []
+            b_id = businesses[0][0].id
+            from sahayak.modules.business.adapters.sales import (
+                SQLAlchemyProductRepository,
+            )
+
+            p_repo = SQLAlchemyProductRepository(uow.session)
+            low_prods = await p_repo.get_low_stock_products(business_id=b_id)
+            return [p.to_dict() for p in low_prods]
