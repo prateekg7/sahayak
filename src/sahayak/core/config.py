@@ -82,6 +82,22 @@ class Settings(BaseSettings):
     sentry_dsn: SecretStr | None = None
     metrics_token: SecretStr | None = None
 
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def parse_database_url(cls, value: object) -> object:
+        """Fallback to default database URL when an empty string is provided."""
+        if value == "" or value is None:
+            return "postgresql+asyncpg://sahayak:sahayak@localhost:5432/sahayak"
+        return value
+
+    @field_validator("redis_url", mode="before")
+    @classmethod
+    def parse_redis_url(cls, value: object) -> object:
+        """Fallback to default redis URL when an empty string is provided."""
+        if value == "" or value is None:
+            return "redis://localhost:6379/0"
+        return value
+
     @field_validator("enabled_modules", mode="before")
     @classmethod
     def parse_enabled_modules(cls, value: object) -> tuple[str, ...] | object:
