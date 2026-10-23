@@ -543,7 +543,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 
 > These tools depend on **external data sources whose availability, licensing, and terms must be verified before building**. Each task begins with an ADR documenting the source, license, rate limits, and fallback.
 
-### [ ] T12.1 — Data-source adapter framework
+### [x] T12.1 — Data-source adapter framework
 - **Depends on:** T1.4, T0.7 · **Est. LOC:** ~600
 - **What it does:** A safe, cached way to call outside data APIs.
 - **Implement:** `modules/local_info/` skeleton, `DataSource` port, HTTP adapter base (allow-listed hosts, retries, timeouts, circuit breaker, response caching with source-specific TTL, stale-while-error policy), freshness metadata surfaced in answers ("as of …"), attribution helper.

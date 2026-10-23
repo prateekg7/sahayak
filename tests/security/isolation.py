@@ -126,11 +126,13 @@ async def assert_user_isolation(
 
     # 3. Test cross-user isolation when authenticated
     if not spec.allows_anonymous or spec.custom_isolation_check is not None:
+        sub_a = f"user-a-{spec.name}-{uuid.uuid4().hex[:8]}"
+        sub_b = f"user-b-{spec.name}-{uuid.uuid4().hex[:8]}"
         token_user_a = make_test_jwt(
-            rsa_key, sub="user-a", scope=" ".join(spec.required_scopes or ["academics.read"])
+            rsa_key, sub=sub_a, scope=" ".join(spec.required_scopes or ["academics.read"])
         )
         token_user_b = make_test_jwt(
-            rsa_key, sub="user-b", scope=" ".join(spec.required_scopes or ["academics.read"])
+            rsa_key, sub=sub_b, scope=" ".join(spec.required_scopes or ["academics.read"])
         )
 
         headers_a = {"Authorization": f"Bearer {token_user_a}"}

@@ -113,4 +113,5 @@ modules = [
   "sahayak.modules.home",
   "sahayak.modules.business",
   "sahayak.modules.language",
+  "sahayak.modules.local_info",
 ]

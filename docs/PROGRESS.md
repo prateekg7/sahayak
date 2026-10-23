@@ -1,5 +1,29 @@
 # Progress
 
+## 2026-10-24 — T12.1 Data-source adapter framework — DONE
+
+- Summary: implemented the foundational external data-source adapter framework and resilience policies for Phase 12 (Local and Civic Info Module):
+  - Architecture Decision Record:
+    - `docs/adr/0012-data-source-adapter-framework.md`: Documented external API integration requirements, host allow-listing for SSRF prevention, three-state circuit breakers per source, bounded exponential backoff retries, two-tier cache (fresh + stale), and stale-while-error resilience.
+    - Updated `docs/adr/index.md`.
+  - Module Skeleton & Contracts:
+    - Created `src/sahayak/modules/local_info/` package (`ports.py`, `domain/`, `adapters/`, `schemas.py`, `api.py`, `module.py`).
+    - Added `sahayak.modules.local_info` to `pyproject.toml` importlinter independent modules contract.
+  - Ports & Base Adapter (`src/sahayak/modules/local_info/`):
+    - `ports.py`: Defined `DataSourcePort[T]` protocol and `DataSourceResult[T]` generic model capturing data, source attribution, license, freshness timestamps (`fetched_at`, `cached_at`), and `is_stale` flag.
+    - `adapters/circuit_breaker.py`: `DataSourceCircuitBreaker` implementing `CLOSED`, `OPEN`, `HALF_OPEN` states, 3-failure threshold, and 30s recovery timeout.
+    - `adapters/base.py`: `BaseHttpDataSource` providing host allow-listing validation, configurable timeout (2.0s), bounded retries (up to 2 attempts), two-tier fresh/stale caching (in-memory or Redis), and automatic stale-while-error fallback during upstream outages.
+  - Domain Freshness & Speech Attribution (`src/sahayak/modules/local_info/domain/attribution.py`):
+    - `clean_spoken_text`: Strips markdown, emojis, asterisks, brackets, and quotes.
+    - `format_relative_time_spoken`: Natural spoken relative time ("just now", "about X minutes ago", "about X hours ago", "about X days ago").
+    - `format_freshness_spoken`: Prepares spoken freshness prefixes for fresh and stale data.
+    - `format_data_answer_spoken`: Composes voice answers strictly adhering to $\le 300$ characters.
+  - Tests & Verification:
+    - `tests/unit/test_data_source_framework.py`: Verified host allow-listing validation, fresh caching hit prevention of outbound calls, bounded retries on transient errors, stale-while-error fallback during upstream outages, circuit breaker tripping and open-circuit stale delivery, voice freshness formatting, and module registry discovery.
+    - `tests/security/isolation.py`: Updated user sub generation to use unique IDs per spec to eliminate database response truncation across test runs.
+  - Quality Gates: `make lint`, `make test` (645 passed, 85.48% coverage), `make snapshot-check` (28 tools), `make migrate-check`, `make security` all clean.
+- Next: T12.2 `transit_status` tool.
+
 ## 2026-10-24 — T11.2 `language_practice` tool (conversation and translate-and-explain) — DONE
 
 - Summary: completed Phase 11 (Language Learning Module) in full with turn-limited conversation role-play sessions, structured grammar feedback and corrections, translate-and-explain queries, prompt guardrails, and the `language_practice` MCP tool (28th platform tool):
