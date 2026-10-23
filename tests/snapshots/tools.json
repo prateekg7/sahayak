@@ -240,6 +240,96 @@
     }
   },
   {
+    "description": "Assign, track whose turn it is, complete, and list shared household chores with fair rotation. Use when the user says 'Whose turn is it to do the dishes?', 'Add take out trash to chores', 'I completed vacuuming the living room', or 'Assign dishes to Alice and Bob'. Do not use for personal private tasks; use tasks instead.",
+    "name": "chores",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "list",
+          "title": "Action",
+          "type": "string"
+        },
+        "assigned_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assigned To"
+        },
+        "frequency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "weekly",
+          "title": "Frequency"
+        },
+        "household_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Id"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "rotation_members": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rotation Members"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "title": "choresArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Get a unified spoken summary of your day including tasks, habits, and study goals. Use when the user says 'Give me my daily briefing', 'What does my day look like?', or 'Good morning sahayak'. Do not use for creating individual tasks or habits; use tasks or habits instead.",
     "name": "daily_briefing",
     "parameters": {
@@ -1111,6 +1201,130 @@
         "action"
       ],
       "title": "notesArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Manage household pantry ingredients, view expiring items, get recipe suggestions, and generate meal plans. Use when the user says 'What can I cook with what is in the pantry?', 'Add olive oil to the pantry', 'What ingredients are expiring soon?', or 'Suggest a dinner recipe using our vegetables'. Do not use for shopping lists; use shared_list instead.",
+    "name": "pantry_recipes",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "pantry_list",
+          "title": "Action",
+          "type": "string"
+        },
+        "add_missing_to_shopping_list": {
+          "default": false,
+          "title": "Add Missing To Shopping List",
+          "type": "boolean"
+        },
+        "allergies": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allergies"
+        },
+        "days": {
+          "default": 3,
+          "title": "Days",
+          "type": "integer"
+        },
+        "diet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Diet"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires At"
+        },
+        "expires_in_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires In Days"
+        },
+        "household_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Id"
+        },
+        "item": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "title": "pantry_recipesArguments",
       "type": "object"
     }
   },

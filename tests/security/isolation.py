@@ -1032,3 +1032,121 @@ register_isolation_spec(
         custom_isolation_check=_shared_list_cross_user_isolation,
     )
 )
+
+
+async def _chores_cross_user_isolation(session_a: ClientSession, session_b: ClientSession) -> None:
+    # User A creates a chore
+    res_a = await session_a.call_tool(
+        "chores",
+        {"action": "add", "title": "Mow the lawn", "frequency": "weekly"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to add chore: {data_a}"
+    h_id_a = data_a.get("data", {}).get("household_id")
+    assert h_id_a is not None
+
+    # User B creates a chore
+    res_b = await session_b.call_tool(
+        "chores",
+        {"action": "add", "title": "Clean the garage", "frequency": "monthly"},
+    )
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is True, f"User B failed to add chore: {data_b}"
+    h_id_b = data_b.get("data", {}).get("household_id")
+    assert h_id_b is not None
+    assert h_id_a != h_id_b
+
+    # User A lists chores: sees Mow the lawn, not Clean the garage
+    res_a_list = await session_a.call_tool("chores", {"action": "list"})
+    data_a_list = json.loads(getattr(res_a_list.content[0], "text", "{}"))
+    assert data_a_list.get("ok") is True
+    titles_a = [c.get("title", "").lower() for c in data_a_list.get("data", {}).get("chores", [])]
+    assert "mow the lawn" in titles_a
+    assert "clean the garage" not in titles_a
+
+    # User B lists chores: sees Clean the garage, not Mow the lawn
+    res_b_list = await session_b.call_tool("chores", {"action": "list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    titles_b = [c.get("title", "").lower() for c in data_b_list.get("data", {}).get("chores", [])]
+    assert "clean the garage" in titles_b
+    assert "mow the lawn" not in titles_b
+
+    # User B attempts to access User A's chores by household_id
+    res_b_breach = await session_b.call_tool(
+        "chores",
+        {"action": "list", "household_id": h_id_a},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="chores",
+        allows_anonymous=False,
+        sample_args={"action": "list"},
+        custom_isolation_check=_chores_cross_user_isolation,
+    )
+)
+
+
+async def _pantry_recipes_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A adds pantry item
+    res_a = await session_a.call_tool(
+        "pantry_recipes",
+        {"action": "pantry_add", "item": "Basmati rice", "quantity": "1 kg"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to add pantry item: {data_a}"
+    h_id_a = data_a.get("data", {}).get("household_id")
+    assert h_id_a is not None
+
+    # User B adds pantry item
+    res_b = await session_b.call_tool(
+        "pantry_recipes",
+        {"action": "pantry_add", "item": "Extra Virgin Olive Oil", "quantity": "500 ml"},
+    )
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is True, f"User B failed to add pantry item: {data_b}"
+    h_id_b = data_b.get("data", {}).get("household_id")
+    assert h_id_b is not None
+    assert h_id_a != h_id_b
+
+    # User A lists pantry: sees Basmati rice, not Olive Oil
+    res_a_list = await session_a.call_tool("pantry_recipes", {"action": "pantry_list"})
+    data_a_list = json.loads(getattr(res_a_list.content[0], "text", "{}"))
+    assert data_a_list.get("ok") is True
+    items_a = [i.get("item_name", "").lower() for i in data_a_list.get("data", {}).get("items", [])]
+    assert "basmati rice" in items_a
+    assert "extra virgin olive oil" not in items_a
+
+    # User B lists pantry: sees Olive Oil, not Basmati rice
+    res_b_list = await session_b.call_tool("pantry_recipes", {"action": "pantry_list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    items_b = [i.get("item_name", "").lower() for i in data_b_list.get("data", {}).get("items", [])]
+    assert "extra virgin olive oil" in items_b
+    assert "basmati rice" not in items_b
+
+    # User B attempts to access User A's pantry by household_id
+    res_b_breach = await session_b.call_tool(
+        "pantry_recipes",
+        {"action": "pantry_list", "household_id": h_id_a},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="pantry_recipes",
+        allows_anonymous=False,
+        sample_args={"action": "pantry_list"},
+        custom_isolation_check=_pantry_recipes_cross_user_isolation,
+    )
+)

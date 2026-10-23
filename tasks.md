@@ -493,7 +493,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** `lists`, `list_items` tables, `tools/shared_list.py` (`add, remove, read, check_off, clear_checked`), dedupe/merge by normalized item name, quantity parsing, last-write-wins conflict policy documented.
 - **Done when:** two users modify the same list concurrently without corruption; item normalization tested.
 
-### [ ] T9.3 — `chores` and `pantry_recipes` tools
+### [x] T9.3 — `chores` and `pantry_recipes` tools
 - **Depends on:** T9.1, T2.1 · **Est. LOC:** ~900
 - **What it does:** Chore rotation; pantry inventory; recipe lookup and a simple meal planner.
 - **Implement:** `chores` (rotation logic domain function, fairness test), `pantry_items` with quantities/expiry, `tools/chores.py` (`assign, whose_turn, complete, add`), `tools/pantry_recipes.py` (`pantry_add, pantry_list, suggest_recipes, meal_plan`) — recipe suggestions via validated LLM JSON constrained to pantry items, allergy/diet preferences stored per household, ingredient-to-shopping-list handoff through `home` internal services.

@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Protocol
 
 from sahayak.modules.home.models import (
+    Chore,
     Household,
     HouseholdInvite,
     HouseholdMembership,
+    HouseholdPreference,
+    PantryItem,
     SharedList,
     SharedListItem,
 )
@@ -191,3 +194,110 @@ class ListRepositoryPort(Protocol):
     ) -> int:
         """Delete all checked items from a list, returning count deleted."""
         ...
+
+
+class ChoreRepositoryPort(Protocol):
+    """Port defining household chore operations."""
+
+    async def create_chore(
+        self,
+        *,
+        household_id: uuid.UUID,
+        title: str,
+        frequency: str = "weekly",
+        rotation_members: list[str] | None = None,
+        assigned_to: uuid.UUID | None = None,
+        next_due_at: datetime | None = None,
+    ) -> Chore: ...
+
+    async def get_chore(
+        self,
+        *,
+        household_id: uuid.UUID,
+        chore_id: uuid.UUID,
+    ) -> Chore | None: ...
+
+    async def find_chore_by_title(
+        self,
+        *,
+        household_id: uuid.UUID,
+        title: str,
+    ) -> Chore | None: ...
+
+    async def list_chores(
+        self,
+        *,
+        household_id: uuid.UUID,
+    ) -> list[Chore]: ...
+
+    async def complete_chore(
+        self,
+        *,
+        chore_id: uuid.UUID,
+        completed_by: uuid.UUID | None,
+        completed_at: datetime,
+        next_assigned_to: uuid.UUID | None,
+        next_rotation_index: int,
+        next_due_at: datetime | None,
+    ) -> Chore | None: ...
+
+    async def update_assignment(
+        self,
+        *,
+        chore_id: uuid.UUID,
+        assigned_to: uuid.UUID | None,
+        rotation_members: list[str] | None = None,
+    ) -> Chore | None: ...
+
+    async def delete_chore(
+        self,
+        *,
+        chore_id: uuid.UUID,
+    ) -> bool: ...
+
+
+class PantryRepositoryPort(Protocol):
+    """Port defining pantry items and household preferences operations."""
+
+    async def add_or_update_item(
+        self,
+        *,
+        household_id: uuid.UUID,
+        item_name: str,
+        quantity: str | None = None,
+        expires_at: date | None = None,
+        added_by: uuid.UUID | None = None,
+    ) -> PantryItem: ...
+
+    async def list_items(
+        self,
+        *,
+        household_id: uuid.UUID,
+    ) -> list[PantryItem]: ...
+
+    async def find_item_by_name(
+        self,
+        *,
+        household_id: uuid.UUID,
+        item_name: str,
+    ) -> PantryItem | None: ...
+
+    async def remove_item(
+        self,
+        *,
+        item_id: uuid.UUID,
+    ) -> bool: ...
+
+    async def get_or_create_preferences(
+        self,
+        *,
+        household_id: uuid.UUID,
+    ) -> HouseholdPreference: ...
+
+    async def update_preferences(
+        self,
+        *,
+        household_id: uuid.UUID,
+        diet: str,
+        allergies: list[str],
+    ) -> HouseholdPreference: ...

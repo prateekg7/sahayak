@@ -1,6 +1,31 @@
 # Progress
 
-## 2026-10-23 — T9.2 `shared_list` tool — DONE
+## 2026-10-24 — T9.3 `chores` and `pantry_recipes` tools — DONE
+
+- Summary: implemented shared household chores fair round-robin rotation, pantry tracking, dietary preferences, recipe matching with automatic missing ingredient handoff to shopping lists, and the `chores` (22nd) and `pantry_recipes` (23rd) MCP tools:
+  - Database & Migrations:
+    - `src/sahayak/modules/home/models.py`: Added `Chore`, `PantryItem`, and `HouseholdPreference` entities with foreign key cascades and indexes.
+    - `src/sahayak/modules/home/migrations/0003_chores_and_pantry_schema.py`: Alembic migration creating `home.chores`, `home.pantry_items`, and `home.household_preferences` tables. Fully reversible.
+  - Domain Logic:
+    - `src/sahayak/modules/home/domain/chores.py`: Rotation calculation (`compute_next_chore_turn`), frequency calculation for daily, weekly, biweekly, monthly (`compute_next_due_date`), and voice formatters.
+    - `src/sahayak/modules/home/domain/pantry.py`: Pantry parsing with quantity extraction, expiration detection (`is_expiring_soon`), dietary compliance (`check_diet_compliance`), allergen filtering (`check_allergen_free`), curated recipe matching (`match_recipes_from_pantry`), and voice formatters.
+  - Adapters & Services:
+    - `src/sahayak/modules/home/adapters/chores.py` & `pantry.py`: `SQLAlchemyChoreRepository` and `SQLAlchemyPantryRepository`.
+    - `src/sahayak/modules/home/service/chores.py`: `ChoreService` managing chore creation, assignment, whose_turn queries, completion rotation, and listing.
+    - `src/sahayak/modules/home/service/pantry.py`: `PantryService` handling inventory addition, listing, preference configuration, meal plan generation, and cross-service handoff to `SharedListService` for missing ingredients.
+  - Public Tools & Registration:
+    - `src/sahayak/modules/home/tools/chores.py` & `pantry_recipes.py`: MCP tools with `@requires()`, `@idempotent`, and standard envelope responses.
+    - `src/sahayak/modules/home/module.py`: Registered tools in MCP server and updated GDPR Right to Access and Right to Erasure hooks.
+    - `tests/snapshots/tools.json`: Snapshot updated to 23 tools.
+  - Tests & Verification:
+    - `tests/unit/test_chores_domain.py`: Unit and Hypothesis property tests verifying fair rotation distribution over 200 iterations with delta <= 1.
+    - `tests/unit/test_pantry_domain.py`: Unit tests for parsing, expiration, allergens, recipes, and voice summaries.
+    - `tests/unit/test_chores_service.py` & `test_pantry_service.py`: Lifecycle, rotation, and shopping list handoff integration tests.
+    - `tests/contract/test_chores_contract.py` & `test_pantry_recipes_contract.py`: MCP contract tests over Streamable HTTP.
+    - `tests/security/isolation.py`: Cross-user isolation tests for `chores` and `pantry_recipes`.
+  - Quality Gates: `make lint`, `make test` (597 passed, 86.53% coverage), `make snapshot-check` (23 tools), `make migrate-check`, `make security` all green.
+- Phase 9 (Home and Family Module) Complete!
+- Next: Phase 10 — Small business module (T10.1 Business tenancy and `orders` tool).
 
 - Summary: implemented shared family grocery and shopping lists with automatic household creation, quantity parsing, case-insensitive deduplication merge policy, check off/clear workflows, GDPR export/scrubbing, and the `shared_list` MCP tool (21st platform tool):
   - Database & Migrations:
