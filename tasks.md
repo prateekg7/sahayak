@@ -481,7 +481,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 
 # PHASE 9 — Home and family module
 
-### [ ] T9.1 — Households and sharing model **[ADR first]**
+### [x] T9.1 — Households and sharing model **[ADR first]**
 - **Depends on:** T1.1 · **Est. LOC:** ~700
 - **What it does:** Lets several people share lists and chores safely. This is the first module with multi-user data, so authorization must be designed carefully.
 - **Implement:** ADR on sharing model (household with roles `owner/member`), schema `home` (`households`, `memberships`, `invites` with expiring codes), service enforcing membership checks on every query, generic `assert_member` helper, privacy implications for deletion (shared data ownership rules), extended isolation test helper for shared resources.

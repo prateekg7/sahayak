@@ -1,0 +1,13 @@
+# Architecture Decision Records (ADRs) Index
+
+This directory documents the foundational architectural and design decisions for Sahayak.
+
+| ADR | Title | Status | Date | Decision Summary |
+|---|---|---|---|---|
+| [0001](file:///docs/adr/0001-language-and-framework.md) | Language & Framework | Accepted | 2026-10-23 | Python 3.12, FastAPI, SQLAlchemy 2 (asyncio), PostgreSQL 16, Redis 7. |
+| [0002](file:///docs/adr/0002-tool-budget.md) | Tool Budget & Resolution | Accepted | 2026-10-23 | Maximum 6 tools per module (amended for Academics), snapshot verification in CI. |
+| [0003](file:///docs/adr/0003-account-linking.md) | Account Linking & Identity | Accepted | 2026-10-23 | OAuth 2.1 authorization code flow with PKCE via AWS Cognito / Auth0. |
+| [0004](file:///docs/adr/0004-llm-gateway-and-routing.md) | LLM Gateway & Routing | Accepted | 2026-10-23 | Multi-provider abstraction (Primary: Gemini 2.5 Flash, Fallback: Groq LLaMA 3.3 70B), circuit breaker, daily budget guard. |
+| [0009](file:///docs/adr/0009-anonymous-access.md) | Anonymous vs Linked Access | Accepted | 2026-10-23 | Public quizzes and briefs allow anonymous access; personal data (flashcards, study plans, progress) enforces `@requires()`. |
+| [0010](file:///docs/adr/0010-latency-and-response-size.md) | Latency & Response Budget | Accepted | 2026-10-23 | Spoken summaries $\le 300$ chars, response payloads $\le 8192$ bytes, p95 latency $\le 800$ ms for deterministic actions. |
+| [0011](file:///docs/adr/0011-household-sharing-model.md) | Household Sharing Model | Accepted | 2026-10-23 | Household tenancy (`owner`/`member`), expiring 48h invite codes, mandatory `assert_member` authorization barrier. |

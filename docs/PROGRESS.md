@@ -1,5 +1,35 @@
 # Progress
 
+## 2026-10-23 — T9.1 Households and sharing model (ADR first) — DONE
+
+- Summary: designed and implemented Phase 9 (Home and Family Module) foundation with household tenancy, membership authorization, invite code flows, published HomeAPI, and GDPR shared ownership rules:
+  - Architecture Decision Record (`docs/adr/0011-household-sharing-model.md`):
+    - Documented multi-user household tenancy model with roles (`owner`, `member`), 48-hour expiring invite codes, and mandatory `assert_member` authorization barrier.
+    - Defined GDPR deletion semantics: owner erasure transfers ownership to oldest member, or deletes household if sole member.
+    - Updated `docs/adr/index.md`.
+  - Database & Migrations:
+    - Registered `home/migrations` in `alembic.ini` and `pyproject.toml` importlinter contracts.
+    - `src/sahayak/modules/home/models.py`: `Household`, `HouseholdMembership` (with unique constraint `uq_home_membership_household_user`), and `HouseholdInvite` models in schema `home`.
+    - `src/sahayak/modules/home/migrations/0001_home_schema.py`: Alembic migration creating `home.households`, `home.memberships`, and `home.invites` with cascade deletion. Reversible.
+  - Domain Logic (`src/sahayak/modules/home/domain/households.py`):
+    - Unambiguous 6-character uppercase alphanumeric code generation (`INVITE_CHARSET`).
+    - Household name normalization and length limits.
+    - Spoken formatters for creation, onboarding, and membership reporting under 300 characters without markdown.
+  - Ports, Adapters & Services:
+    - `src/sahayak/modules/home/ports.py`: `HouseholdRepositoryPort`.
+    - `src/sahayak/modules/home/adapters/households.py`: `SQLAlchemyHouseholdRepository` handling creation, lookups, invite redemption, and membership management.
+    - `src/sahayak/modules/home/service/households.py`: `HouseholdService` enforcing membership checks, invite generation, joining, and leaving households.
+    - `src/sahayak/modules/home/api.py`: published `HomeAPI` providing `assert_member`, `get_user_households`, and member queries for subsequent home tools (`shared_list`, `chores`).
+  - Module & GDPR Hooks:
+    - `src/sahayak/modules/home/module.py`: `HomeModule` registered in `ModuleRegistry`, GDPR `export_user_data` and `delete_user_data` with automatic ownership transfer.
+  - Tests & Verification:
+    - `tests/unit/test_households_domain.py`: 5 tests covering invite code randomness/unambiguity, normalization, voice formatters, and sanitization.
+    - `tests/unit/test_households_service.py`: full lifecycle test verifying household creation, owner role, member joining, invite expiry/single-use, `assert_member` rejections for non-members, and member leaving.
+    - `tests/integration/test_home_privacy.py`: verified GDPR export and ownership transfer upon owner deletion.
+    - `tests/security/test_tool_isolation_auto.py`: loaded `home` module into auto-isolation test harness.
+  - Quality Gates: `make lint`, `make test` (573 passed, 86.79% coverage), `make snapshot-check`, `make migrate-check`, `make security` all green.
+- Next: T9.2 `shared_list` tool.
+
 ## 2026-10-23 — T8.3 `career_practice` tool (resume bullets, daily question) — DONE
 
 - Summary: implemented resume bullet point polish with Google's XYZ formula, daily technical and behavioral practice question bank with unrepeated rotation, answer evaluation, GDPR privacy, and the `career_practice` MCP tool (completing Phase 8):
