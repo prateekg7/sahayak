@@ -1,0 +1,70 @@
+{
+  "$schema": "https://developer.amazon.com/schemas/alexa-ai/addon-manifest-v1.json",
+  "addonId": "amzn1.alexa-addon.sahayak-life-v1",
+  "version": "1.0.0",
+  "name": "Sahayak Life",
+  "publisher": "Sahayak Team",
+  "bundle": "life",
+  "locales": {
+    "en-US": {
+      "name": "Sahayak Life Assistant",
+      "shortDescription": "Voice companion for daily briefings, tasks, habit tracking, spending, and health.",
+      "fullDescription": "Sahayak Life manages your daily productivity, finances, and personal wellness. Get morning briefings, run Pomodoro focus timers, build habits, capture quick notes, track personal expenses and group bill splits, manage category budgets, and log vital health metrics and medication reminders by voice.",
+      "examplePhrases": [
+        "What is on my schedule today?",
+        "Start a twenty-five minute focus session.",
+        "Log twenty dollars for groceries.",
+        "Split the dinner bill equally among four people.",
+        "Log blood pressure one twenty over eighty."
+      ]
+    },
+    "en-IN": {
+      "name": "Sahayak Life Assistant",
+      "shortDescription": "Voice companion for daily briefings, tasks, habit tracking, spending, and health.",
+      "fullDescription": "Sahayak Life manages your daily productivity, finances, and personal wellness. Get morning briefings, run focus timers, track habits and tasks, manage expenses and bill splits, and log daily health vitals.",
+      "examplePhrases": [
+        "What is my daily briefing?",
+        "Start a twenty-five minute focus timer.",
+        "Log five hundred rupees for groceries.",
+        "Split the dinner bill of two thousand rupees among four people.",
+        "Log blood pressure one twenty over eighty."
+      ]
+    }
+  },
+  "server": {
+    "type": "MCP",
+    "transport": "STREAMABLE_HTTP",
+    "uri": "https://life.sahayak.app/mcp",
+    "protocolVersion": "2025-11-25"
+  },
+  "accountLinking": {
+    "type": "AUTH_CODE",
+    "grantType": "AUTHORIZATION_CODE",
+    "authorizationUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/authorize",
+    "tokenUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/token",
+    "clientId": "SAHAYAK_COGNITO_CLIENT_ID",
+    "scopes": [
+      "openid",
+      "email",
+      "profile",
+      "sahayak-api/productivity.read",
+      "sahayak-api/productivity.write",
+      "sahayak-api/finance.read",
+      "sahayak-api/finance.write",
+      "sahayak-api/health.read",
+      "sahayak-api/health.write"
+    ],
+    "domains": [
+      "sahayak-auth.auth.us-east-1.amazoncognito.com",
+      "life.sahayak.app"
+    ],
+    "privacyPolicyUrl": "https://sahayak.app/privacy",
+    "termsOfServiceUrl": "https://sahayak.app/terms"
+  },
+  "privacyAndCompliance": {
+    "allowsPurchases": false,
+    "usesHealthInfo": true,
+    "isChildDirected": false,
+    "containsAds": false
+  }
+}

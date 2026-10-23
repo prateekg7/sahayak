@@ -1,0 +1,317 @@
+[
+  {
+    "description": "Manages flashcards and spaced repetition study reviews. Use when the user wants to create, review, grade, or list study flashcards, such as 'Alexa, add a flashcard: capital of Australia is Canberra' or 'Alexa, review my flashcards'. Do not use for taking multiple-choice quizzes; use quiz_start or quiz_answer instead.",
+    "name": "flashcards",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "back": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Back"
+        },
+        "card_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Card Id"
+        },
+        "deck": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deck"
+        },
+        "front": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Front"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "rating": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rating"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "flashcardsArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Inspect academic quiz performance, study streaks, weak topics, and weekly summaries. Use when the student asks 'How am I doing?', 'What are my weak topics?', 'What is my streak?', or 'How did I do this week?'. Do not use for starting quizzes or scheduling study plans; use 'quiz_start' or 'study_plan' instead.",
+    "name": "progress_report",
+    "parameters": {
+      "properties": {
+        "scope": {
+          "default": "summary",
+          "title": "Scope",
+          "type": "string"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        }
+      },
+      "title": "progress_reportArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Submits an answer to the current question in an active quiz session. Use when the user answers a quiz question by letter, number, or text, such as 'Alexa, option B' or 'the answer is photosynthesis'. Do not use for starting a new quiz; use quiz_start instead.",
+    "name": "quiz_answer",
+    "parameters": {
+      "properties": {
+        "answer": {
+          "title": "Answer",
+          "type": "string"
+        },
+        "quiz_id": {
+          "title": "Quiz Id",
+          "type": "string"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "quiz_id",
+        "answer"
+      ],
+      "title": "quiz_answerArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Starts an interactive multiple-choice quiz on any academic topic. Use when the user asks to start a quiz or be tested, such as 'Alexa, quiz me on photosynthesis' or 'Alexa, quiz me on my weak topics'. Do not use for answering questions in an active quiz; use quiz_answer instead.",
+    "name": "quiz_start",
+    "parameters": {
+      "properties": {
+        "difficulty": {
+          "default": "medium",
+          "title": "Difficulty",
+          "type": "string"
+        },
+        "num_questions": {
+          "default": 5,
+          "title": "Num Questions",
+          "type": "integer"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "source": {
+          "default": "topic",
+          "title": "Source",
+          "type": "string"
+        },
+        "topic": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topic"
+        }
+      },
+      "title": "quiz_startArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Creates and manages day-by-day exam preparation schedules and daily study tasks. Use when the user wants to prepare for an upcoming exam or ask what to study today, such as 'Alexa, make a study plan for chemistry exam on the 15th' or 'Alexa, what should I study today?'. Do not use for practicing flashcards or quizzes; use flashcards or quiz_start instead.",
+    "name": "study_plan",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "exam_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exam Date"
+        },
+        "goal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Goal"
+        },
+        "hours_per_day": {
+          "default": 1.0,
+          "title": "Hours Per Day",
+          "type": "number"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "mark_done": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mark Done"
+        },
+        "plan_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Id"
+        },
+        "replan": {
+          "default": false,
+          "title": "Replan",
+          "type": "boolean"
+        },
+        "request_id": {
+          "default": "",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "timezone": {
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "topics": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topics"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "study_planArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Provides a concise, sourced spoken summary of an academic topic grounded in verified references. Use when the user asks 'Give me a brief on photosynthesis', 'Tell me about the French Revolution', or 'What is plate tectonics?'. Do not use for testing knowledge or scheduling study; use 'quiz_start' or 'study_plan' instead.",
+    "name": "topic_brief",
+    "parameters": {
+      "properties": {
+        "length": {
+          "default": "short",
+          "title": "Length",
+          "type": "string"
+        },
+        "topic": {
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic"
+      ],
+      "title": "topic_briefArguments",
+      "type": "object"
+    }
+  }
+]

@@ -30,10 +30,10 @@ migrate-check:
 	PYTHONPATH=src uv run python scripts/migrate_check.py
 
 snapshot:
-	PYTHONPATH=src uv run python scripts/snapshot_tools.py
+	PYTHONPATH=src uv run python scripts/snapshot_tools.py --all-profiles
 
 snapshot-check:
-	PYTHONPATH=src uv run python scripts/snapshot_tools.py --check
+	PYTHONPATH=src uv run python scripts/snapshot_tools.py --all-profiles --check
 
 tunnel:
 	cloudflared tunnel --url http://localhost:8000

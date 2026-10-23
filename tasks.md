@@ -571,7 +571,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 
 # PHASE 13 — Multi-add-on scaling, cross-module features, v1.0
 
-### [ ] T13.1 — Deployment profiles and multiple add-ons (solves the tool-count limit)
+### [x] T13.1 — Deployment profiles and multiple add-ons (solves the tool-count limit)
 - **Depends on:** T0.13, T4.3, ≥ 2 modules built · **Est. LOC:** ~600
 - **What it does:** Alexa+ may handle only a limited number of tools well, so the product is split into several add-ons from **one codebase**.
 - **Implement:** ADR defining add-on bundles (suggested: **Study** = academics; **Life** = productivity + finance + health; **Work** = career + business; **Home** = home + language + local info — adjust by V1 findings), deployment profiles via `ENABLED_MODULES` per service, per-profile tool snapshots, per-profile ECS service + ALB rule/path or subdomain, per-profile add-on config under `alexa/<bundle>/`, per-profile CI contract runs, routing of shared identity (one IdP, same `user_id` across bundles).

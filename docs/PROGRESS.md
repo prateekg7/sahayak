@@ -1,5 +1,32 @@
 # Progress
 
+## 2026-10-24 — T13.1 Deployment profiles and multiple add-ons — DONE
+
+- Summary: implemented deployment profiles and multi-add-on bundle scaling (ADR 0016), resolving the Alexa+ tool budget across 31 platform tools with zero cross-module database fragmentation:
+  - Architecture Decision Record:
+    - `docs/adr/0016-multi-addon-deployment-profiles.md`: Documented 4 bundle profiles (Study: 6 tools, Life: 11 tools, Work: 6 tools, Home: 8 tools, Full monolith: 31 tools) staying strictly within Alexa+ 5-12 tool sweet spot; shared identity and database persistence across all profiles; ALB path/subdomain routing.
+    - Updated `docs/adr/index.md`.
+  - Deployment Profiles Architecture (`src/sahayak/core/profiles.py`):
+    - `BUNDLE_PROFILES`: Defined module sets for `study`, `life`, `work`, `home`, and `full`.
+    - `PROFILE_TOOL_BUDGETS`: Configured budget limits per bundle (Study: 6, Life: 12, Work: 8, Home: 10, Full: 35).
+    - `get_profile_modules`: Case-insensitive profile validation and module tuple resolution.
+    - `resolve_active_modules`: Resolution hierarchy across explicit parameters, `DEPLOYMENT_PROFILE` env, `ENABLED_MODULES` env, and full fallback.
+  - Configuration & Server Integration:
+    - `src/sahayak/core/config.py`: Added `deployment_profile` field to `Settings` with `@model_validator` dynamically configuring `enabled_modules`.
+    - `.env.example`: Documented `DEPLOYMENT_PROFILE` configuration option.
+    - `src/sahayak/main.py`: Supports running with specified deployment profile containers.
+  - Per-Profile Tool Snapshots & Verification Tooling:
+    - `scripts/snapshot_tools.py`: Added `--profile` and `--all-profiles` support.
+    - Generated snapshots: `study_tools.json` (6), `life_tools.json` (11), `work_tools.json` (6), `home_tools.json` (8), `tools.json` (31).
+    - `Makefile`: Updated `make snapshot` and `make snapshot-check` to verify all profiles.
+  - Alexa Add-on Manifests:
+    - `alexa/study/addon.json`, `alexa/life/addon.json`, `alexa/work/addon.json`, `alexa/home/addon.json`: Manifests defining name, descriptions, sample utterances, MCP Streamable HTTP uri, and Cognito OAuth scopes for each add-on.
+  - Tests & Verification:
+    - `tests/unit/test_deployment_profiles.py`: Precedence ordering, profile queries, case insensitivity, Settings integration, and tool budget validation.
+    - `tests/contract/test_profile_contract.py`: Over-the-wire Streamable HTTP MCP contract tests verifying each profile starts independently, exposes only its tools matching its snapshot, and shares database state without user ID collision.
+  - Quality Gates: `make lint`, `make test` (698 passed, 85.59% coverage), `make snapshot-check` (all profiles), `make migrate-check`, `make security` all clean.
+- Next: T13.2 — Cross-module weekly report.
+
 ## 2026-10-24 — T12.4 `scheme_finder` tool (government scheme eligibility) — DONE
 
 - Summary: completed Phase 12 (Local and Civic Info Module) in full with a curated versioned dataset of 12+ prominent national welfare schemes, pure code declarative rules engine, conversational one-missing-fact clarification, and the `scheme_finder` MCP tool (31st platform tool):

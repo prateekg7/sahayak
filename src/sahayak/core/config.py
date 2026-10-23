@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from enum import StrEnum
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Self
 
-from pydantic import AnyUrl, Field, SecretStr, field_validator
+from pydantic import AnyUrl, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     app_env: AppEnvironment = AppEnvironment.LOCAL
     app_name: NonEmptyString = "Sahayak"
     public_base_url: AnyUrl = AnyUrl("http://localhost:8000")
+    deployment_profile: NonEmptyString | None = None
     enabled_modules: Annotated[tuple[NonEmptyString, ...], NoDecode] = ("academics",)
 
     database_url: AnyUrl = AnyUrl("postgresql+asyncpg://sahayak:sahayak@localhost:5432/sahayak")
@@ -92,6 +93,15 @@ class Settings(BaseSettings):
             msg = "ENABLED_MODULES must contain at least one module"
             raise ValueError(msg)
         return modules
+
+    @model_validator(mode="after")
+    def resolve_deployment_profile(self) -> Self:
+        """Resolve enabled modules from deployment profile if specified."""
+        if self.deployment_profile is not None:
+            from sahayak.core.profiles import get_profile_modules
+
+            self.enabled_modules = get_profile_modules(self.deployment_profile)
+        return self
 
     @field_validator("allowed_origins", mode="before")
     @classmethod

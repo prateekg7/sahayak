@@ -1,0 +1,68 @@
+{
+  "$schema": "https://developer.amazon.com/schemas/alexa-ai/addon-manifest-v1.json",
+  "addonId": "amzn1.alexa-addon.sahayak-work-v1",
+  "version": "1.0.0",
+  "name": "Sahayak Work",
+  "publisher": "Sahayak Team",
+  "bundle": "work",
+  "locales": {
+    "en-US": {
+      "name": "Sahayak Work Assistant",
+      "shortDescription": "Job applications, interview mock prep, customer udhaar ledger, and sales reports.",
+      "fullDescription": "Sahayak Work empowers job seekers, professionals, and small business owners. Track job application deadlines, conduct AI-driven voice interview practice sessions, manage wholesale customer credit and payment reminders, record sales orders, and inspect low-stock inventory alerts completely hands-free.",
+      "examplePhrases": [
+        "Add a job application for Google as Software Engineer.",
+        "Practice behavioral interview questions for product manager.",
+        "What are my sales today?",
+        "Add an order for five bags of rice.",
+        "Check customer dues for Sharma Store."
+      ]
+    },
+    "en-IN": {
+      "name": "Sahayak Work Assistant",
+      "shortDescription": "Job applications, interview mock prep, customer udhaar ledger, and sales reports.",
+      "fullDescription": "Sahayak Work empowers job seekers and small shopkeepers. Track interview stages, practice voice interview questions, manage customer udhaar khata ledger, and track daily sales orders hands-free.",
+      "examplePhrases": [
+        "Add a job application for Software Engineer.",
+        "Start an interview practice session.",
+        "How were sales today?",
+        "Record an order for three packets of tea.",
+        "Check customer dues for Ramesh."
+      ]
+    }
+  },
+  "server": {
+    "type": "MCP",
+    "transport": "STREAMABLE_HTTP",
+    "uri": "https://work.sahayak.app/mcp",
+    "protocolVersion": "2025-11-25"
+  },
+  "accountLinking": {
+    "type": "AUTH_CODE",
+    "grantType": "AUTHORIZATION_CODE",
+    "authorizationUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/authorize",
+    "tokenUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/token",
+    "clientId": "SAHAYAK_COGNITO_CLIENT_ID",
+    "scopes": [
+      "openid",
+      "email",
+      "profile",
+      "sahayak-api/career.read",
+      "sahayak-api/career.write",
+      "sahayak-api/business.read",
+      "sahayak-api/business.write"
+    ],
+    "domains": [
+      "sahayak-auth.auth.us-east-1.amazoncognito.com",
+      "work.sahayak.app"
+    ],
+    "privacyPolicyUrl": "https://sahayak.app/privacy",
+    "termsOfServiceUrl": "https://sahayak.app/terms"
+  },
+  "privacyAndCompliance": {
+    "allowsPurchases": false,
+    "usesHealthInfo": false,
+    "isChildDirected": false,
+    "containsAds": false
+  }
+}

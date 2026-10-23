@@ -1,0 +1,69 @@
+{
+  "$schema": "https://developer.amazon.com/schemas/alexa-ai/addon-manifest-v1.json",
+  "addonId": "amzn1.alexa-addon.sahayak-home-v1",
+  "version": "1.0.0",
+  "name": "Sahayak Home",
+  "publisher": "Sahayak Team",
+  "bundle": "home",
+  "locales": {
+    "en-US": {
+      "name": "Sahayak Home & Civic Assistant",
+      "shortDescription": "Shared grocery lists, household chores, language practice, transit, and mandi rates.",
+      "fullDescription": "Sahayak Home simplifies household management, language learning, and civic inquiries. Maintain shared grocery lists and rotating chore assignments, get zero-waste pantry recipes, learn daily vocabulary with spaced repetition, practice spoken conversation in Spanish or Hindi, check live metro train departures, and verify mandi crop prices.",
+      "examplePhrases": [
+        "Add milk to the grocery list.",
+        "Whose turn is it to take out the trash?",
+        "What can I cook with potatoes and onions?",
+        "Give me the word of the day in Spanish.",
+        "When is the next train from Rajiv Chowk?",
+        "What is the wheat price in Azadpur mandi?"
+      ]
+    },
+    "en-IN": {
+      "name": "Sahayak Home & Civic Assistant",
+      "shortDescription": "Shared grocery lists, household chores, language practice, transit, and mandi rates.",
+      "fullDescription": "Sahayak Home simplifies household management, language learning, and civic inquiries. Maintain shared grocery lists, rotating chores, daily vocab learning, metro departures, and mandi crop rates hands-free.",
+      "examplePhrases": [
+        "Add milk to the grocery list.",
+        "What chores are due today?",
+        "Give me the word of the day in German.",
+        "When is the next train from Rajiv Chowk?",
+        "What is the wheat price in Azadpur mandi?"
+      ]
+    }
+  },
+  "server": {
+    "type": "MCP",
+    "transport": "STREAMABLE_HTTP",
+    "uri": "https://home.sahayak.app/mcp",
+    "protocolVersion": "2025-11-25"
+  },
+  "accountLinking": {
+    "type": "AUTH_CODE",
+    "grantType": "AUTHORIZATION_CODE",
+    "authorizationUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/authorize",
+    "tokenUrl": "https://sahayak-auth.auth.us-east-1.amazoncognito.com/oauth2/token",
+    "clientId": "SAHAYAK_COGNITO_CLIENT_ID",
+    "scopes": [
+      "openid",
+      "email",
+      "profile",
+      "sahayak-api/home.read",
+      "sahayak-api/home.write",
+      "sahayak-api/language.read",
+      "sahayak-api/language.write"
+    ],
+    "domains": [
+      "sahayak-auth.auth.us-east-1.amazoncognito.com",
+      "home.sahayak.app"
+    ],
+    "privacyPolicyUrl": "https://sahayak.app/privacy",
+    "termsOfServiceUrl": "https://sahayak.app/terms"
+  },
+  "privacyAndCompliance": {
+    "allowsPurchases": false,
+    "usesHealthInfo": false,
+    "isChildDirected": false,
+    "containsAds": false
+  }
+}

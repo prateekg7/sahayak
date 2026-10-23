@@ -1,0 +1,753 @@
+[
+  {
+    "description": "Assign, track whose turn it is, complete, and list shared household chores with fair rotation. Use when the user says 'Whose turn is it to do the dishes?', 'Add take out trash to chores', 'I completed vacuuming the living room', or 'Assign dishes to Alice and Bob'. Do not use for personal private tasks; use tasks instead.",
+    "name": "chores",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "list",
+          "title": "Action",
+          "type": "string"
+        },
+        "assigned_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assigned To"
+        },
+        "frequency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "weekly",
+          "title": "Frequency"
+        },
+        "household_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Id"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "rotation_members": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rotation Members"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "title": "choresArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Check daily agricultural mandi crop prices, wholesale market comparisons, and trends. Use when the user asks 'What is the wheat price in Azadpur mandi?', 'Compare onion prices between Azadpur and Ghazipur', or 'Is tomato price increasing?'. Do not use for tracking train schedules or finding welfare schemes; use 'transit_status' or 'scheme_finder' instead.",
+    "name": "commodity_prices",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "get_price",
+          "title": "Action",
+          "type": "string"
+        },
+        "commodity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commodity"
+        },
+        "market": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Market"
+        },
+        "markets": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Markets"
+        }
+      },
+      "title": "commodity_pricesArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Practice short conversational role-play sessions and get grammar-aware translations. Use when the user says 'Let us practice Spanish', 'Reply to conversation', 'Translate how much is this to Spanish', or 'End conversation'. Do not use for spaced repetition flashcards or daily word; use vocab instead.",
+    "name": "language_practice",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "start_conversation",
+          "title": "Action",
+          "type": "string"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Level"
+        },
+        "max_turns": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 5,
+          "title": "Max Turns"
+        },
+        "query": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Query"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "scenario": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scenario"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Id"
+        },
+        "target_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Language"
+        },
+        "user_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Message"
+        }
+      },
+      "title": "language_practiceArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Manage household pantry ingredients, view expiring items, get recipe suggestions, and generate meal plans. Use when the user says 'What can I cook with what is in the pantry?', 'Add olive oil to the pantry', 'What ingredients are expiring soon?', or 'Suggest a dinner recipe using our vegetables'. Do not use for shopping lists; use shared_list instead.",
+    "name": "pantry_recipes",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "pantry_list",
+          "title": "Action",
+          "type": "string"
+        },
+        "add_missing_to_shopping_list": {
+          "default": false,
+          "title": "Add Missing To Shopping List",
+          "type": "boolean"
+        },
+        "allergies": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allergies"
+        },
+        "days": {
+          "default": 3,
+          "title": "Days",
+          "type": "integer"
+        },
+        "diet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Diet"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires At"
+        },
+        "expires_in_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires In Days"
+        },
+        "household_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Id"
+        },
+        "item": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "title": "pantry_recipesArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Discover government welfare schemes, check eligibility, and find portals. Use when the user asks 'Which government schemes do I qualify for?', 'Tell me about PM-Kisan', or 'Am I eligible for Ayushman Bharat?'. Do not use for checking agricultural mandi prices or transit departures; use 'commodity_prices' or 'transit_status' instead.",
+    "name": "scheme_finder",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "find",
+          "title": "Action",
+          "type": "string"
+        },
+        "age": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Age"
+        },
+        "annual_income_inr": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Annual Income Inr"
+        },
+        "gender": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gender"
+        },
+        "is_landowner": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Landowner"
+        },
+        "occupation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occupation"
+        },
+        "scheme": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scheme"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State"
+        }
+      },
+      "title": "scheme_finderArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Add, remove, read, check off, and clear items on shared household lists like groceries. Use when the user says 'Add milk to the shopping list', 'What is on our grocery list?', 'Check off eggs', or 'Clear finished items from the list'. Do not use for personal private tasks or habit tracking.",
+    "name": "shared_list",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "read",
+          "title": "Action",
+          "type": "string"
+        },
+        "household_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Id"
+        },
+        "item": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item"
+        },
+        "list_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "shopping",
+          "title": "List Name"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "title": "shared_listArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Check real-time train and metro departures, line delays, and service status. Use when the user asks 'When is the next train from Rajiv Chowk?', 'What is the status of the Yellow line?', or 'Next departures from CP'. Do not use for checking mandi agricultural prices or government welfare schemes; use 'commodity_prices' or 'scheme_finder' instead.",
+    "name": "transit_status",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "next_departures",
+          "title": "Action",
+          "type": "string"
+        },
+        "destination": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Destination"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line"
+        },
+        "station": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Station"
+        }
+      },
+      "title": "transit_statusArguments",
+      "type": "object"
+    }
+  },
+  {
+    "description": "Manages daily vocabulary learning and spaced repetition review quizzes. Use when the user says 'Give me my word of the day in Spanish', 'Review my vocabulary', 'Grade my word good', or 'What are my language stats?'. Do not use for conversational practice or translations; use language_practice instead.",
+    "name": "vocab",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "word_of_day",
+          "title": "Action",
+          "type": "string"
+        },
+        "example_sentence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Example Sentence"
+        },
+        "example_translation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Example Translation"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Level"
+        },
+        "pronunciation_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pronunciation Hint"
+        },
+        "rating": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rating"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "translation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Translation"
+        },
+        "user_word_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Word Id"
+        },
+        "word": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Word"
+        }
+      },
+      "title": "vocabArguments",
+      "type": "object"
+    }
+  }
+]
