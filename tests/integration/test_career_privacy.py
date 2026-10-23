@@ -13,6 +13,7 @@ from sahayak.core.module import Deps
 from sahayak.modules.career.module import module as career_module
 from sahayak.modules.career.service.applications import ApplicationService
 from sahayak.modules.career.service.interview import InterviewService
+from sahayak.modules.career.service.practice import CareerPracticeService
 from sahayak.shared.users.models import User
 
 
@@ -32,6 +33,7 @@ async def test_career_privacy_export_and_delete() -> None:
 
     service = InterviewService(session_factory=session_factory)
     app_service = ApplicationService(session_factory=session_factory)
+    practice_service = CareerPracticeService(session_factory=session_factory)
 
     try:
         # Start a session
@@ -58,6 +60,13 @@ async def test_career_privacy_export_and_delete() -> None:
             status="applied",
         )
 
+        # Record daily practice answer
+        await practice_service.check_daily_answer(
+            user_id=user_id,
+            question_key="star_method_intro",
+            answer="Situation task action result",
+        )
+
         # 1. Export user data
         exported = await career_module.export_user_data(str(user_id))
         assert "interview_sessions" in exported
@@ -72,6 +81,11 @@ async def test_career_privacy_export_and_delete() -> None:
         assert len(apps) == 1
         assert apps[0]["company"] == "OpenAI"
 
+        assert "daily_practice" in exported
+        practices = exported["daily_practice"]
+        assert len(practices) == 1
+        assert practices[0]["question_key"] == "star_method_intro"
+
         # 2. Delete user data (GDPR Right to Erasure)
         await career_module.delete_user_data(str(user_id))
 
@@ -79,5 +93,6 @@ async def test_career_privacy_export_and_delete() -> None:
         post_delete = await career_module.export_user_data(str(user_id))
         assert len(post_delete.get("interview_sessions", [])) == 0
         assert len(post_delete.get("applications", [])) == 0
+        assert len(post_delete.get("daily_practice", [])) == 0
     finally:
         await engine.dispose()

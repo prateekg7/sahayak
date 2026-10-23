@@ -10,7 +10,12 @@ from sqlalchemy import delete, select
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.career.models import Application, InterviewSession, InterviewTurn
+from sahayak.modules.career.models import (
+    Application,
+    DailyPractice,
+    InterviewSession,
+    InterviewTurn,
+)
 
 
 class CareerModule:
@@ -44,8 +49,12 @@ class CareerModule:
         if deps.session_factory is not None:
             from sahayak.modules.career.service.applications import ApplicationService
             from sahayak.modules.career.service.interview import InterviewService
+            from sahayak.modules.career.service.practice import CareerPracticeService
             from sahayak.modules.career.tools.application_tracker import (
                 set_application_service,
+            )
+            from sahayak.modules.career.tools.career_practice import (
+                set_practice_service,
             )
             from sahayak.modules.career.tools.interview_practice import (
                 set_interview_service,
@@ -66,9 +75,19 @@ class CareerModule:
             )
             set_application_service(app_service)
 
+            practice_service = CareerPracticeService(
+                session_factory=deps.session_factory,
+                llm_client=llm_client,
+            )
+            set_practice_service(practice_service)
+
         from sahayak.modules.career.tools.application_tracker import (
             APPLICATION_TRACKER_DESCRIPTION,
             application_tracker,
+        )
+        from sahayak.modules.career.tools.career_practice import (
+            CAREER_PRACTICE_DESCRIPTION,
+            career_practice,
         )
         from sahayak.modules.career.tools.interview_practice import (
             INTERVIEW_PRACTICE_DESCRIPTION,
@@ -83,6 +102,9 @@ class CareerModule:
             tool_decorator(name="application_tracker", description=APPLICATION_TRACKER_DESCRIPTION)(
                 application_tracker
             )
+            tool_decorator(name="career_practice", description=CAREER_PRACTICE_DESCRIPTION)(
+                career_practice
+            )
         elif hasattr(mcp, "add_tool"):
             mcp.add_tool(
                 interview_practice,
@@ -93,6 +115,11 @@ class CareerModule:
                 application_tracker,
                 name="application_tracker",
                 description=APPLICATION_TRACKER_DESCRIPTION,
+            )
+            mcp.add_tool(
+                career_practice,
+                name="career_practice",
+                description=CAREER_PRACTICE_DESCRIPTION,
             )
 
     def register_jobs(self, worker: Any) -> None:
@@ -112,7 +139,7 @@ class CareerModule:
         pass
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
-        """GDPR Right to Access: export user interview sessions, turns, and applications."""
+        """GDPR Right to Access: export user interview, application, and practice records."""
         if self._deps is None or self._deps.session_factory is None:
             return {}
 
@@ -145,9 +172,15 @@ class CareerModule:
             )
             apps = res_apps.scalars().all()
 
+            res_practice = await uow.session.execute(
+                select(DailyPractice).where(DailyPractice.user_id == uid)
+            )
+            practices = res_practice.scalars().all()
+
             return {
                 "interview_sessions": exported_sessions,
                 "applications": [a.to_dict() for a in apps],
+                "daily_practice": [p.to_dict() for p in practices],
             }
 
     async def delete_user_data(self, user_id: str) -> None:
@@ -159,6 +192,9 @@ class CareerModule:
         async with UnitOfWork(self._deps.session_factory) as uow:
             # Delete applications
             await uow.session.execute(delete(Application).where(Application.user_id == uid))
+
+            # Delete daily practice
+            await uow.session.execute(delete(DailyPractice).where(DailyPractice.user_id == uid))
 
             # Delete sessions & turns
             res = await uow.session.execute(

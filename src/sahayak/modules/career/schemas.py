@@ -114,3 +114,27 @@ class ApplicationRequest(BaseModel):
         le=50,
         description="Maximum number of applications to list",
     )
+
+
+CareerPracticeAction = Literal["improve_bullet", "daily_question", "check_answer"]
+
+
+class CareerPracticeRequest(BaseModel):
+    """Input payload for career_practice tool (T8.3)."""
+
+    action: CareerPracticeAction = Field(
+        ...,
+        description="Action: 'improve_bullet', 'daily_question', or 'check_answer'",
+    )
+    bullet: str | None = Field(
+        default=None,
+        description="Resume bullet point to polish using Google XYZ formula (for 'improve_bullet')",
+    )
+    question_key: str | None = Field(
+        default=None,
+        description="Key of the daily question being answered (for 'check_answer')",
+    )
+    answer: str | None = Field(
+        default=None,
+        description="Candidate's answer to the daily question (for 'check_answer')",
+    )

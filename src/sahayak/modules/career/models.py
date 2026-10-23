@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import (
+    Boolean,
     DateTime,
     ForeignKey,
     Index,
@@ -259,4 +260,63 @@ class Application(Base):
             "notes": self.notes,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class DailyPractice(Base):
+    """Daily career practice question record (T8.3)."""
+
+    __tablename__ = "daily_practice"
+    __table_args__ = (
+        Index("ix_career_practice_user_key", "user_id", "question_key"),
+        Index("ix_career_practice_user_created", "user_id", "created_at"),
+        {"schema": "career"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    question_key: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        comment="Deterministic identifier of the question",
+    )
+    question_text: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+    user_answer: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+    is_correct: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+    )
+    feedback: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        server_default=func.now(),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "question_key": self.question_key,
+            "question_text": self.question_text,
+            "user_answer": self.user_answer,
+            "is_correct": self.is_correct,
+            "feedback": self.feedback,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

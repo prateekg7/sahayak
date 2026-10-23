@@ -177,6 +177,69 @@
     }
   },
   {
+    "description": "Improve resume bullet points using the XYZ formula and answer daily career questions. Use when the user says 'Improve my resume bullet: led migration of database', 'Give me today's career practice question', or 'Check my answer to the daily question'. Do not use for conducting full mock interview sessions or logging job applications.",
+    "name": "career_practice",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "daily_question",
+          "title": "Action",
+          "type": "string"
+        },
+        "answer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer"
+        },
+        "bullet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bullet"
+        },
+        "question_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Key"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "title": "career_practiceArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Get a unified spoken summary of your day including tasks, habits, and study goals. Use when the user says 'Give me my daily briefing', 'What does my day look like?', or 'Good morning sahayak'. Do not use for creating individual tasks or habits; use tasks or habits instead.",
     "name": "daily_briefing",
     "parameters": {

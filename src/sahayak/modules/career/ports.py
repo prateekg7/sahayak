@@ -130,3 +130,30 @@ class ApplicationRepositoryPort(Protocol):
         user_id: uuid.UUID,
         application_id: uuid.UUID,
     ) -> bool: ...
+
+
+class PracticeRepositoryPort(Protocol):
+    """Port for recording daily career practice question answers (T8.3)."""
+
+    async def record_daily_practice(
+        self,
+        *,
+        user_id: uuid.UUID,
+        question_key: str,
+        question_text: str,
+        user_answer: str,
+        is_correct: bool,
+        feedback: str,
+    ) -> Any: ...
+
+    async def get_answered_keys(
+        self,
+        *,
+        user_id: uuid.UUID,
+    ) -> set[str]: ...
+
+    async def get_practice_stats(
+        self,
+        *,
+        user_id: uuid.UUID,
+    ) -> dict[str, Any]: ...

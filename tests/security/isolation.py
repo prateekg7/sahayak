@@ -922,3 +922,45 @@ register_isolation_spec(
         custom_isolation_check=_application_tracker_cross_user_isolation,
     )
 )
+
+
+async def _career_practice_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A answers daily question
+    res_a = await session_a.call_tool(
+        "career_practice",
+        {
+            "action": "check_answer",
+            "question_key": "star_method_intro",
+            "answer": "STAR stands for situation, task, action, and result.",
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to answer daily question: {data_a}"
+    stats_a = data_a.get("data", {}).get("stats", {})
+    assert stats_a.get("total_attempts", 0) >= 1
+
+    # User B answers daily question - User B's attempts must be recorded independently
+    res_b = await session_b.call_tool(
+        "career_practice",
+        {
+            "action": "check_answer",
+            "question_key": "star_method_intro",
+            "answer": "Situation task action result to structure interview answers.",
+        },
+    )
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is True, f"User B failed to answer daily question: {data_b}"
+    stats_b = data_b.get("data", {}).get("stats", {})
+    assert stats_b.get("total_attempts", 0) >= 1
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="career_practice",
+        allows_anonymous=False,
+        sample_args={"action": "daily_question"},
+        custom_isolation_check=_career_practice_cross_user_isolation,
+    )
+)
