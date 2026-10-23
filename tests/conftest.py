@@ -34,4 +34,4 @@ def prepare_test_database() -> None:
     is_db_up = asyncio.run(_check_db())
     if is_db_up:
         config = Config("alembic.ini")
-        command.upgrade(config, "head")
+        command.upgrade(config, "heads")

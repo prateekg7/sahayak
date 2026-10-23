@@ -16,16 +16,16 @@ def main() -> None:
     """
     config = Config("alembic.ini")
     try:
-        command.upgrade(config, "head")
+        command.upgrade(config, "heads")
         command.downgrade(config, "base")
-        command.upgrade(config, "head")
+        command.upgrade(config, "heads")
         print("Online migration up -> down -> up verified.")
     except Exception as exc:
         print(
             f"Online migration unavailable ({exc}). Validating migration SQL offline...",
             file=sys.stderr,
         )
-        command.upgrade(config, "head", sql=True)
+        command.upgrade(config, "heads", sql=True)
         print("Offline SQL generation verified.")
 
 

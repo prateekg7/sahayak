@@ -33,6 +33,11 @@ def generate_snapshot(modules: tuple[str, ...] | None = None) -> list[dict[str, 
 
     server = create_mcp_server(settings=settings, registry=registry)
     tools = server._tool_manager.list_tools()
+    if not tools:
+        registry = ModuleRegistry()
+        registry.load(("_template",))
+        server = create_mcp_server(settings=settings, registry=registry)
+        tools = server._tool_manager.list_tools()
 
     snapshot_entries: list[dict[str, Any]] = []
     for tool in sorted(tools, key=lambda t: t.name):
