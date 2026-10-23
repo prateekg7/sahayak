@@ -587,3 +587,49 @@ register_isolation_spec(
         custom_isolation_check=_daily_briefing_cross_user_isolation,
     )
 )
+
+
+async def _expense_log_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A logs an expense
+    res_a = await session_a.call_tool(
+        "expense_log",
+        {
+            "action": "add",
+            "amount": 250,
+            "currency": "INR",
+            "category": "groceries",
+            "note": "Private Organic Groceries",
+        },
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True
+    exp_id = data_a.get("data", {}).get("expense", {}).get("id")
+    assert exp_id
+
+    # User B lists expenses - User A's expense must not appear
+    res_b_list = await session_b.call_tool("expense_log", {"action": "list"})
+    data_b_list = json.loads(getattr(res_b_list.content[0], "text", "{}"))
+    assert data_b_list.get("ok") is True
+    b_ids = [e.get("id") for e in data_b_list.get("data", {}).get("expenses", [])]
+    assert exp_id not in b_ids
+
+    # User B attempts to delete User A's expense - must fail with not_found
+    res_b_del = await session_b.call_tool(
+        "expense_log",
+        {"action": "delete", "expense_id": exp_id},
+    )
+    data_b_del = json.loads(getattr(res_b_del.content[0], "text", "{}"))
+    assert data_b_del.get("ok") is False
+    assert data_b_del.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="expense_log",
+        allows_anonymous=False,
+        sample_args={"action": "list"},
+        custom_isolation_check=_expense_log_cross_user_isolation,
+    )
+)

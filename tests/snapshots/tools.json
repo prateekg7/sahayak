@@ -27,6 +27,96 @@
     }
   },
   {
+    "description": "Track personal spending, log expenses by category, list recent purchases, and undo entries. Use when the user says 'Add 200 rupees for groceries', 'What did I spend this week?', 'List my expenses', or 'Undo my last expense'. Do not use for monthly budget targets; use the budget tool instead.",
+    "name": "expense_log",
+    "parameters": {
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "currency": {
+          "default": "INR",
+          "title": "Currency",
+          "type": "string"
+        },
+        "expense_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expense Id"
+        },
+        "limit": {
+          "default": 5,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "title": "expense_logArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Manages flashcards and spaced repetition study reviews. Use when the user wants to create, review, grade, or list study flashcards, such as 'Alexa, add a flashcard: capital of Australia is Canberra' or 'Alexa, review my flashcards'. Do not use for taking multiple-choice quizzes; use quiz_start or quiz_answer instead.",
     "name": "flashcards",
     "parameters": {

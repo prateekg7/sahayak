@@ -107,4 +107,5 @@ modules = [
   "sahayak.modules._template",
   "sahayak.modules.academics",
   "sahayak.modules.productivity",
+  "sahayak.modules.finance",
 ]
