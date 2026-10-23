@@ -12,9 +12,10 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-local}
       APP_NAME: ${APP_NAME:-Sahayak}
+      DEPLOYMENT_PROFILE: ${DEPLOYMENT_PROFILE:-full}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
-      ENABLED_MODULES: ${ENABLED_MODULES:-_template}
+      ENABLED_MODULES: ${ENABLED_MODULES:-}
     command: ["uvicorn", "sahayak.main:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       postgres:
@@ -36,9 +37,10 @@ services:
       start_period: 2s
     environment:
       APP_ENV: ${APP_ENV:-local}
+      DEPLOYMENT_PROFILE: ${DEPLOYMENT_PROFILE:-full}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://sahayak:sahayak@postgres:5432/sahayak}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
-      ENABLED_MODULES: ${ENABLED_MODULES:-_template}
+      ENABLED_MODULES: ${ENABLED_MODULES:-}
     command: ["python", "-m", "sahayak.container", "worker"]
     depends_on:
       postgres:
@@ -57,6 +59,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -68,6 +72,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
 

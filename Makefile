@@ -1,4 +1,4 @@
-.PHONY: setup dev test lint typecheck security migrate migrate-check snapshot snapshot-check tunnel inspector
+.PHONY: setup dev run test smoke lint typecheck security migrate migrate-check snapshot snapshot-check tunnel inspector
 
 security:
 	uv run bandit --quiet --recursive src
@@ -10,6 +10,12 @@ setup:
 
 dev:
 	docker compose up --build --remove-orphans
+
+run:
+	PYTHONPATH=src DEPLOYMENT_PROFILE=full uv run uvicorn sahayak.main:app --host 127.0.0.1 --port 8000 --reload
+
+smoke:
+	uv run python scripts/smoke_test.py --url http://127.0.0.1:8000 --iterations 5
 
 test:
 	PYTHONPATH=src uv run pytest
