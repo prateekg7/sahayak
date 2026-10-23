@@ -1204,6 +1204,81 @@
     }
   },
   {
+    "description": "Add, remove, read, check off, and clear items on shared household lists like groceries. Use when the user says 'Add milk to the shopping list', 'What is on our grocery list?', 'Check off eggs', or 'Clear finished items from the list'. Do not use for personal private tasks or habit tracking.",
+    "name": "shared_list",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "read",
+          "title": "Action",
+          "type": "string"
+        },
+        "household_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Id"
+        },
+        "item": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item"
+        },
+        "list_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "shopping",
+          "title": "List Name"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        }
+      },
+      "title": "shared_listArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Split shared expenses, calculate who owes whom, and record debt settlements. Use when the user says 'Split 1200 among four of us', 'Who owes what in Goa Trip?', 'What are the balances in Roommates?', or 'Record settlement of 300 rupees from Bob to me'. Do not use for individual personal expenses; use expense_log instead.",
     "name": "split_bill",
     "parameters": {

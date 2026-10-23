@@ -1,5 +1,32 @@
 # Progress
 
+## 2026-10-23 — T9.2 `shared_list` tool — DONE
+
+- Summary: implemented shared family grocery and shopping lists with automatic household creation, quantity parsing, case-insensitive deduplication merge policy, check off/clear workflows, GDPR export/scrubbing, and the `shared_list` MCP tool (21st platform tool):
+  - Database & Migrations:
+    - `src/sahayak/modules/home/models.py`: Added `SharedList` and `SharedListItem` models with foreign key cascades, `uq_home_lists_household_name` constraint, and `ix_home_list_items_list_checked` index.
+    - `src/sahayak/modules/home/migrations/0002_lists_schema.py`: Alembic migration creating `home.lists` and `home.list_items` tables with UTC timestamps. Reversible.
+  - Domain Logic (`src/sahayak/modules/home/domain/lists.py`):
+    - Quantity regex parser (`QUANTITY_PATTERN`) extracting leading units and quantities (e.g. "2 liters of whole milk" -> "Whole Milk", "2 liters").
+    - Name normalization (`normalize_list_name`, `normalize_item_name`) ensuring consistency and length limits.
+    - Spoken formatters for add, check off, remove, clear, and list summary (capped at 5 items with summary of remaining), strictly <= 300 characters, no markdown/symbols/emojis.
+  - Ports, Adapters & Services:
+    - `src/sahayak/modules/home/ports.py`: Defined `ListRepositoryPort`.
+    - `src/sahayak/modules/home/adapters/lists.py`: `SQLAlchemyListRepository` with atomic `pg_insert` + `on_conflict_do_nothing` for concurrent list creation, case-insensitive item deduplication updating quantity/added_by, and bulk clearance.
+    - `src/sahayak/modules/home/service/lists.py`: `SharedListService` resolving user household context (with seamless default Family household auto-creation for new users), orchestrating add, read, check_off, remove, and clear_checked.
+  - Public MCP Tool & GDPR:
+    - `src/sahayak/modules/home/tools/shared_list.py`: `shared_list` MCP tool with `@requires()` authorization, `@idempotent(tool_name="shared_list")`, and voice-friendly error handling.
+    - `src/sahayak/modules/home/module.py`: Registered `shared_list` tool (21st platform tool); updated GDPR export to include family lists and items; updated GDPR erasure to scrub `added_by` references while preserving household list continuity.
+  - Tests & Verification:
+    - `tests/unit/test_shared_list_domain.py`: 5 tests covering list and item name normalization, quantity extraction, speech formatters, and length constraints.
+    - `tests/unit/test_shared_list_service.py`: 3 comprehensive tests verifying list lifecycle, case-insensitive item deduplication merge, cross-household isolation, and concurrent additions by multiple household members.
+    - `tests/contract/test_shared_list_contract.py`: Streamable HTTP MCP contract testing, anonymous rejection, and full authenticated CRUD lifecycle.
+    - `tests/integration/test_home_privacy.py`: Verified GDPR export and item user ID scrubbing upon user erasure.
+    - `tests/security/isolation.py`: Registered `shared_list` in cross-user isolation auto-discovery suite.
+    - `tests/snapshots/tools.json`: Snapshot updated to 21 tools.
+  - Quality Gates: `make lint`, `make test` (582 passed, 86.76% coverage), `make snapshot-check` (21 tools), `make migrate-check`, `make security` all green.
+- Next: T9.3 `chores` and `pantry_recipes` tools.
+
 ## 2026-10-23 — T9.1 Households and sharing model (ADR first) — DONE
 
 - Summary: designed and implemented Phase 9 (Home and Family Module) foundation with household tenancy, membership authorization, invite code flows, published HomeAPI, and GDPR shared ownership rules:

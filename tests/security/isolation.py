@@ -964,3 +964,71 @@ register_isolation_spec(
         custom_isolation_check=_career_practice_cross_user_isolation,
     )
 )
+
+
+async def _shared_list_cross_user_isolation(
+    session_a: ClientSession, session_b: ClientSession
+) -> None:
+    # User A adds an item to groceries list
+    res_a = await session_a.call_tool(
+        "shared_list",
+        {"action": "add", "item": "Organic Almond Milk", "list_name": "groceries"},
+    )
+    data_a = json.loads(getattr(res_a.content[0], "text", "{}"))
+    assert data_a.get("ok") is True, f"User A failed to add item: {data_a}"
+    h_id_a = data_a.get("data", {}).get("household_id")
+    assert h_id_a is not None
+
+    # User B adds an item to groceries list
+    res_b = await session_b.call_tool(
+        "shared_list",
+        {"action": "add", "item": "Earl Grey Tea", "list_name": "groceries"},
+    )
+    data_b = json.loads(getattr(res_b.content[0], "text", "{}"))
+    assert data_b.get("ok") is True, f"User B failed to add item: {data_b}"
+    h_id_b = data_b.get("data", {}).get("household_id")
+    assert h_id_b is not None
+    assert h_id_a != h_id_b
+
+    # User A reads list: sees Organic Almond Milk, not Earl Grey Tea
+    res_a_read = await session_a.call_tool(
+        "shared_list",
+        {"action": "read", "list_name": "groceries"},
+    )
+    data_a_read = json.loads(getattr(res_a_read.content[0], "text", "{}"))
+    assert data_a_read.get("ok") is True
+    raw_items_a = data_a_read.get("data", {}).get("items", [])
+    items_a = [it.get("item_name", "").lower() for it in raw_items_a]
+    assert "organic almond milk" in items_a
+    assert "earl grey tea" not in items_a
+
+    # User B reads list: sees Earl Grey Tea, not Organic Almond Milk
+    res_b_read = await session_b.call_tool(
+        "shared_list",
+        {"action": "read", "list_name": "groceries"},
+    )
+    data_b_read = json.loads(getattr(res_b_read.content[0], "text", "{}"))
+    assert data_b_read.get("ok") is True
+    raw_items_b = data_b_read.get("data", {}).get("items", [])
+    items_b = [it.get("item_name", "").lower() for it in raw_items_b]
+    assert "earl grey tea" in items_b
+    assert "organic almond milk" not in items_b
+
+    # User B attempts to access User A's household list directly
+    res_b_breach = await session_b.call_tool(
+        "shared_list",
+        {"action": "read", "household_id": h_id_a, "list_name": "groceries"},
+    )
+    data_b_breach = json.loads(getattr(res_b_breach.content[0], "text", "{}"))
+    assert data_b_breach.get("ok") is False
+    assert data_b_breach.get("error_code") == "not_found"
+
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="shared_list",
+        allows_anonymous=False,
+        sample_args={"action": "read"},
+        custom_isolation_check=_shared_list_cross_user_isolation,
+    )
+)

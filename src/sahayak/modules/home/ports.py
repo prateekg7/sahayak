@@ -6,7 +6,13 @@ import uuid
 from datetime import datetime
 from typing import Protocol
 
-from sahayak.modules.home.models import Household, HouseholdInvite, HouseholdMembership
+from sahayak.modules.home.models import (
+    Household,
+    HouseholdInvite,
+    HouseholdMembership,
+    SharedList,
+    SharedListItem,
+)
 
 
 class HouseholdRepositoryPort(Protocol):
@@ -109,4 +115,79 @@ class HouseholdRepositoryPort(Protocol):
         household_id: uuid.UUID,
     ) -> bool:
         """Delete household and all its cascade children."""
+        ...
+
+
+class ListRepositoryPort(Protocol):
+    """Port defining shared list and list items operations."""
+
+    async def get_or_create_list(
+        self,
+        *,
+        household_id: uuid.UUID,
+        name: str,
+    ) -> SharedList:
+        """Fetch existing list by name or create a new one."""
+        ...
+
+    async def get_list_by_name(
+        self,
+        *,
+        household_id: uuid.UUID,
+        name: str,
+    ) -> SharedList | None:
+        """Fetch list by household and name."""
+        ...
+
+    async def add_or_update_item(
+        self,
+        *,
+        list_id: uuid.UUID,
+        item_name: str,
+        quantity: str | None,
+        added_by: uuid.UUID | None,
+    ) -> SharedListItem:
+        """Add new item or update quantity of existing unchecked item."""
+        ...
+
+    async def get_list_items(
+        self,
+        *,
+        list_id: uuid.UUID,
+        include_checked: bool = True,
+    ) -> list[SharedListItem]:
+        """Fetch items on a list ordered by created_at."""
+        ...
+
+    async def find_item_by_name(
+        self,
+        *,
+        list_id: uuid.UUID,
+        item_name: str,
+    ) -> SharedListItem | None:
+        """Find item by case-insensitive name."""
+        ...
+
+    async def check_off_item(
+        self,
+        *,
+        item_id: uuid.UUID,
+    ) -> SharedListItem | None:
+        """Mark an item as checked."""
+        ...
+
+    async def remove_item(
+        self,
+        *,
+        item_id: uuid.UUID,
+    ) -> bool:
+        """Remove an item from a list."""
+        ...
+
+    async def clear_checked_items(
+        self,
+        *,
+        list_id: uuid.UUID,
+    ) -> int:
+        """Delete all checked items from a list, returning count deleted."""
         ...

@@ -6,11 +6,17 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 
 from sahayak.core.db.session import UnitOfWork
 from sahayak.core.module import Deps, HealthStatus
-from sahayak.modules.home.models import Household, HouseholdInvite, HouseholdMembership
+from sahayak.modules.home.models import (
+    Household,
+    HouseholdInvite,
+    HouseholdMembership,
+    SharedList,
+    SharedListItem,
+)
 
 
 class HomeModule:
@@ -39,9 +45,25 @@ class HomeModule:
         return self._api
 
     def register_tools(self, mcp: Any, deps: Deps) -> None:
-        """Register MCP tools for home module (tools added in T9.2 and T9.3)."""
+        """Register MCP tools for home module."""
         self._deps = deps
-        # Tools will be registered in T9.2 (shared_list) and T9.3 (chores, pantry_recipes)
+        if deps.session_factory is not None:
+            from sahayak.modules.home.service.lists import SharedListService
+            from sahayak.modules.home.tools.shared_list import set_shared_list_service
+
+            list_service = SharedListService(session_factory=deps.session_factory)
+            set_shared_list_service(list_service)
+
+        from sahayak.modules.home.tools.shared_list import (
+            SHARED_LIST_DESCRIPTION,
+            shared_list,
+        )
+
+        tool_decorator = getattr(mcp, "tool", None)
+        if callable(tool_decorator):
+            tool_decorator(name="shared_list", description=SHARED_LIST_DESCRIPTION)(shared_list)
+        elif hasattr(mcp, "add_tool"):
+            mcp.add_tool(shared_list, name="shared_list", description=SHARED_LIST_DESCRIPTION)
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs for home module."""
@@ -60,7 +82,7 @@ class HomeModule:
         pass
 
     async def export_user_data(self, user_id: str) -> dict[str, Any]:
-        """GDPR Right to Access: export user households and memberships."""
+        """GDPR Right to Access: export user households, memberships, lists, and items."""
         if self._deps is None or self._deps.session_factory is None:
             return {}
 
@@ -73,11 +95,25 @@ class HomeModule:
             household_ids = [m.household_id for m in memberships]
 
             exported_households = []
+            exported_lists = []
+            exported_items = []
             if household_ids:
                 res_h = await uow.session.execute(
                     select(Household).where(Household.id.in_(household_ids))
                 )
                 exported_households = [h.to_dict() for h in res_h.scalars().all()]
+
+                res_l = await uow.session.execute(
+                    select(SharedList).where(SharedList.household_id.in_(household_ids))
+                )
+                lists = res_l.scalars().all()
+                exported_lists = [lst.to_dict() for lst in lists]
+                list_ids = [lst.id for lst in lists]
+                if list_ids:
+                    res_li = await uow.session.execute(
+                        select(SharedListItem).where(SharedListItem.list_id.in_(list_ids))
+                    )
+                    exported_items = [it.to_dict() for it in res_li.scalars().all()]
 
             res_inv = await uow.session.execute(
                 select(HouseholdInvite).where(HouseholdInvite.created_by == uid)
@@ -88,6 +124,8 @@ class HomeModule:
                 "households": exported_households,
                 "memberships": [m.to_dict() for m in memberships],
                 "created_invites": [i.to_dict() for i in invites],
+                "shared_lists": exported_lists,
+                "list_items": exported_items,
             }
 
     async def delete_user_data(self, user_id: str) -> None:
@@ -100,6 +138,11 @@ class HomeModule:
             # Delete invites created by user
             await uow.session.execute(
                 delete(HouseholdInvite).where(HouseholdInvite.created_by == uid)
+            )
+
+            # Scrub user references on remaining list items
+            await uow.session.execute(
+                update(SharedListItem).where(SharedListItem.added_by == uid).values(added_by=None)
             )
 
             # Check memberships to manage household ownership

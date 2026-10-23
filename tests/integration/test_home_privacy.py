@@ -33,14 +33,25 @@ async def test_home_privacy_export_and_ownership_transfer() -> None:
             uow.session.add_all([User(id=user_owner), User(id=user_member)])
             await uow.session.commit()
 
-        # 1. User owner creates household and invites member
         create_data, _, _ = await service.create_household(
             user_id=user_owner,
             name="Rose Cottage",
         )
         code = create_data["invite"]["code"]
+        household_id = create_data["household"]["id"]
 
         await service.join_household(user_id=user_member, invite_code=code)
+
+        from sahayak.modules.home.service.lists import SharedListService
+
+        list_service = SharedListService(session_factory=session_factory)
+        await list_service.add_item(
+            user_id=user_owner,
+            household_id_str=household_id,
+            list_name="Pantry",
+            item="Basmati Rice",
+            quantity="5 kg",
+        )
 
         # 2. Export user data for owner
         exported_owner = await home_module.export_user_data(str(user_owner))
@@ -50,6 +61,8 @@ async def test_home_privacy_export_and_ownership_transfer() -> None:
         assert len(exported_owner["memberships"]) == 1
         assert exported_owner["memberships"][0]["role"] == "owner"
         assert len(exported_owner["created_invites"]) >= 1
+        assert len(exported_owner.get("shared_lists", [])) == 1
+        assert len(exported_owner.get("list_items", [])) == 1
 
         # 3. Owner requests GDPR erasure -> ownership transfers to member
         await home_module.delete_user_data(str(user_owner))

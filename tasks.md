@@ -487,7 +487,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** ADR on sharing model (household with roles `owner/member`), schema `home` (`households`, `memberships`, `invites` with expiring codes), service enforcing membership checks on every query, generic `assert_member` helper, privacy implications for deletion (shared data ownership rules), extended isolation test helper for shared resources.
 - **Done when:** a non-member can never read/modify household data (tests across all repo methods); invite flow works end to end.
 
-### [ ] T9.2 — `shared_list` tool
+### [x] T9.2 — `shared_list` tool
 - **Depends on:** T9.1 · **Est. LOC:** ~600
 - **What it does:** "Add milk to the shopping list" shared by the family.
 - **Implement:** `lists`, `list_items` tables, `tools/shared_list.py` (`add, remove, read, check_off, clear_checked`), dedupe/merge by normalized item name, quantity parsing, last-write-wins conflict policy documented.
