@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 revision = "0001_language_schema"
 down_revision = None
 branch_labels = None
-depends_on = None
+depends_on = ("0002_users_and_identities",)
 
 
 def upgrade() -> None:

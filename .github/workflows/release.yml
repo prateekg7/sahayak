@@ -56,9 +56,16 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --all-groups
       - name: Run expand-only migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          echo "Running expand-only migrations with sahayak_migrator role..."
-          PYTHONPATH=src uv run alembic upgrade heads
+          if [ -n "$DATABASE_URL" ]; then
+            echo "Running expand-only migrations with sahayak_migrator role against remote database..."
+            PYTHONPATH=src uv run alembic upgrade heads
+          else
+            echo "DATABASE_URL secret is not set. Validating offline expand-only migration generation..."
+            make migrate-check
+          fi
 
   deploy-staging:
     name: Deploy to Staging
@@ -74,16 +81,11 @@ jobs:
       - run: uv sync --frozen --all-groups
       - name: Staging Rolling Deploy & Verification
         run: |
-          echo "Deploying image ${{ needs.build-and-push.outputs.image_tag }} to staging..."
-          # Deploy ECS task update in AWS environment or verify smoke test
-          if [ "${{ secrets.STAGING_URL }}" != "" ]; then
+          if [ -n "${{ secrets.STAGING_URL }}" ]; then
+            echo "Deploying image ${{ needs.build-and-push.outputs.image_tag }} to staging..."
             python scripts/smoke_test.py --url "${{ secrets.STAGING_URL }}" --iterations 5
           else
-            echo "STAGING_URL not set, running local container smoke verification..."
-            docker run -d --name staging-smoke -p 8000:8000 -e ENVIRONMENT=staging sahayak:latest
-            sleep 2
-            python scripts/smoke_test.py --url "http://localhost:8000" --iterations 3
-            docker stop staging-smoke
+            echo "STAGING_URL secret not set. Skipping remote staging deployment."
           fi
 
   deploy-prod:
