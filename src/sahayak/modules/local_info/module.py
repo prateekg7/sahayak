@@ -1,4 +1,4 @@
-"""Local and civic information module conforming to the Module protocol (T12.1)."""
+"""Local and civic information module conforming to the Module protocol (T12.1, T12.2)."""
 
 from __future__ import annotations
 
@@ -26,13 +26,30 @@ class LocalInfoModule:
     @property
     def api(self) -> LocalInfoAPI:
         if self._api is None:
-            self._api = DefaultLocalInfoAPI(registered_count=0)
+            self._api = DefaultLocalInfoAPI(registered_count=1)
         return self._api
 
     def register_tools(self, mcp: Any, deps: Deps) -> None:
         """Register MCP tools for local and civic information."""
         self._deps = deps
-        # Tools will be registered in T12.2 (transit), T12.3 (prices), T12.4 (schemes)
+
+        from sahayak.modules.local_info.adapters.transit import TransitHttpDataSource
+        from sahayak.modules.local_info.service.transit import TransitService
+        from sahayak.modules.local_info.tools.transit import (
+            TRANSIT_STATUS_DESCRIPTION,
+            set_transit_service,
+            transit_status,
+        )
+
+        transit_source = TransitHttpDataSource(cache=deps.cache)
+        transit_service = TransitService(data_source=transit_source)
+        set_transit_service(transit_service)
+
+        tool_decorator = getattr(mcp, "tool", None)
+        if callable(tool_decorator):
+            tool_decorator(name="transit_status", description=TRANSIT_STATUS_DESCRIPTION)(
+                transit_status
+            )
 
     def register_jobs(self, worker: Any) -> None:
         """Register background worker jobs for local_info module."""

@@ -1,5 +1,31 @@
 # Progress
 
+## 2026-10-24 — T12.2 `transit_status` tool — DONE
+
+- Summary: implemented the `transit_status` MCP tool (29th platform tool) for real-time transit departures, operational line status, and delay alerts with fuzzy station matching and schedule headway fallback:
+  - Architecture Decision Record:
+    - `docs/adr/0013-transit-data-source.md`: Documented open transit API feeds under ODbL 1.0, fuzzy phonetic station resolution, schedule headway fallback during upstream outages, and anonymous access policy per ADR 0009.
+    - Updated `docs/adr/index.md`.
+  - Domain Logic (`src/sahayak/modules/local_info/domain/transit.py`):
+    - `StationInfo`, `DepartureInfo`, `LineStatusInfo` domain models.
+    - Canonical station dictionary covering key transit lines and colloquial spoken aliases ("cp" -> Rajiv Chowk, "ndls" -> New Delhi, "huda" -> Millennium City Centre, "airport"/"t3" -> IGI Airport, "isbt" -> Kashmere Gate, "anand vihar" -> Anand Vihar ISBT, etc.).
+    - Fuzzy station resolver with Levenshtein similarity cutoff (0.68) resolving speech variations, phonetic misspellings, and colloquial station names.
+    - Natural voice formatters for next departures and line status adhering to $\le 300$ characters without markdown or forbidden symbols.
+  - Adapter & Service (`src/sahayak/modules/local_info/`):
+    - `adapters/transit.py`: `TransitHttpDataSource` extending `BaseHttpDataSource` with 120s caching, host allow-listing, and automatic headway fallback when live tracking is unavailable.
+    - `service/transit.py`: `TransitService` resolving stations, filtering departures by line/destination, retrieving line statuses, and producing standard envelopes.
+  - Public MCP Tool & Snapshot:
+    - `tools/transit.py`: `transit_status` tool with `@allow_anonymous` supporting `next_departures` and `status` actions.
+    - Registered tool in `local_info/module.py` and exported in `tools/__init__.py`.
+    - `tests/snapshots/tools.json`: Updated snapshot to 29 tools.
+  - Tests & Verification:
+    - `tests/unit/test_transit_domain.py`: Station resolution with exact names, colloquial aliases, fillers, fuzzy misspellings, unknown station handling, and speech length limits.
+    - `tests/unit/test_transit_service.py`: Departures fetching, line/destination filtering, upstream failure fallback, and line status checks.
+    - `tests/contract/test_transit_status_contract.py`: Contract test over Streamable HTTP verifying anonymous departures query, status check, validation errors, and auto-isolation.
+    - `tests/security/isolation.py`: Registered `transit_status` in auto-isolation suite with `allows_anonymous=True`.
+  - Quality Gates: `make lint`, `make test` (658 passed, 85.66% coverage), `make snapshot-check` (29 tools), `make migrate-check`, `make security` all green.
+- Next: T12.3 `commodity_prices` tool.
+
 ## 2026-10-24 — T12.1 Data-source adapter framework — DONE
 
 - Summary: implemented the foundational external data-source adapter framework and resilience policies for Phase 12 (Local and Civic Info Module):

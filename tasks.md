@@ -549,7 +549,7 @@ Write the tests listed under "Done when". Run `make lint test` and fix failures 
 - **Implement:** `modules/local_info/` skeleton, `DataSource` port, HTTP adapter base (allow-listed hosts, retries, timeouts, circuit breaker, response caching with source-specific TTL, stale-while-error policy), freshness metadata surfaced in answers ("as of …"), attribution helper.
 - **Done when:** simulated upstream outages return cached data marked stale; no unbounded retries.
 
-### [ ] T12.2 — `transit_status` tool **[VERIFY data source]**
+### [x] T12.2 — `transit_status` tool **[VERIFY data source]**
 - **Depends on:** T12.1 · **Est. LOC:** ~600
 - **What it does:** Train/bus status and departures.
 - **Implement:** ADR choosing an official or licensed API (do not scrape sites that forbid it), adapter, station/route name resolution with fuzzy matching, `tools/transit.py` (`next_departures, status`), clear "unavailable" spoken fallback, caching.

@@ -1436,3 +1436,11 @@ register_isolation_spec(
         custom_isolation_check=_language_practice_cross_user_isolation,
     )
 )
+
+register_isolation_spec(
+    ToolIsolationSpec(
+        name="transit_status",
+        allows_anonymous=True,
+        sample_args={"action": "status", "line": "yellow"},
+    )
+)

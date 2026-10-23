@@ -2353,6 +2353,57 @@
     }
   },
   {
+    "description": "Check real-time train and metro departures, line delays, and service status. Use when the user asks 'When is the next train from Rajiv Chowk?', 'What is the status of the Yellow line?', or 'Next departures from CP'. Do not use for checking mandi agricultural prices or government welfare schemes; use 'commodity_prices' or 'scheme_finder' instead.",
+    "name": "transit_status",
+    "parameters": {
+      "properties": {
+        "action": {
+          "default": "next_departures",
+          "title": "Action",
+          "type": "string"
+        },
+        "destination": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Destination"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line"
+        },
+        "station": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Station"
+        }
+      },
+      "title": "transit_statusArguments",
+      "type": "object"
+    }
+  },
+  {
     "description": "Manages daily vocabulary learning and spaced repetition review quizzes. Use when the user says 'Give me my word of the day in Spanish', 'Review my vocabulary', 'Grade my word good', or 'What are my language stats?'. Do not use for conversational practice or translations; use language_practice instead.",
     "name": "vocab",
     "parameters": {

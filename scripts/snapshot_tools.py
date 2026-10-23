@@ -39,6 +39,7 @@ def generate_snapshot(modules: tuple[str, ...] | None = None) -> list[dict[str, 
             "home",
             "business",
             "language",
+            "local_info",
             "civic",
         ]
         available: list[str] = []

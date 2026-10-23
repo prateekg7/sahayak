@@ -43,6 +43,7 @@ def test_every_registered_tool_has_isolation_specification() -> None:
             "home",
             "business",
             "language",
+            "local_info",
         )
     )
     server = create_mcp_server(settings=settings, registry=registry)
@@ -118,6 +119,7 @@ async def test_auto_isolation_suite_passes_all_registered_tools(
                     "home",
                     "business",
                     "language",
+                    "local_info",
                 )
             )
             deps = Deps(session_factory=session_factory)
