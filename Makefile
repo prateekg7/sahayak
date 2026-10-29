@@ -42,7 +42,7 @@ snapshot-check:
 	PYTHONPATH=src uv run python scripts/snapshot_tools.py --all-profiles --check
 
 tunnel:
-	cloudflared tunnel --url http://localhost:8000
+	cloudflared tunnel --protocol http2 --url http://localhost:8000
 
 inspector:
 	npx -y @modelcontextprotocol/inspector@latest --transport http --server-url http://localhost:8000/mcp
