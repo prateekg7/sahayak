@@ -32,6 +32,7 @@
 - [Alexa+ Add-on Package](#alexa-add-on-package)
 - [Quality Gates & CI/CD](#quality-gates--cicd)
 - [Documentation Index](#documentation-index)
+- [License](#license)
 
 ---
 
@@ -40,16 +41,16 @@
 **Sahayak** (सहायक, *"Helper"* in Sanskrit and Hindi) is an enterprise-grade, privacy-first conversational assistant built on the **[Model Context Protocol (MCP)](https://modelcontextprotocol.io)** and tailored for **Amazon Alexa+**.
 
 It delivers hands-free assistance across 10 life domains:
-- 🎓 **Academics & Study**: Dynamic quizzes, spaced-repetition flashcards (SuperMemo-2), exam schedules, and grounded knowledge overviews.
-- ⚡ **Productivity**: Daily morning briefings, task management, habit streaks, Pomodoro focus timers, quick voice notes, and weekly reviews.
-- 💰 **Personal Finance**: Expense tracking, category budgets, shared bill splitting with settlement optimization, and financial reports.
-- 🩺 **Health & Wellness**: Logging water, workouts, sleep, vitals, and weekly wellness trend analysis.
-- 💼 **Career**: Mock behavioral interviews with rubric scoring, job application pipelines, and resume elevator pitch practice.
-- 🏬 **Micro-Business**: Customer order management, small business credit/debit ledgers, and sales reports.
-- 🏠 **Home & Living**: Shared grocery lists, chore rotation schedules, and pantry-based recipe suggestions.
-- 🗣️ **Languages**: Daily vocabulary acquisition (SM-2) and interactive conversational drills.
-- 📍 **Local Information**: Public transit schedules, live agricultural mandi prices, and government scheme eligibility discovery.
-- ⚙️ **Settings**: Assistant configuration, locale customization, and modular capability management.
+- **Academics & Study**: Dynamic quizzes, spaced-repetition flashcards (SuperMemo-2), exam schedules, and grounded knowledge overviews.
+- **Productivity**: Daily morning briefings, task management, habit streaks, Pomodoro focus timers, quick voice notes, and weekly reviews.
+- **Personal Finance**: Expense tracking, category budgets, shared bill splitting with settlement optimization, and financial reports.
+- **Health & Wellness**: Logging water, workouts, sleep, vitals, and weekly wellness trend analysis.
+- **Career**: Mock behavioral interviews with rubric scoring, job application pipelines, and resume elevator pitch practice.
+- **Micro-Business**: Customer order management, small business credit/debit ledgers, and sales reports.
+- **Home & Living**: Shared grocery lists, chore rotation schedules, and pantry-based recipe suggestions.
+- **Languages**: Daily vocabulary acquisition (SM-2) and interactive conversational drills.
+- **Local Information**: Public transit schedules, live agricultural mandi prices, and government scheme eligibility discovery.
+- **Settings**: Assistant configuration, locale customization, and modular capability management.
 
 ---
 
@@ -151,7 +152,7 @@ Exposing 30+ tools in a single Alexa add-on causes LLM cognitive overload and de
 | | [`application_tracker`](file:///src/sahayak/modules/career/tools/applications.py) | *"Alexa, add Amazon to my job applications"* | Tracks job application stages, interview dates, and follow-up deadlines. |
 | | [`career_practice`](file:///src/sahayak/modules/career/tools/practice.py) | *"Alexa, help me improve my resume bullet"* | Formulates resume impact statements using the Google XYZ formula. |
 | **Business** | [`orders`](file:///src/sahayak/modules/business/tools/orders.py) | *"Alexa, create an order for three coffee bags"* | Small business customer order intake, status tracking, and fulfillment. |
-| | [`ledger`](file:///src/sahayak/modules/business/tools/ledger.py) | *"Alexa, record fifty dollars paid by Mike"* | Digital *Khata* / double-entry credit and debt ledger for micro-merchants. |
+| | [`ledger`](file:///src/sahayak/modules/business/tools/ledger.py) | *"Alexa, record fifty dollars paid by Mike"* | Digital Khata / double-entry credit and debt ledger for micro-merchants. |
 | | [`sales_summary`](file:///src/sahayak/modules/business/tools/sales.py) | *"Alexa, what were my sales today?"* | Daily revenue totals, top-selling items, and low-inventory warnings. |
 | **Home** | [`shared_list`](file:///src/sahayak/modules/home/tools/shared_list.py) | *"Alexa, add olive oil to the grocery list"* | Collaborative household shopping lists with real-time check-off. |
 | | [`chores`](file:///src/sahayak/modules/home/tools/chores.py) | *"Alexa, whose turn is it to do the dishes?"* | Household chore schedules with fair rotation algorithms and assignments. |
@@ -159,7 +160,7 @@ Exposing 30+ tools in a single Alexa add-on causes LLM cognitive overload and de
 | **Language** | [`vocab`](file:///src/sahayak/modules/language/tools/vocab.py) | *"Alexa, teach me a new Spanish word"* | Spaced repetition vocabulary builder with definitions and usage contexts. |
 | | [`language_practice`](file:///src/sahayak/modules/language/tools/practice.py) | *"Alexa, practice ordering at a café in French"* | Conversational roleplay sessions with grammar hints and translations. |
 | **Local Info** | [`transit_status`](file:///src/sahayak/modules/local_info/tools/transit.py) | *"Alexa, is the Blue Line running on time?"* | Real-time public transit status, schedules, and service disruption alerts. |
-| | [`commodity_prices`](file:///src/sahayak/modules/local_info/tools/commodity.py) | *"Alexa, what is the price of wheat in Delhi mandi?"* | Daily agricultural market wholesale rates (*mandi* rates) and trends. |
+| | [`commodity_prices`](file:///src/sahayak/modules/local_info/tools/commodity.py) | *"Alexa, what is the price of wheat in Delhi mandi?"* | Daily agricultural market wholesale rates (mandi rates) and trends. |
 | | [`scheme_finder`](file:///src/sahayak/modules/local_info/tools/schemes.py) | *"Alexa, find scholarship schemes for college students"* | Government citizen welfare and subsidy scheme eligibility discovery. |
 | **Settings** | [`settings`](file:///src/sahayak/modules/settings/tools/settings.py) | *"Alexa, set my timezone to America/New_York"* | Assistant configuration, default preferences, and module enablement flags. |
 
@@ -227,6 +228,7 @@ sahayak/
 │   ├── snapshots/                     # Public tool JSON contract snapshots
 │   └── unit/                          # Isolated business logic unit tests
 ├── docker-compose.yml                 # Local multi-service composition
+├── LICENSE                            # MIT Open Source License
 ├── Makefile                           # Automated developer workflows
 └── pyproject.toml                     # Python dependencies & tool configurations
 ```
@@ -382,17 +384,17 @@ make security
 
 ## Documentation Index
 
-- 📘 **[Developer Guide](docs/dev-guide.md)**: Deep-dive local development, testing, and troubleshooting.
-- 🏗️ **[Architecture Document](docs/architecture.md)**: System design, event outbox, and security boundaries.
-- 📦 **[Module Authoring Guide](docs/module-authoring.md)**: Step-by-step tutorial on adding new modules from `_template`.
-- 📐 **[Architectural Decision Records (ADRs)](docs/adr/index.md)**:
+- **[Developer Guide](docs/dev-guide.md)**: Deep-dive local development, testing, and troubleshooting.
+- **[Architecture Document](docs/architecture.md)**: System design, event outbox, and security boundaries.
+- **[Module Authoring Guide](docs/module-authoring.md)**: Step-by-step tutorial on adding new modules from `_template`.
+- **[Architectural Decision Records (ADRs)](docs/adr/index.md)**:
   - [ADR 0001: Language and Framework Selection](docs/adr/0001-language-and-framework.md)
   - [ADR 0002: Tool Budget & Cognitive Load](docs/adr/0002-tool-budget.md)
   - [ADR 0003: Account Linking & OAuth 2.1](docs/adr/0003-account-linking.md)
   - [ADR 0010: Latency & Response Size Budgets](docs/adr/0010-latency-and-response-size.md)
   - [ADR 0016: Multi-Add-On Deployment Profiles](docs/adr/0016-multi-addon-deployment-profiles.md)
-- 🔒 **[Security Threat Model](docs/security/threat-model.md)**: Threat vector analysis and mitigation matrix.
-- 📜 **[Production Runbooks](docs/runbooks/)**:
+- **[Security Threat Model](docs/security/threat-model.md)**: Threat vector analysis and mitigation matrix.
+- **[Production Runbooks](docs/runbooks/)**:
   - [Disaster Recovery & Backup Restore](docs/runbooks/backup-restore.md)
   - [Zero-Downtime Deployment](docs/runbooks/deploy.md)
   - [Provider Outage Fallback](docs/runbooks/provider-outage.md)
@@ -400,6 +402,6 @@ make security
 
 ---
 
-<p align="center">
-  Built with ❤️ for voice-first AI interfaces.
-</p>
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

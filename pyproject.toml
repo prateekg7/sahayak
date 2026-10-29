@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "A modular, stateless MCP server for the Sahayak voice assistant."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-license = { text = "Proprietary" }
+license = { text = "MIT" }
 authors = [{ name = "Sahayak contributors" }]
 dependencies = [
   "alembic>=1.14,<2",
