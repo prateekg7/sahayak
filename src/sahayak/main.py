@@ -202,7 +202,7 @@ def create_app(
         }
 
     if mcp_app is not None:
-        mount_mcp_server(app, mcp_app)
+        mount_mcp_server(app, mcp_app, settings=app_settings)
 
     # AuthMiddleware wraps MCPRoutingMiddleware so credentials are set for tool execution
     app.add_middleware(AuthMiddleware, validator=validator, user_service=users_svc)

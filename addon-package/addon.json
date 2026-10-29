@@ -1,0 +1,84 @@
+{
+  "manifestVersion": "1.0",
+  "storeListing": {
+    "distributionCountries": [
+      "US"
+    ],
+    "locales": {
+      "en-US": {
+        "default": "DEFAULT",
+        "name": {
+          "value": "Sahayak",
+          "spokenForm": {
+            "format": "ipa",
+            "value": "səˈhɑːjək"
+          }
+        },
+        "shortDescription": "Your intelligent everyday assistant for academics, finances, home, and productivity.",
+        "fullDescription": "Sahayak is an AI assistant providing study plans, quizzes, flashcards, budget tracking, chore scheduling, and focus management.",
+        "examplePhrases": [
+          "Alexa, quiz me on photosynthesis",
+          "Alexa, check my daily budget in Sahayak",
+          "Alexa, what are my pending chores in Sahayak",
+          "Alexa, start a 25-minute focus session in Sahayak"
+        ],
+        "privacyAndCompliance": {
+          "privacyPolicyUrl": "https://sahayak.app/privacy",
+          "termsOfUseUrl": "https://sahayak.app/terms"
+        },
+        "mediaAssets": {
+          "icons": {
+            "light": [
+              {
+                "size": "72x72",
+                "uri": "https://assets.sahayak.app/icons/icon-72x72.png"
+              },
+              {
+                "size": "64x64",
+                "uri": "https://assets.sahayak.app/icons/icon-64x64.png"
+              },
+              {
+                "size": "88x88",
+                "uri": "https://assets.sahayak.app/icons/icon-88x88.png"
+              },
+              {
+                "size": "126x126",
+                "uri": "https://assets.sahayak.app/icons/icon-126x126.png"
+              },
+              {
+                "size": "180x180",
+                "uri": "https://assets.sahayak.app/icons/icon-180x180.png"
+              },
+              {
+                "size": "241x241",
+                "uri": "https://assets.sahayak.app/icons/icon-241x241.png"
+              }
+            ],
+            "dark": []
+          },
+          "carouselImages": [
+            {
+              "uri": "https://assets.sahayak.app/carousel/sahayak-overview.png",
+              "altText": "Interactive academic quiz and daily assistant overview",
+              "size": "600x900"
+            }
+          ],
+          "bannerImages": []
+        }
+      }
+    }
+  },
+  "integrations": [
+    {
+      "type": "MCP",
+      "config": {
+        "endpoints": {
+          "default": {
+            "type": "HTTPS",
+            "uri": "https://api.sahayak.app/mcp"
+          }
+        }
+      }
+    }
+  ]
+}

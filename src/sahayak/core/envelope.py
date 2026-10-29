@@ -54,6 +54,7 @@ def ok(
     next_actions: list[str] | None = None,
     module: str = "",
     version: str = "0.0.0",
+    ui: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Build a successful tool response envelope.
 
@@ -63,6 +64,7 @@ def ok(
         next_actions: Suggested follow-up actions for the user.
         module: Owning module name for the meta block.
         version: Module version string.
+        ui: Optional Alexa+ UI metadata (resourceUri, invoking, invoked).
 
     Returns:
         A dictionary matching the PRD §9.3 envelope shape.
@@ -75,16 +77,20 @@ def ok(
     cleaned = _clean_spoken(spoken_summary)
     spoken = _truncate_spoken(cleaned, settings.spoken_summary_max_chars)
 
+    meta: dict[str, Any] = {
+        "request_id": get_request_id() or "",
+        "module": module,
+        "version": version,
+    }
+    if ui:
+        meta["ui"] = ui
+
     payload: dict[str, Any] = {
         "ok": True,
         "spoken_summary": spoken,
         "data": data or {},
         "next_actions": next_actions or [],
-        "meta": {
-            "request_id": get_request_id() or "",
-            "module": module,
-            "version": version,
-        },
+        "meta": meta,
     }
     return _enforce_size(payload, settings.max_response_bytes)
 
@@ -94,6 +100,7 @@ def fail(
     *,
     module: str = "",
     version: str = "0.0.0",
+    ui: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Build an error tool response envelope from a ``SahayakError``.
 
@@ -101,6 +108,7 @@ def fail(
         error: The domain or service error to surface.
         module: Owning module name for the meta block.
         version: Module version string.
+        ui: Optional Alexa+ UI metadata.
 
     Returns:
         A dictionary with ``ok=False`` and the stable error code.
@@ -111,17 +119,21 @@ def fail(
         settings.spoken_summary_max_chars,
     )
 
+    meta: dict[str, Any] = {
+        "request_id": get_request_id() or "",
+        "module": module,
+        "version": version,
+    }
+    if ui:
+        meta["ui"] = ui
+
     payload: dict[str, Any] = {
         "ok": False,
         "error_code": error.code,
         "spoken_summary": spoken,
         "data": {},
         "next_actions": [],
-        "meta": {
-            "request_id": get_request_id() or "",
-            "module": module,
-            "version": version,
-        },
+        "meta": meta,
     }
     return _enforce_size(payload, settings.max_response_bytes)
 

@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     database_url: AnyUrl = AnyUrl("postgresql+asyncpg://sahayak:sahayak@localhost:5432/sahayak")
     redis_url: AnyUrl = AnyUrl("redis://localhost:6379/0")
     allowed_origins: Annotated[tuple[AnyUrl, ...], NoDecode] = ()
+    mcp_stateless_http: bool = True
 
     max_tools: PositiveInt = 15
     max_tools_per_module: PositiveInt = 6
