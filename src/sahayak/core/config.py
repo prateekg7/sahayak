@@ -98,10 +98,20 @@ class Settings(BaseSettings):
             return "redis://localhost:6379/0"
         return value
 
+    @field_validator("deployment_profile", mode="before")
+    @classmethod
+    def parse_deployment_profile(cls, value: object) -> object:
+        """Handle empty string as None."""
+        if value == "" or value is None:
+            return None
+        return value
+
     @field_validator("enabled_modules", mode="before")
     @classmethod
     def parse_enabled_modules(cls, value: object) -> tuple[str, ...] | object:
         """Convert the comma-separated environment form into a non-empty tuple."""
+        if value == "" or value is None:
+            return ("academics",)
         if not isinstance(value, str):
             return value
         modules = tuple(module.strip() for module in value.split(",") if module.strip())
