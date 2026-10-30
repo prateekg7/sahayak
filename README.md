@@ -18,11 +18,11 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Architecture & Design Principles](#architecture--design-principles)
+- [Architecture Highlights & Design Principles](#architecture-highlights--design-principles)
 - [Deployment Profiles (ADR 0016)](#deployment-profiles-adr-0016)
 - [Complete Tool Inventory (33 Tools)](#complete-tool-inventory-33-tools)
 - [Repository Structure](#repository-structure)
-- [Getting Started & Local Setup](#getting-started--local-setup)
+- [Quick Start & Local Setup](#quick-start--local-setup)
   - [Prerequisites](#prerequisites)
   - [Option A: Local Virtualenv with `uv` (Recommended)](#option-a-local-virtualenv-with-uv-recommended)
   - [Option B: Full Containerized Stack (Docker Compose)](#option-b-full-containerized-stack-docker-compose)
@@ -54,7 +54,7 @@ It delivers hands-free assistance across 10 life domains:
 
 ---
 
-## Architecture & Design Principles
+## Architecture Highlights & Design Principles
 
 ```
                                     +-----------------------------+
@@ -235,7 +235,7 @@ sahayak/
 
 ---
 
-## Getting Started & Local Setup
+## Quick Start & Local Setup
 
 ### Prerequisites
 
